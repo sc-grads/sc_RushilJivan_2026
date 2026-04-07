@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime
 
+
 def get_response(text: str) -> str:
     lowered: str = text.lower()
 
@@ -18,3 +19,12 @@ def get_response(text: str) -> str:
     else:
         return f'Sorry i do not understand: "{text}"'
 
+
+while True:
+    user_input: str = input("You: ")
+    if user_input == 'exit':
+        print("Bot: It was a pleasure talking to you!")
+        sys.exit()
+
+    bot_response: str = get_response(user_input)
+    print(f'Bot response: {bot_response}')
