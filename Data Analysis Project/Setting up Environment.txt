@@ -1,0 +1,164 @@
+c^H^Hcroot@LAPTOP-66HI94H2:~# cd
+root@LAPTOP-66HI94H2:~# cd
+root@LAPTOP-66HI94H2:~# ls
+root@LAPTOP-66HI94H2:~# ls -l
+total 0
+root@LAPTOP-66HI94H2:~# cd
+root@LAPTOP-66HI94H2:~# cd ..
+root@LAPTOP-66HI94H2:/# ls -l
+total 2816
+lrwxrwxrwx   1 root root       7 Apr 22  2024 bin -> usr/bin
+drwxr-xr-x   2 root root    4096 Feb 26  2024 bin.usr-is-merged
+drwxr-xr-x   2 root root    4096 Apr 22  2024 boot
+drwxr-xr-x  15 root root    3860 Apr 13  2026 dev
+drwxr-xr-x  87 root root    4096 Apr 13 09:40 etc
+drwxr-xr-x   3 root root    4096 Mar 25 09:45 home
+-rwxr-xr-x   1 root root 2781568 Dec 12 03:58 init
+lrwxrwxrwx   1 root root       7 Apr 22  2024 lib -> usr/lib
+drwxr-xr-x   2 root root    4096 Apr  8  2024 lib.usr-is-merged
+lrwxrwxrwx   1 root root       9 Apr 22  2024 lib64 -> usr/lib64
+drwx------   2 root root   16384 Mar 24 10:45 lost+found
+drwxr-xr-x   2 root root    4096 Jan  6  2025 media
+drwxr-xr-x   5 root root    4096 Mar 24 10:45 mnt
+drwxr-xr-x   2 root root    4096 Jan  6  2025 opt
+dr-xr-xr-x 297 root root       0 Apr 13  2026 proc
+drwx------   5 root root    4096 Mar 25 14:24 root
+drwxr-xr-x  19 root root     580 Apr 13 09:40 run
+lrwxrwxrwx   1 root root       8 Apr 22  2024 sbin -> usr/sbin
+drwxr-xr-x   2 root root    4096 Mar 31  2024 sbin.usr-is-merged
+drwxr-xr-x   2 root root    4096 Mar 24 10:44 snap
+drwxr-xr-x   2 root root    4096 Jan  6  2025 srv
+dr-xr-xr-x  13 root root       0 Apr 13  2026 sys
+drwxrwxrwt   9 root root    4096 Apr 13 09:40 tmp
+drwxr-xr-x  12 root root    4096 Jan  6  2025 usr
+drwxr-xr-x  13 root root    4096 Mar 24 10:45 var
+drwx------   2 root root    4096 Mar 25 07:58 wslGGjBbN
+drwx------   2 root root    4096 Mar 25 07:58 wslMLGkON
+drwx------   2 root root    4096 Mar 25 07:58 wslPlIabN
+drwx------   2 root root    4096 Mar 25 07:58 wslanooeK
+drwx------   2 root root    4096 Mar 25 07:58 wslfeoPaN
+root@LAPTOP-66HI94H2:/# cd home
+root@LAPTOP-66HI94H2:/home# ls -l
+total 4
+drwxr-xr-x 2 root root 4096 Mar 25 14:02 Linux_Fundamentals
+root@LAPTOP-66HI94H2:/home# cd Linux
+-bash: cd: Linux: No such file or directory
+root@LAPTOP-66HI94H2:/home# cd Linux_Fundamentals
+root@LAPTOP-66HI94H2:/home/Linux_Fundamentals# ls -l
+total 4
+-rw-r--r-- 1 root root 37 Mar 25 13:58 test.txt
+root@LAPTOP-66HI94H2:/home/Linux_Fundamentals# cd ..
+root@LAPTOP-66HI94H2:/home# cd ..
+root@LAPTOP-66HI94H2:/# cd ..
+root@LAPTOP-66HI94H2:/# cd ..
+root@LAPTOP-66HI94H2:/# cd
+root@LAPTOP-66HI94H2:~# ls -l
+total 0
+root@LAPTOP-66HI94H2:~# ls
+root@LAPTOP-66HI94H2:~# cd ..
+root@LAPTOP-66HI94H2:/# ls -l
+total 2816
+lrwxrwxrwx   1 root root       7 Apr 22  2024 bin -> usr/bin
+drwxr-xr-x   2 root root    4096 Feb 26  2024 bin.usr-is-merged
+drwxr-xr-x   2 root root    4096 Apr 22  2024 boot
+drwxr-xr-x  15 root root    3860 Apr 13  2026 dev
+drwxr-xr-x  87 root root    4096 Apr 13 09:40 etc
+drwxr-xr-x   3 root root    4096 Mar 25 09:45 home
+-rwxr-xr-x   1 root root 2781568 Dec 12 03:58 init
+lrwxrwxrwx   1 root root       7 Apr 22  2024 lib -> usr/lib
+drwxr-xr-x   2 root root    4096 Apr  8  2024 lib.usr-is-merged
+lrwxrwxrwx   1 root root       9 Apr 22  2024 lib64 -> usr/lib64
+drwx------   2 root root   16384 Mar 24 10:45 lost+found
+drwxr-xr-x   2 root root    4096 Jan  6  2025 media
+drwxr-xr-x   5 root root    4096 Mar 24 10:45 mnt
+drwxr-xr-x   2 root root    4096 Jan  6  2025 opt
+dr-xr-xr-x 296 root root       0 Apr 13  2026 proc
+drwx------   5 root root    4096 Mar 25 14:24 root
+drwxr-xr-x  19 root root     580 Apr 13 09:40 run
+lrwxrwxrwx   1 root root       8 Apr 22  2024 sbin -> usr/sbin
+drwxr-xr-x   2 root root    4096 Mar 31  2024 sbin.usr-is-merged
+drwxr-xr-x   2 root root    4096 Mar 24 10:44 snap
+drwxr-xr-x   2 root root    4096 Jan  6  2025 srv
+dr-xr-xr-x  13 root root       0 Apr 13 09:40 sys
+drwxrwxrwt   8 root root    4096 Apr 13 09:40 tmp
+drwxr-xr-x  12 root root    4096 Jan  6  2025 usr
+drwxr-xr-x  13 root root    4096 Mar 24 10:45 var
+drwx------   2 root root    4096 Mar 25 07:58 wslGGjBbN
+drwx------   2 root root    4096 Mar 25 07:58 wslMLGkON
+drwx------   2 root root    4096 Mar 25 07:58 wslPlIabN
+drwx------   2 root root    4096 Mar 25 07:58 wslanooeK
+drwx------   2 root root    4096 Mar 25 07:58 wslfeoPaN
+root@LAPTOP-66HI94H2:/# cd mnt
+root@LAPTOP-66HI94H2:/mnt# ls -l
+total 0
+drwxrwxrwx 1 root root 4096 Apr 12 23:29 c
+drwxrwxrwt 2 root root   60 Apr 13 09:41 wsl
+drwxrwxrwt 7 root root  300 Apr 13 09:40 wslg
+root@LAPTOP-66HI94H2:/mnt# cd c
+root@LAPTOP-66HI94H2:/mnt/c# ls -l
+ls: Config.Msi: Permission denied
+ls: cannot access 'DumpStack.log.tmp': Permission denied
+ls: cannot access 'hiberfil.sys': Permission denied
+ls: cannot access 'pagefile.sys': Permission denied
+ls: Recovery: Permission denied
+ls: cannot access 'swapfile.sys': Permission denied
+ls: 'System Volume Information': Permission denied
+total 0
+drwxrwxrwx 1 root root 4096 Feb 27 09:11 '$Recycle.Bin'
+d--x--x--x 1 root root 4096 Apr 12 23:29  Config.Msi
+lrwxrwxrwx 1 root root   12 Feb  4  2025 'Documents and Settings' -> /mnt/c/Users
+-????????? ? ?    ?       ?            ?  DumpStack.log.tmp
+drwxrwxrwx 1 root root 4096 Mar  2 12:00  OneDriveTemp
+drwxrwxrwx 1 root root 4096 Apr  1  2024  PerfLogs
+dr-xr-xr-x 1 root root 4096 Apr  5 15:32 'Program Files'
+dr-xr-xr-x 1 root root 4096 Mar 24 09:25 'Program Files (x86)'
+drwxrwxrwx 1 root root 4096 Apr  1 10:02  ProgramData
+d--x--x--x 1 root root 4096 Apr  1  2025  Recovery
+d--x--x--x 1 root root 4096 Apr 12 23:27 'System Volume Information'
+drwxrwxrwx 1 root root 4096 Feb  4  2025  System.Sav
+drwxrwxrwx 1 root root 4096 Mar 24 09:12  Temp
+dr-xr-xr-x 1 root root 4096 Feb 27 09:09  Users
+dr-xr-xr-x 1 root root 4096 Apr  6 20:55  Windows
+-r-xr-xr-x 1 root root    0 Jun 25  2025  config.cmd
+drwxrwxrwx 1 root root 4096 Mar 12 09:01  git-practice
+-????????? ? ?    ?       ?            ?  hiberfil.sys
+drwxrwxrwx 1 root root 4096 Aug 24  2024  hp
+-????????? ? ?    ?       ?            ?  pagefile.sys
+drwxrwxrwx 1 root root 4096 Apr 13 09:23  sc_RushilJivan_2026
+-????????? ? ?    ?       ?            ?  swapfile.sys
+root@LAPTOP-66HI94H2:/mnt/c# cd sc_RushilJivan_2026
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# ls -l
+total 0
+drwxrwxrwx 1 root root 4096 Mar 16 09:32 'Data Analysis'
+drwxrwxrwx 1 root root 4096 Apr 13 09:23 'Data Analysis Project'
+drwxrwxrwx 1 root root 4096 Apr  1 10:00 'Excel for Beginners'
+drwxrwxrwx 1 root root 4096 Mar 27 14:49 'Linux Fundamentals'
+drwxrwxrwx 1 root root 4096 Apr  1 14:13 'Python for Beginners'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# cd Data Analysis Project
+-bash: cd: too many arguments
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# cd 'Data Analysis Project'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project# ls -l
+total 404
+-rwxrwxrwx 1 root root   2700 Apr 10 08:55  Sales_data.csv
+-rwxrwxrwx 1 root root 409155 Apr 10 08:55 'TCO-Graduate Project 2026_ Sales Data Processing and Business Insights System-100426-064702.pdf'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project# mkdir -p project/data project/scripts project/output project/reports
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project# ls -l
+total 404
+-rwxrwxrwx 1 root root   2700 Apr 10 08:55  Sales_data.csv
+-rwxrwxrwx 1 root root 409155 Apr 10 08:55 'TCO-Graduate Project 2026_ Sales Data Processing and Business Insights System-100426-064702.pdf'
+drwxrwxrwx 1 root root   4096 Apr 13  2026  project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project# cd project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project# ls -l
+total 0
+drwxrwxrwx 1 root root 4096 Apr 13 09:45 data
+drwxrwxrwx 1 root root 4096 Apr 13 09:45 output
+drwxrwxrwx 1 root root 4096 Apr 13 09:45 reports
+drwxrwxrwx 1 root root 4096 Apr 13 09:45 scripts
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project# pwd
+/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project# cd scripts
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# touch run_pipeline.sh
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# ls -l
+total 0
+-rwxrwxrwx 1 root root 0 Apr 13  2026 run_pipeline.sh
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts#
