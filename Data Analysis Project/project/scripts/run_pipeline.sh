@@ -2,7 +2,7 @@
 
 TIMESTAMP=$(date)
 
-echo "Pipeline started..."
+echo "Pipeline started.."
 
 python3 scripts/process_data.py
 
@@ -12,4 +12,4 @@ else
     echo "[$TIMESTAMP] Failed" >> output/pipeline.log
 fi
 
-echo "Pipeline Completed..."
+echo "Pipeline Completed.."
