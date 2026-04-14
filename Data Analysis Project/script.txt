@@ -1,0 +1,2173 @@
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# cd
+root@LAPTOP-66HI94H2:~# cd ..
+root@LAPTOP-66HI94H2:/# ls
+bin                dev   init               lib64       mnt   root  sbin.usr-is-merged  sys  var        wslPlIabN
+bin.usr-is-merged  etc   lib                lost+found  opt   run   snap                tmp  wslGGjBbN  wslanooeK
+boot               home  lib.usr-is-merged  media       proc  sbin  srv                 usr  wslMLGkON  wslfeoPaN
+root@LAPTOP-66HI94H2:/# cd mnt
+root@LAPTOP-66HI94H2:/mnt# cd c
+root@LAPTOP-66HI94H2:/mnt/c# ls
+ls: cannot access 'DumpStack.log.tmp': Permission denied
+ls: cannot access 'hiberfil.sys': Permission denied
+ls: cannot access 'pagefile.sys': Permission denied
+ls: cannot access 'swapfile.sys': Permission denied
+'$Recycle.Bin'             PerfLogs              'System Volume Information'   config.cmd     sc_RushilJivan_2026
+ Config.Msi               'Program Files'         System.Sav                   git-practice   swapfile.sys
+'Documents and Settings'  'Program Files (x86)'   Temp                         hiberfil.sys
+ DumpStack.log.tmp         ProgramData            Users                        hp
+ OneDriveTemp              Recovery               Windows                      pagefile.sys
+root@LAPTOP-66HI94H2:/mnt/c# cd sc_RushilJivan_2026
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# ls
+'Data Analysis'          'Excel for Beginners'  'Linux Fundamentals'
+'Data Analysis Project'  'GitHub Actions'       'Python for Beginners'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# cd 'Data Analysis Project'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project# ls
+ Report.docx
+'Setting up Environment.txt'
+'TCO-Graduate Project 2026_ Sales Data Processing and Business Insights System-100426-064702.pdf'
+ project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project# cd project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project# ls -l
+total 0
+drwxrwxrwx 1 root root 4096 Apr 14 10:22 data
+drwxrwxrwx 1 root root 4096 Apr 13 16:28 output
+drwxrwxrwx 1 root root 4096 Apr 13 16:28 reports
+drwxrwxrwx 1 root root 4096 Apr 14 10:52 scripts
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project# ls
+data  output  reports  scripts
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project# cd scripts
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# ls
+process_data.py  run_pipeline.sh
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# run_pipepine.sh
+run_pipepine.sh: command not found
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# ./run_pipeline.sh
+-bash: ./run_pipeline.sh: cannot execute: required file not found
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# chmod +x run_pipeline.sh
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# ./run_pipeline.sh
+-bash: ./run_pipeline.sh: cannot execute: required file not found
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# sed -i 's/\r$//' run_pipeline.sh
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+python3: can't open file '/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts/scripts/process_data.py': [Errno 2] No such file or directory
+./run_pipeline.sh: line 12: output/pipeline.log: No such file or directory
+Pipeline Completed...
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# nano run_pipeline.sh
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+Traceback (most recent call last):
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts/process_data.py", line 1, in <module>
+    import pandas
+ModuleNotFoundError: No module named 'pandas'
+./run_pipeline.sh: line 12: output/pipeline.log: No such file or directory
+Pipeline Completed...
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# pip3 install pandas
+Command 'pip3' not found, but can be installed with:
+apt install python3-pip
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# python3 -m pip install pandas
+/usr/bin/python3: No module named pip
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# apt update
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:4 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1586 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1897 kB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/main Translation-en [255 kB]
+Get:8 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [21.5 kB]
+Get:9 http://security.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [10.7 kB]
+Get:10 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1170 kB]
+Get:11 http://security.ubuntu.com/ubuntu noble-security/universe Translation-en [225 kB]
+Get:12 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [74.1 kB]
+Get:13 http://security.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [22.9 kB]
+Get:14 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2775 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main Translation-en [345 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [177 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [16.9 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1666 kB]
+Get:19 http://security.ubuntu.com/ubuntu noble-security/restricted Translation-en [646 kB]
+Get:20 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Components [212 B]
+Get:21 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [208 B]
+Get:22 http://archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [323 kB]
+Get:23 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [386 kB]
+Get:24 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.3 kB]
+Get:25 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2946 kB]
+Get:26 http://archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [684 kB]
+Get:27 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Components [212 B]
+Get:28 http://archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [7752 B]
+Get:29 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:30 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [7380 B]
+Get:31 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [30.7 kB]
+Get:32 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:33 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 c-n-f Metadata [1484 B]
+Get:34 http://archive.ubuntu.com/ubuntu noble-backports/restricted amd64 Components [216 B]
+Get:35 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
+Fetched 15.7 MB in 5s (2901 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+117 packages can be upgraded. Run 'apt list --upgradable' to see them.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# apt install python3-pip -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  build-essential bzip2 cpp cpp-13 cpp-13-x86-64-linux-gnu cpp-x86-64-linux-gnu dpkg-dev fakeroot g++ g++-13
+  g++-13-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-13 gcc-13-base gcc-13-x86-64-linux-gnu gcc-x86-64-linux-gnu
+  javascript-common libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl libaom3 libasan8
+  libatomic1 libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libde265-0 libdpkg-perl libexpat1-dev
+  libfakeroot libfile-fcntllock-perl libgcc-13-dev libgd3 libgomp1 libheif-plugin-aomdec libheif-plugin-aomenc
+  libheif-plugin-libde265 libheif1 libhwasan0 libisl23 libitm1 libjs-jquery libjs-sphinxdoc libjs-underscore liblsan0
+  libmpc3 libpython3-dev libpython3.12-dev libquadmath0 libstdc++-13-dev libtsan2 libubsan1 libxpm4 linux-libc-dev
+  lto-disabled-list make manpages-dev python3-dev python3-wheel python3.12-dev rpcsvc-proto zlib1g-dev
+Suggested packages:
+  bzip2-doc cpp-doc gcc-13-locales cpp-13-doc debian-keyring g++-multilib g++-13-multilib gcc-13-doc gcc-multilib
+  autoconf automake libtool flex bison gdb gcc-doc gcc-13-multilib gdb-x86-64-linux-gnu apache2 | lighttpd | httpd
+  glibc-doc bzr libgd-tools libheif-plugin-x265 libheif-plugin-ffmpegdec libheif-plugin-jpegdec libheif-plugin-jpegenc
+  libheif-plugin-j2kdec libheif-plugin-j2kenc libheif-plugin-rav1e libheif-plugin-svtenc libstdc++-13-doc make-doc
+The following NEW packages will be installed:
+  build-essential bzip2 cpp cpp-13 cpp-13-x86-64-linux-gnu cpp-x86-64-linux-gnu dpkg-dev fakeroot g++ g++-13
+  g++-13-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-13 gcc-13-base gcc-13-x86-64-linux-gnu gcc-x86-64-linux-gnu
+  javascript-common libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl libaom3 libasan8
+  libatomic1 libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libde265-0 libdpkg-perl libexpat1-dev
+  libfakeroot libfile-fcntllock-perl libgcc-13-dev libgd3 libgomp1 libheif-plugin-aomdec libheif-plugin-aomenc
+  libheif-plugin-libde265 libheif1 libhwasan0 libisl23 libitm1 libjs-jquery libjs-sphinxdoc libjs-underscore liblsan0
+  libmpc3 libpython3-dev libpython3.12-dev libquadmath0 libstdc++-13-dev libtsan2 libubsan1 libxpm4 linux-libc-dev
+  lto-disabled-list make manpages-dev python3-dev python3-pip python3-wheel python3.12-dev rpcsvc-proto zlib1g-dev
+0 upgraded, 66 newly installed, 0 to remove and 117 not upgraded.
+Need to get 80.3 MB of archives.
+After this operation, 283 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libc-dev-bin amd64 2.39-0ubuntu8.7 [20.4 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 linux-libc-dev amd64 6.8.0-110.110 [1587 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 libcrypt-dev amd64 1:4.4.36-4build1 [112 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/main amd64 rpcsvc-proto amd64 1.4.2-0ubuntu7 [67.4 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libc6-dev amd64 2.39-0ubuntu8.7 [2124 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-base amd64 13.3.0-6ubuntu2~24.04.1 [51.6 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libisl23 amd64 0.26-3build1.1 [680 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libmpc3 amd64 1.3.1-1build1.1 [54.6 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 cpp-13-x86-64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1 [10.7 MB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 cpp-13 amd64 13.3.0-6ubuntu2~24.04.1 [1042 B]
+Get:11 http://archive.ubuntu.com/ubuntu noble/main amd64 cpp-x86-64-linux-gnu amd64 4:13.2.0-7ubuntu1 [5326 B]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 cpp amd64 4:13.2.0-7ubuntu1 [22.4 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcc1-0 amd64 14.2.0-4ubuntu2~24.04.1 [48.0 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgomp1 amd64 14.2.0-4ubuntu2~24.04.1 [148 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libitm1 amd64 14.2.0-4ubuntu2~24.04.1 [29.7 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libatomic1 amd64 14.2.0-4ubuntu2~24.04.1 [10.5 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libasan8 amd64 14.2.0-4ubuntu2~24.04.1 [3027 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 liblsan0 amd64 14.2.0-4ubuntu2~24.04.1 [1322 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libtsan2 amd64 14.2.0-4ubuntu2~24.04.1 [2772 kB]
+Get:20 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libubsan1 amd64 14.2.0-4ubuntu2~24.04.1 [1184 kB]
+Get:21 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libhwasan0 amd64 14.2.0-4ubuntu2~24.04.1 [1641 kB]
+Get:22 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libquadmath0 amd64 14.2.0-4ubuntu2~24.04.1 [153 kB]
+Get:23 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgcc-13-dev amd64 13.3.0-6ubuntu2~24.04.1 [2681 kB]
+Get:24 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13-x86-64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1 [21.1 MB]
+Get:25 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gcc-13 amd64 13.3.0-6ubuntu2~24.04.1 [494 kB]
+Get:26 http://archive.ubuntu.com/ubuntu noble/main amd64 gcc-x86-64-linux-gnu amd64 4:13.2.0-7ubuntu1 [1212 B]
+Get:27 http://archive.ubuntu.com/ubuntu noble/main amd64 gcc amd64 4:13.2.0-7ubuntu1 [5018 B]
+Get:28 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libstdc++-13-dev amd64 13.3.0-6ubuntu2~24.04.1 [2420 kB]
+Get:29 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 g++-13-x86-64-linux-gnu amd64 13.3.0-6ubuntu2~24.04.1 [12.2 MB]
+Get:30 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 g++-13 amd64 13.3.0-6ubuntu2~24.04.1 [16.0 kB]
+Get:31 http://archive.ubuntu.com/ubuntu noble/main amd64 g++-x86-64-linux-gnu amd64 4:13.2.0-7ubuntu1 [964 B]
+Get:32 http://archive.ubuntu.com/ubuntu noble/main amd64 g++ amd64 4:13.2.0-7ubuntu1 [1100 B]
+Get:33 http://archive.ubuntu.com/ubuntu noble/main amd64 make amd64 4.3-4.1build2 [180 kB]
+Get:34 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libdpkg-perl all 1.22.6ubuntu6.5 [269 kB]
+Get:35 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 bzip2 amd64 1.0.8-5.1build0.1 [34.5 kB]
+Get:36 http://archive.ubuntu.com/ubuntu noble/main amd64 lto-disabled-list all 47 [12.4 kB]
+Get:37 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dpkg-dev all 1.22.6ubuntu6.5 [1074 kB]
+Get:38 http://archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+Get:39 http://archive.ubuntu.com/ubuntu noble/main amd64 libfakeroot amd64 1.33-1 [32.4 kB]
+Get:40 http://archive.ubuntu.com/ubuntu noble/main amd64 fakeroot amd64 1.33-1 [67.2 kB]
+Get:41 http://archive.ubuntu.com/ubuntu noble/main amd64 javascript-common all 11+nmu1 [5936 B]
+Get:42 http://archive.ubuntu.com/ubuntu noble/main amd64 libalgorithm-diff-perl all 1.201-1 [41.8 kB]
+Get:43 http://archive.ubuntu.com/ubuntu noble/main amd64 libalgorithm-diff-xs-perl amd64 0.04-8build3 [11.2 kB]
+Get:44 http://archive.ubuntu.com/ubuntu noble/main amd64 libalgorithm-merge-perl all 0.08-5 [11.4 kB]
+Get:45 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libaom3 amd64 3.8.2-2ubuntu0.1 [1941 kB]
+Get:46 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif-plugin-aomdec amd64 1.17.6-1ubuntu4.2 [10.6 kB]
+Get:47 http://archive.ubuntu.com/ubuntu noble/main amd64 libde265-0 amd64 1.0.15-1build3 [166 kB]
+Get:48 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif-plugin-libde265 amd64 1.17.6-1ubuntu4.2 [8174 B]
+Get:49 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif1 amd64 1.17.6-1ubuntu4.2 [276 kB]
+Get:50 http://archive.ubuntu.com/ubuntu noble/main amd64 libxpm4 amd64 1:3.5.17-1build2 [36.5 kB]
+Get:51 http://archive.ubuntu.com/ubuntu noble/main amd64 libgd3 amd64 2.3.3-9ubuntu5 [128 kB]
+Get:52 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libc-devtools amd64 2.39-0ubuntu8.7 [29.3 kB]
+Get:53 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libexpat1-dev amd64 2.6.1-2ubuntu0.4 [140 kB]
+Get:54 http://archive.ubuntu.com/ubuntu noble/main amd64 libfile-fcntllock-perl amd64 0.22-4ubuntu5 [30.7 kB]
+Get:55 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libheif-plugin-aomenc amd64 1.17.6-1ubuntu4.2 [14.7 kB]
+Get:56 http://archive.ubuntu.com/ubuntu noble/main amd64 libjs-jquery all 3.6.1+dfsg+~3.5.14-1 [328 kB]
+Get:57 http://archive.ubuntu.com/ubuntu noble/main amd64 libjs-underscore all 1.13.4~dfsg+~1.11.4-3 [118 kB]
+Get:58 http://archive.ubuntu.com/ubuntu noble/main amd64 libjs-sphinxdoc all 7.2.6-6 [149 kB]
+Get:59 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 zlib1g-dev amd64 1:1.3.dfsg-3.1ubuntu2.1 [894 kB]
+Get:60 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-dev amd64 3.12.3-1ubuntu0.12 [5681 kB]
+Get:61 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3-dev amd64 3.12.3-0ubuntu2.1 [10.3 kB]
+Get:62 http://archive.ubuntu.com/ubuntu noble/main amd64 manpages-dev all 6.7-2 [2013 kB]
+Get:63 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-dev amd64 3.12.3-1ubuntu0.12 [498 kB]
+Get:64 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-dev amd64 3.12.3-0ubuntu2.1 [26.7 kB]
+Get:65 http://archive.ubuntu.com/ubuntu noble/universe amd64 python3-wheel all 0.42.0-2 [53.1 kB]
+Get:66 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3-pip all 24.0+dfsg-1ubuntu1.3 [1320 kB]
+Fetched 80.3 MB in 18s (4501 kB/s)
+Extracting templates from packages: 100%
+Selecting previously unselected package libc-dev-bin.
+(Reading database ... 40741 files and directories currently installed.)
+Preparing to unpack .../00-libc-dev-bin_2.39-0ubuntu8.7_amd64.deb ...
+Unpacking libc-dev-bin (2.39-0ubuntu8.7) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../01-linux-libc-dev_6.8.0-110.110_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (6.8.0-110.110) ...
+Selecting previously unselected package libcrypt-dev:amd64.
+Preparing to unpack .../02-libcrypt-dev_1%3a4.4.36-4build1_amd64.deb ...
+Unpacking libcrypt-dev:amd64 (1:4.4.36-4build1) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../03-rpcsvc-proto_1.4.2-0ubuntu7_amd64.deb ...
+Unpacking rpcsvc-proto (1.4.2-0ubuntu7) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../04-libc6-dev_2.39-0ubuntu8.7_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.39-0ubuntu8.7) ...
+Selecting previously unselected package gcc-13-base:amd64.
+Preparing to unpack .../05-gcc-13-base_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking gcc-13-base:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package libisl23:amd64.
+Preparing to unpack .../06-libisl23_0.26-3build1.1_amd64.deb ...
+Unpacking libisl23:amd64 (0.26-3build1.1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../07-libmpc3_1.3.1-1build1.1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.3.1-1build1.1) ...
+Selecting previously unselected package cpp-13-x86-64-linux-gnu.
+Preparing to unpack .../08-cpp-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package cpp-13.
+Preparing to unpack .../09-cpp-13_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking cpp-13 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package cpp-x86-64-linux-gnu.
+Preparing to unpack .../10-cpp-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking cpp-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../11-cpp_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking cpp (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../12-libcc1-0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../13-libgomp1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libgomp1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../14-libitm1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../15-libatomic1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libatomic1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libasan8:amd64.
+Preparing to unpack .../16-libasan8_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../17-liblsan0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libtsan2:amd64.
+Preparing to unpack .../18-libtsan2_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../19-libubsan1_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libubsan1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libhwasan0:amd64.
+Preparing to unpack .../20-libhwasan0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libhwasan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../21-libquadmath0_14.2.0-4ubuntu2~24.04.1_amd64.deb ...
+Unpacking libquadmath0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Selecting previously unselected package libgcc-13-dev:amd64.
+Preparing to unpack .../22-libgcc-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking libgcc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package gcc-13-x86-64-linux-gnu.
+Preparing to unpack .../23-gcc-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking gcc-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package gcc-13.
+Preparing to unpack .../24-gcc-13_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking gcc-13 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package gcc-x86-64-linux-gnu.
+Preparing to unpack .../25-gcc-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking gcc-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../26-gcc_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking gcc (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package libstdc++-13-dev:amd64.
+Preparing to unpack .../27-libstdc++-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking libstdc++-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package g++-13-x86-64-linux-gnu.
+Preparing to unpack .../28-g++-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking g++-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package g++-13.
+Preparing to unpack .../29-g++-13_13.3.0-6ubuntu2~24.04.1_amd64.deb ...
+Unpacking g++-13 (13.3.0-6ubuntu2~24.04.1) ...
+Selecting previously unselected package g++-x86-64-linux-gnu.
+Preparing to unpack .../30-g++-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking g++-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../31-g++_4%3a13.2.0-7ubuntu1_amd64.deb ...
+Unpacking g++ (4:13.2.0-7ubuntu1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../32-make_4.3-4.1build2_amd64.deb ...
+Unpacking make (4.3-4.1build2) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../33-libdpkg-perl_1.22.6ubuntu6.5_all.deb ...
+Unpacking libdpkg-perl (1.22.6ubuntu6.5) ...
+Selecting previously unselected package bzip2.
+Preparing to unpack .../34-bzip2_1.0.8-5.1build0.1_amd64.deb ...
+Unpacking bzip2 (1.0.8-5.1build0.1) ...
+Selecting previously unselected package lto-disabled-list.
+Preparing to unpack .../35-lto-disabled-list_47_all.deb ...
+Unpacking lto-disabled-list (47) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../36-dpkg-dev_1.22.6ubuntu6.5_all.deb ...
+Unpacking dpkg-dev (1.22.6ubuntu6.5) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../37-build-essential_12.10ubuntu1_amd64.deb ...
+Unpacking build-essential (12.10ubuntu1) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../38-libfakeroot_1.33-1_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.33-1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../39-fakeroot_1.33-1_amd64.deb ...
+Unpacking fakeroot (1.33-1) ...
+Selecting previously unselected package javascript-common.
+Preparing to unpack .../40-javascript-common_11+nmu1_all.deb ...
+Unpacking javascript-common (11+nmu1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../41-libalgorithm-diff-perl_1.201-1_all.deb ...
+Unpacking libalgorithm-diff-perl (1.201-1) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl:amd64.
+Preparing to unpack .../42-libalgorithm-diff-xs-perl_0.04-8build3_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl:amd64 (0.04-8build3) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../43-libalgorithm-merge-perl_0.08-5_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-5) ...
+Selecting previously unselected package libaom3:amd64.
+Preparing to unpack .../44-libaom3_3.8.2-2ubuntu0.1_amd64.deb ...
+Unpacking libaom3:amd64 (3.8.2-2ubuntu0.1) ...
+Selecting previously unselected package libheif-plugin-aomdec:amd64.
+Preparing to unpack .../45-libheif-plugin-aomdec_1.17.6-1ubuntu4.2_amd64.deb ...
+Unpacking libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.2) ...
+Selecting previously unselected package libde265-0:amd64.
+Preparing to unpack .../46-libde265-0_1.0.15-1build3_amd64.deb ...
+Unpacking libde265-0:amd64 (1.0.15-1build3) ...
+Selecting previously unselected package libheif-plugin-libde265:amd64.
+Preparing to unpack .../47-libheif-plugin-libde265_1.17.6-1ubuntu4.2_amd64.deb ...
+Unpacking libheif-plugin-libde265:amd64 (1.17.6-1ubuntu4.2) ...
+Selecting previously unselected package libheif1:amd64.
+Preparing to unpack .../48-libheif1_1.17.6-1ubuntu4.2_amd64.deb ...
+Unpacking libheif1:amd64 (1.17.6-1ubuntu4.2) ...
+Selecting previously unselected package libxpm4:amd64.
+Preparing to unpack .../49-libxpm4_1%3a3.5.17-1build2_amd64.deb ...
+Unpacking libxpm4:amd64 (1:3.5.17-1build2) ...
+Selecting previously unselected package libgd3:amd64.
+Preparing to unpack .../50-libgd3_2.3.3-9ubuntu5_amd64.deb ...
+Unpacking libgd3:amd64 (2.3.3-9ubuntu5) ...
+Selecting previously unselected package libc-devtools.
+Preparing to unpack .../51-libc-devtools_2.39-0ubuntu8.7_amd64.deb ...
+Unpacking libc-devtools (2.39-0ubuntu8.7) ...
+Selecting previously unselected package libexpat1-dev:amd64.
+Preparing to unpack .../52-libexpat1-dev_2.6.1-2ubuntu0.4_amd64.deb ...
+Unpacking libexpat1-dev:amd64 (2.6.1-2ubuntu0.4) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../53-libfile-fcntllock-perl_0.22-4ubuntu5_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-4ubuntu5) ...
+Selecting previously unselected package libheif-plugin-aomenc:amd64.
+Preparing to unpack .../54-libheif-plugin-aomenc_1.17.6-1ubuntu4.2_amd64.deb ...
+Unpacking libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.2) ...
+Selecting previously unselected package libjs-jquery.
+Preparing to unpack .../55-libjs-jquery_3.6.1+dfsg+~3.5.14-1_all.deb ...
+Unpacking libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Selecting previously unselected package libjs-underscore.
+Preparing to unpack .../56-libjs-underscore_1.13.4~dfsg+~1.11.4-3_all.deb ...
+Unpacking libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Selecting previously unselected package libjs-sphinxdoc.
+Preparing to unpack .../57-libjs-sphinxdoc_7.2.6-6_all.deb ...
+Unpacking libjs-sphinxdoc (7.2.6-6) ...
+Selecting previously unselected package zlib1g-dev:amd64.
+Preparing to unpack .../58-zlib1g-dev_1%3a1.3.dfsg-3.1ubuntu2.1_amd64.deb ...
+Unpacking zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.1) ...
+Selecting previously unselected package libpython3.12-dev:amd64.
+Preparing to unpack .../59-libpython3.12-dev_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking libpython3.12-dev:amd64 (3.12.3-1ubuntu0.12) ...
+Selecting previously unselected package libpython3-dev:amd64.
+Preparing to unpack .../60-libpython3-dev_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking libpython3-dev:amd64 (3.12.3-0ubuntu2.1) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../61-manpages-dev_6.7-2_all.deb ...
+Unpacking manpages-dev (6.7-2) ...
+Selecting previously unselected package python3.12-dev.
+Preparing to unpack .../62-python3.12-dev_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12-dev (3.12.3-1ubuntu0.12) ...
+Selecting previously unselected package python3-dev.
+Preparing to unpack .../63-python3-dev_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking python3-dev (3.12.3-0ubuntu2.1) ...
+Selecting previously unselected package python3-wheel.
+Preparing to unpack .../64-python3-wheel_0.42.0-2_all.deb ...
+Unpacking python3-wheel (0.42.0-2) ...
+Selecting previously unselected package python3-pip.
+Preparing to unpack .../65-python3-pip_24.0+dfsg-1ubuntu1.3_all.deb ...
+Unpacking python3-pip (24.0+dfsg-1ubuntu1.3) ...
+Setting up javascript-common (11+nmu1) ...
+Setting up libaom3:amd64 (3.8.2-2ubuntu0.1) ...
+Setting up manpages-dev (6.7-2) ...
+Setting up lto-disabled-list (47) ...
+Setting up libxpm4:amd64 (1:3.5.17-1build2) ...
+Setting up libfile-fcntllock-perl (0.22-4ubuntu5) ...
+Setting up libalgorithm-diff-perl (1.201-1) ...
+Setting up linux-libc-dev:amd64 (6.8.0-110.110) ...
+Setting up libgomp1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up bzip2 (1.0.8-5.1build0.1) ...
+Setting up python3-wheel (0.42.0-2) ...
+Setting up libfakeroot:amd64 (1.33-1) ...
+Setting up fakeroot (1.33-1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+Setting up rpcsvc-proto (1.4.2-0ubuntu7) ...
+Setting up gcc-13-base:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up make (4.3-4.1build2) ...
+Setting up libquadmath0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libmpc3:amd64 (1.3.1-1build1.1) ...
+Setting up libatomic1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up python3-pip (24.0+dfsg-1ubuntu1.3) ...
+Setting up libdpkg-perl (1.22.6ubuntu6.5) ...
+Setting up libubsan1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libhwasan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libcrypt-dev:amd64 (1:4.4.36-4build1) ...
+Setting up libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Setting up libisl23:amd64 (0.26-3build1.1) ...
+Setting up libde265-0:amd64 (1.0.15-1build3) ...
+Setting up libc-dev-bin (2.39-0ubuntu8.7) ...
+Setting up libalgorithm-diff-xs-perl:amd64 (0.04-8build3) ...
+Setting up libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Setting up libalgorithm-merge-perl (0.08-5) ...
+Setting up cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up dpkg-dev (1.22.6ubuntu6.5) ...
+Setting up libjs-sphinxdoc (7.2.6-6) ...
+Setting up libgcc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libc6-dev:amd64 (2.39-0ubuntu8.7) ...
+Setting up libstdc++-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up cpp-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Setting up cpp-13 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up gcc-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libexpat1-dev:amd64 (2.6.1-2ubuntu0.4) ...
+Setting up gcc-13 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.1) ...
+Setting up cpp (4:13.2.0-7ubuntu1) ...
+Setting up g++-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up gcc-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Setting up libpython3.12-dev:amd64 (3.12.3-1ubuntu0.12) ...
+Setting up gcc (4:13.2.0-7ubuntu1) ...
+Setting up python3.12-dev (3.12.3-1ubuntu0.12) ...
+Setting up g++-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...
+Setting up g++-13 (13.3.0-6ubuntu2~24.04.1) ...
+Setting up libpython3-dev:amd64 (3.12.3-0ubuntu2.1) ...
+Setting up python3-dev (3.12.3-0ubuntu2.1) ...
+Setting up g++ (4:13.2.0-7ubuntu1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.10ubuntu1) ...
+Setting up libheif1:amd64 (1.17.6-1ubuntu4.2) ...
+Setting up libgd3:amd64 (2.3.3-9ubuntu5) ...
+Setting up libc-devtools (2.39-0ubuntu8.7) ...
+Setting up libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.2) ...
+Setting up libheif-plugin-libde265:amd64 (1.17.6-1ubuntu4.2) ...
+Setting up libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# pip3 --version
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.12)
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# pip3 install pandas
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+
+    See /usr/share/doc/python3.12/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# python3 -m pip install pandas
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+
+    See /usr/share/doc/python3.12/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# python3 -c "import pandas as pd; print(pd.__version__)"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'pandas'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# cd .
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis Project/project/scripts# cd
+root@LAPTOP-66HI94H2:~# ls
+root@LAPTOP-66HI94H2:~# ls -l
+total 0
+root@LAPTOP-66HI94H2:~# cd ..
+root@LAPTOP-66HI94H2:/# ls
+bin                dev   init               lib64       mnt   root  sbin.usr-is-merged  sys  var        wslPlIabN
+bin.usr-is-merged  etc   lib                lost+found  opt   run   snap                tmp  wslGGjBbN  wslanooeK
+boot               home  lib.usr-is-merged  media       proc  sbin  srv                 usr  wslMLGkON  wslfeoPaN
+root@LAPTOP-66HI94H2:/# cd mnt
+root@LAPTOP-66HI94H2:/mnt# cd c
+root@LAPTOP-66HI94H2:/mnt/c# cd sc_RushilJivan_2026
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# ls
+'Data Analysis'          'Excel for Beginners'  'Linux Fundamentals'
+'Data Analysis Project'  'GitHub Actions'       'Python for Beginners'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# cd 'Data Analytics Project'
+-bash: cd: Data Analytics Project: No such file or directory
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026# cd 'Data Analysis project'
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project# ls
+ Report.docx
+'Setting up Environment.txt'
+'TCO-Graduate Project 2026_ Sales Data Processing and Business Insights System-100426-064702.pdf'
+ project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project# cd project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# pip install pandas
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+
+    See /usr/share/doc/python3.12/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# python3 -m pip install pandas
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+
+    See /usr/share/doc/python3.12/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# pwd
+/mnt/c/sc_RushilJivan_2026/Data Analysis project/project
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# python3 -m venv venv
+The virtual environment was not created successfully because ensurepip is not
+available.  On Debian/Ubuntu systems, you need to install the python3-venv
+package using the following command.
+
+    apt install python3.12-venv
+
+You may need to use sudo with that command.  After installing the python3-venv
+package, recreate your virtual environment.
+
+Failing command: /mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/bin/python3
+
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# python3 -m venv venv
+The virtual environment was not created successfully because ensurepip is not
+available.  On Debian/Ubuntu systems, you need to install the python3-venv
+package using the following command.
+
+    apt install python3.12-venv
+
+You may need to use sudo with that command.  After installing the python3-venv
+package, recreate your virtual environment.
+
+Failing command: /mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/bin/python3
+
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# apt update
+Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+117 packages can be upgraded. Run 'apt list --upgradable' to see them.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# apt install python3.12-venv -y
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  python3-pip-whl python3-setuptools-whl
+The following NEW packages will be installed:
+  python3-pip-whl python3-setuptools-whl python3.12-venv
+0 upgraded, 3 newly installed, 0 to remove and 117 not upgraded.
+Need to get 2429 kB of archives.
+After this operation, 2777 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3-pip-whl all 24.0+dfsg-1ubuntu1.3 [1707 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3-setuptools-whl all 68.1.2-2ubuntu1.2 [716 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3.12-venv amd64 3.12.3-1ubuntu0.12 [5666 B]
+Fetched 2429 kB in 2s (1095 kB/s)
+Selecting previously unselected package python3-pip-whl.
+(Reading database ... 47742 files and directories currently installed.)
+Preparing to unpack .../python3-pip-whl_24.0+dfsg-1ubuntu1.3_all.deb ...
+Unpacking python3-pip-whl (24.0+dfsg-1ubuntu1.3) ...
+Selecting previously unselected package python3-setuptools-whl.
+Preparing to unpack .../python3-setuptools-whl_68.1.2-2ubuntu1.2_all.deb ...
+Unpacking python3-setuptools-whl (68.1.2-2ubuntu1.2) ...
+Selecting previously unselected package python3.12-venv.
+Preparing to unpack .../python3.12-venv_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12-venv (3.12.3-1ubuntu0.12) ...
+Setting up python3-setuptools-whl (68.1.2-2ubuntu1.2) ...
+Setting up python3-pip-whl (24.0+dfsg-1ubuntu1.3) ...
+Setting up python3.12-venv (3.12.3-1ubuntu0.12) ...
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# pip install pandas
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+
+    See /usr/share/doc/python3.12/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# python3 -m venv venv
+
+
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project#
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project#
+root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# source venv/bin/activate
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# pip install pandas
+Collecting pandas
+  Downloading pandas-3.0.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.5/79.5 kB 229.6 kB/s eta 0:00:00
+Collecting numpy>=1.26.0 (from pandas)
+  Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Collecting python-dateutil>=2.8.2 (from pandas)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Downloading pandas-3.0.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (10.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.9/10.9 MB 1.7 MB/s eta 0:00:00
+Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.6/16.6 MB 5.9 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 6.0 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Installing collected packages: six, numpy, python-dateutil, pandas
+
+Successfully installed numpy-2.4.4 pandas-3.0.2 python-dateutil-2.9.0.post0 six-1.17.0
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project#
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# python -c "import pandas as pd; print(pd.__version__)"
+3.0.2
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project# cd scripts
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+Traceback (most recent call last):
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts/process_data.py", line 2, in <module>
+    var = pandas.read_csv(r'C:\sc_RushilJivan_2026\Data Analysis Project\project\data\Messy_Sales_Data.csv')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 873, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 300, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1645, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1904, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/common.py", line 926, in get_handle
+    handle = open(
+             ^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\sc_RushilJivan_2026\\Data Analysis Project\\project\\data\\Messy_Sales_Data.csv'
+./run_pipeline.sh: line 12: output/pipeline.log: No such file or directory
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+(52, 8)
+--------------------------
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+./run_pipeline.sh: line 10: output/pipeline.log: No such file or directory
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+(52, 8)
+--------------------------
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+(52, 8)
+--------------------------
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+    transaction_id       date product     category  quantity  price region salesperson
+0             1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5             1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006 2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007 2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008 2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009 2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010 2024-02-03    Desk    Furniture       3.0   3000  South     Unknown
+11            1011 2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012 2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013 2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014 2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015 2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016 2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017 2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018 2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019 2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020 2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021 2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022 2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023 2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024 2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025 2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026 2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027 2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028 2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029 2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030 2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031 2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032 2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033 2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034 2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035 2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036 2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037 2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038 2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039 2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040 2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041 2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042 2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043 2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044 2024-04-18   Chair    Furniture       0.0   1500   West       Sarah
+46            1045 2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046 2024-04-22  Laptop  Electronics       1.0  12000  South     Unknown
+48            1047 2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048 2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049 2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050 2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Traceback (most recent call last):
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts/process_data.py", line 43, in <module>
+    var.to_csv('../output/clean_sales.csv', index=False)
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/core/generic.py", line 3988, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/formats/format.py", line 1025, in to_csv
+    csv_formatter.save()
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/formats/csvs.py", line 251, in save
+    with get_handle(
+         ^^^^^^^^^^^
+  File "/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/venv/lib/python3.12/site-packages/pandas/io/common.py", line 926, in get_handle
+    handle = open(
+             ^^^^^
+PermissionError: [Errno 13] Permission denied: '../output/clean_sales.csv'
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+(52, 8)
+--------------------------
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+    transaction_id       date product     category  quantity  price region salesperson
+0             1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5             1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006 2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007 2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008 2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009 2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010 2024-02-03    Desk    Furniture       3.0   3000  South     Unknown
+11            1011 2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012 2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013 2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014 2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015 2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016 2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017 2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018 2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019 2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020 2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021 2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022 2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023 2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024 2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025 2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026 2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027 2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028 2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029 2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030 2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031 2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032 2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033 2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034 2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035 2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036 2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037 2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038 2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039 2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040 2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041 2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042 2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043 2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044 2024-04-18   Chair    Furniture       0.0   1500   West       Sarah
+46            1045 2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046 2024-04-22  Laptop  Electronics       1.0  12000  South     Unknown
+48            1047 2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048 2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049 2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050 2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+(52, 8)
+--------------------------
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+--------------------------
+--------------------------
+--------------------------
+    transaction_id       date product     category  quantity  price region salesperson
+0             1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5             1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006 2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007 2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008 2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009 2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010 2024-02-03    Desk    Furniture       3.0   3000  South     Unknown
+11            1011 2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012 2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013 2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014 2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015 2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016 2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017 2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018 2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019 2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020 2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021 2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022 2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023 2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024 2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025 2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026 2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027 2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028 2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029 2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030 2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031 2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032 2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033 2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034 2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035 2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036 2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037 2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038 2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039 2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040 2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041 2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042 2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043 2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044 2024-04-18   Chair    Furniture       0.0   1500   West       Sarah
+46            1045 2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046 2024-04-22  Laptop  Electronics       1.0  12000  South     Unknown
+48            1047 2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048 2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049 2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050 2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# ./run_pipeline.sh
+Pipeline started...
+Full list
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+HEAD
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+SHAPE
+(52, 8)
+--------------------------
+NULL VALUES
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+DUPLICATED VALUES
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+--------------------------
+--------------------------
+--------------------------
+    transaction_id       date product     category  quantity  price region salesperson
+0             1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5             1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006 2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007 2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008 2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009 2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010 2024-02-03    Desk    Furniture       3.0   3000  South     Unknown
+11            1011 2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012 2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013 2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014 2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015 2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016 2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017 2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018 2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019 2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020 2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021 2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022 2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023 2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024 2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025 2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026 2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027 2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028 2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029 2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030 2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031 2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032 2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033 2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034 2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035 2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036 2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037 2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038 2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039 2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040 2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041 2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042 2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043 2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044 2024-04-18   Chair    Furniture       0.0   1500   West       Sarah
+46            1045 2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046 2024-04-22  Laptop  Electronics       1.0  12000  South     Unknown
+48            1047 2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048 2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049 2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050 2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Pipeline Completed...
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# python process_data.py
+Full list
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+31            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+--------------------------
+HEAD
+   transaction_id        date product     category  quantity  price region salesperson
+0            1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+3            1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+--------------------------
+SHAPE
+(52, 8)
+--------------------------
+NULL VALUES
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          2
+price             0
+region            0
+salesperson       2
+dtype: int64
+--------------------------
+DUPLICATED VALUES
+2
+--------------------------
+    transaction_id        date product     category  quantity  price region salesperson
+0             1001  2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002  2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003  2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004  2024-01-15   Chair    Furniture       NaN   1500   West       Sarah
+5             1005  2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006  2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007  2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008  2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009  2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010  2024-02-03    Desk    Furniture       3.0   3000  South         NaN
+11            1011  2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012  2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013  2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014  2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015  2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016  2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017  2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018  2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019  2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020  2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021  2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022  2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023  2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024  2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025  2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026  2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027  2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028  2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029  2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030  2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031  2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032  2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033  2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034  2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035  2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036  2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037  2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038  2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039  2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040  2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041  2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042  2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043  2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044  2024-04-18   Chair    Furniture       NaN   1500   West       Sarah
+46            1045  2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046  2024-04-22  Laptop  Electronics       1.0  12000  South         NaN
+48            1047  2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048  2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049  2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050  2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+Missing values after filling:
+transaction_id    0
+date              0
+product           0
+category          0
+quantity          0
+price             0
+region            0
+salesperson       0
+dtype: int64
+--------------------------
+Data types after standardization:
+transaction_id             int64
+date              datetime64[us]
+product                      str
+category                     str
+quantity                 float64
+price                      int64
+region                       str
+salesperson                  str
+dtype: object
+--------------------------
+Final preview:
+   transaction_id       date product     category  quantity  price region salesperson
+0            1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1            1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2            1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4            1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5            1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+--------------------------
+--------------------------
+--------------------------
+    transaction_id       date product     category  quantity  price region salesperson
+0             1001 2024-01-05  Laptop  Electronics       2.0  12000  North        John
+1             1002 2024-01-07   Phone  Electronics       5.0   8000  South        Mary
+2             1003 2024-01-10  Tablet  Electronics       3.0   6000   East       David
+4             1004 2024-01-15   Chair    Furniture       0.0   1500   West       Sarah
+5             1005 2024-01-20    Desk    Furniture       2.0   3000  North        John
+6             1006 2024-01-22  Laptop  Electronics       1.0  12000  South        Mary
+7             1007 2024-01-25   Phone  Electronics       6.0   8000   East       David
+8             1008 2024-01-28  Tablet  Electronics       2.0   6000   West       Sarah
+9             1009 2024-02-01   Chair    Furniture       5.0   1500  North        John
+10            1010 2024-02-03    Desk    Furniture       3.0   3000  South     Unknown
+11            1011 2024-02-05  Laptop  Electronics       2.0  12000   East       David
+12            1012 2024-02-07   Phone  Electronics       4.0   8000   West       Sarah
+13            1013 2024-02-10  Tablet  Electronics       3.0   6000  North        John
+14            1014 2024-02-12   Chair    Furniture       6.0   1500  South        Mary
+15            1015 2024-02-15    Desk    Furniture       2.0   3000   East       David
+16            1016 2024-02-18  Laptop  Electronics       1.0  12000   West       Sarah
+17            1017 2024-02-20   Phone  Electronics       7.0   8000  North        John
+18            1018 2024-02-22  Tablet  Electronics       2.0   6000  South        Mary
+19            1019 2024-02-25   Chair    Furniture       4.0   1500   East       David
+20            1020 2024-02-28    Desk    Furniture       3.0   3000   West       Sarah
+21            1021 2024-03-02  Laptop  Electronics       2.0  12000  North        John
+22            1022 2024-03-04   Phone  Electronics       5.0   8000  South        Mary
+23            1023 2024-03-06  Tablet  Electronics       3.0   6000   East       David
+24            1024 2024-03-08   Chair    Furniture       4.0   1500   West       Sarah
+25            1025 2024-03-10    Desk    Furniture       2.0   3000  North        John
+26            1026 2024-03-12  Laptop  Electronics       1.0  12000  South        Mary
+27            1027 2024-03-14   Phone  Electronics       6.0   8000   East       David
+28            1028 2024-03-16  Tablet  Electronics       2.0   6000   West       Sarah
+29            1029 2024-03-18   Chair    Furniture       5.0   1500  North        John
+30            1030 2024-03-20    Desk    Furniture       3.0   3000  South        Mary
+32            1031 2024-03-22  Laptop  Electronics       2.0  12000   East       David
+33            1032 2024-03-24   Phone  Electronics       4.0   8000   West       Sarah
+34            1033 2024-03-26  Tablet  Electronics       3.0   6000  North        John
+35            1034 2024-03-28   Chair    Furniture       6.0   1500  South        Mary
+36            1035 2024-03-30    Desk    Furniture       2.0   3000   East       David
+37            1036 2024-04-02  Laptop  Electronics       1.0  12000   West       Sarah
+38            1037 2024-04-04   Phone  Electronics       7.0   8000  North        John
+39            1038 2024-04-06  Tablet  Electronics       2.0   6000  South        Mary
+40            1039 2024-04-08   Chair    Furniture       4.0   1500   East       David
+41            1040 2024-04-10    Desk    Furniture       3.0   3000   West       Sarah
+42            1041 2024-04-12  Laptop  Electronics       2.0  12000  North        John
+43            1042 2024-04-14   Phone  Electronics       5.0   8000  South        Mary
+44            1043 2024-04-16  Tablet  Electronics       3.0   6000   East       David
+45            1044 2024-04-18   Chair    Furniture       0.0   1500   West       Sarah
+46            1045 2024-04-20    Desk    Furniture       2.0   3000  North        John
+47            1046 2024-04-22  Laptop  Electronics       1.0  12000  South     Unknown
+48            1047 2024-04-24   Phone  Electronics       6.0   8000   East       David
+49            1048 2024-04-26  Tablet  Electronics       2.0   6000   West       Sarah
+50            1049 2024-04-28   Chair    Furniture       5.0   1500  North        John
+51            1050 2024-04-30    Desk    Furniture       3.0   3000  South        Mary
+(venv) root@LAPTOP-66HI94H2:/mnt/c/sc_RushilJivan_2026/Data Analysis project/project/scripts# import pandas
+var = pandas.read_csv('../data/Messy_Sales_Data.csv')
+print('Full list')
+print(var)
+print ('--------------------------')
+print('HEAD')
+print(var.head())
+print ('--------------------------')
+print('SHAPE')
+print(var.shape)
+print ('--------------------------')
+print('NULL VALUES')
+print(var.isnull().sum())
+print ('--------------------------')
+print('DUPLICATED VALUES')
+print(var.duplicated().sum())
+print ('--------------------------')
+
+var = var.drop_duplicates()
+print(var)
+
+var['quantity'] = var['quantity'].fillna(0)
+var['salesperson'] = var['salesperson'].fillna('Unknown')
+
+print("Missing values after filling:")
+print(var.isnull().sum())
+print('--------------------------')
+
+
+
+var['date'] = pandas.to_datetime(var['date'])
+var['quantity'] = pandas.to_numeric(var['quantity'])
+var['price'] = pandas.to_numeric(var['price'])
+var['product'] = var['product'].str.strip()
+var['category'] = var['category'].str.strip()
+var['region'] = var['region'].str.strip()
+var['salesperson'] = var['salesperson'].str.strip()
+
+
+print("Data types after standardization:")
+print(var.dtypes)
+
+print('--------------------------')
+print("Final preview:")
+print(var.head())
+print('--------------------------')
+print('--------------------------')
+print('--------------------------')
+print(var)
+
+var.to_csv('../output/clean_sales.csv', index=False)
