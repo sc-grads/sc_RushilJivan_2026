@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(
         filename='../output/pipeline.log',
-        level=logging.INFO,
+        level= logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
@@ -102,7 +102,8 @@ try:
         monthly_revenue.to_csv('../output/monthly_revenue.csv', index=False)
         salesperson_performance.to_csv('../output/salesperson_performance.csv', index=False)
 
-        #var.to_excel('../reports/sales_analysis.xlsx', index=False)
+
         logging.info("Files exported successfully")
 
-except Exception as e:logging.error(f"Pipeline failed: {e}")
+except Exception as e:
+        logging.error(f"Pipeline failed: {e}")
