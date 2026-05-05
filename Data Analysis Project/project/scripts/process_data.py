@@ -31,7 +31,6 @@ try:
 
         var['quantity'] = var['quantity'].fillna(0)
         var['quantity'] = var['quantity'].astype(int)
-        var['salesperson'] = var['salesperson'].fillna('Unknown')
         var = var[var['quantity'] > 0]
         logging.info("Missing values handled and invalid rows removed")
 
@@ -87,7 +86,8 @@ try:
         print(monthly_revenue)
         print('----------------------------------')
 
-        salesperson_performance = var.groupby('salesperson')['revenue'].sum().reset_index()
+        #salesperson_performance = var.groupby('salesperson')['revenue'].sum().reset_index()
+        salesperson_performance = var.groupby('salesperson', dropna=False)['revenue'].sum().reset_index()
         print(salesperson_performance)
         print('----------------------------------')
 
