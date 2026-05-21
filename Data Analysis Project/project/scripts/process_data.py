@@ -52,7 +52,8 @@ try:
 
         var['region'] = var['region'].str.strip()
 
-        var['salesperson'] = var['salesperson'].str.strip()
+        #var['salesperson'] = var['salesperson'].str.strip()
+        var['salesperson'] = var['salesperson'].fillna('Unknown').str.strip()
 
         logging.info("Data standardized")
 
@@ -86,8 +87,8 @@ try:
         print(monthly_revenue)
         print('----------------------------------')
 
-        #salesperson_performance = var.groupby('salesperson')['revenue'].sum().reset_index()
-        salesperson_performance = var.groupby('salesperson', dropna=False)['revenue'].sum().reset_index()
+        salesperson_performance = var.groupby('salesperson')['revenue'].sum().reset_index()
+        #salesperson_performance = var.groupby('salesperson', dropna=False)['revenue'].sum().reset_index()
         print(salesperson_performance)
         print('----------------------------------')
 
