@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="5/22/2026 10:19:01 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="LAPTOP-66HI94H2"
+  DTS:CreatorName="LAPTOP-66HI94H2\Rushil Jivan"
+  DTS:DTSID="{E6F35AFC-8738-4BDE-AAAF-D8EF64CD1158}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="7177"
+  DTS:ObjectName="Untitled"
+  DTS:PackageType="5"
+  DTS:VersionGUID="{E2A89EBA-E6ED-42EC-9FC9-823190681598}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables />
+</DTS:Executable>
