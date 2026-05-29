@@ -1,7 +1,7 @@
--- Creating and populating tblEmployee3
+-- Creating and populating tblEmployee
 
-create table [dbo].[tblEmployee3] ([EmployeeNumber] int NOT NULL, [EmployeeFirstName] varchar(50) NOT NULL, [EmployeeMiddleName] varchar(50) NULL, [EmployeeLastName] varchar(50) NOT NULL, [EmployeeGovernmentID] char(10) NOT NULL, [DateOfBirth] date NOT NULL, [Department] varchar(19) NULL)
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(123, 'Jane', NULL, 'Zwilling', 'AB123456G', '1985-01-01', 'Customer Relations'),
+create table [dbo].[tblEmployee] ([EmployeeNumber] int NOT NULL, [EmployeeFirstName] varchar(50) NOT NULL, [EmployeeMiddleName] varchar(50) NULL, [EmployeeLastName] varchar(50) NOT NULL, [EmployeeGovernmentID] char(10) NOT NULL, [DateOfBirth] date NOT NULL, [Department] varchar(19) NULL)
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(123, 'Jane', NULL, 'Zwilling', 'AB123456G', '1985-01-01', 'Customer Relations'),
 	(124, 'Carolyn', 'Andrea', 'Zimmerman', 'AB234578H', '1975-06-01', 'Commercial'),
 	(125, 'Jane', NULL, 'Zabokritski', 'LU778728T', '1977-12-09', 'Commercial'),
 	(126, 'Ken', 'J', 'Yukish', 'PO201903O', '1969-12-27', 'HR'),
@@ -101,7 +101,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(220, 'Jim', 'H', 'Reding', 'NY480363H', '1988-12-23', 'Litigation'),
 	(221, 'Elizabeth', 'I', 'Rector', 'KP298792T', '1977-05-11', 'Customer Relations'),
 	(222, 'Mandar', 'H', 'Reátegui Alayo', 'RA549593S', '1986-07-16', 'Customer Relations');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(223, 'Sameer', 'A', 'Reams', 'YG615891A', '1972-12-03', 'HR'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(223, 'Sameer', 'A', 'Reams', 'YG615891A', '1972-12-03', 'HR'),
 	(224, 'Nuan', NULL, 'Ray', 'ND117517F', '1978-11-20', 'Litigation'),
 	(225, 'Lolan', 'B', 'Ray', 'SK649995H', '1980-10-26', 'Litigation'),
 	(226, 'Houman', 'N', 'Rapier', 'AM866046T', '1980-07-04', 'Commercial'),
@@ -201,7 +201,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(320, 'Kevin', 'H', 'Nay', 'ZK847878W', '1989-02-20', 'Commercial'),
 	(321, 'Shammi', 'G', 'Nash', 'EW458203L', '1968-04-27', 'HR'),
 	(322, 'Rajesh', 'M', 'Nartker', 'JB783423G', '1987-12-31', 'HR');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(323, 'Lorraine', 'O', 'Naik', 'LY344333R', '1975-03-06', 'Customer Relations'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(323, 'Lorraine', 'O', 'Naik', 'LY344333R', '1975-03-06', 'Customer Relations'),
 	(324, 'Paula', 'R', 'Myer', 'UM375041E', '1985-03-12', 'Commercial'),
 	(325, 'Frank', 'T', 'Myer', 'RM433520A', '1970-01-28', 'Commercial'),
 	(326, 'Brian', 'T', 'Myer', 'NJ837536J', '1979-12-15', 'HR'),
@@ -301,7 +301,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(420, 'Pilar', NULL, 'Marshall', 'IM167983H', '1975-04-03', 'Litigation'),
 	(421, 'Frances', 'B.', 'Marple', 'JG858859Z', '1975-03-31', 'Customer Relations'),
 	(422, 'Margaret', 'J.', 'Markwood', 'FE303791N', '1990-11-05', 'Customer Relations');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(423, 'Carla', 'J.', 'Margheim', 'HM072560V', '1979-12-25', 'Commercial'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(423, 'Carla', 'J.', 'Margheim', 'HM072560V', '1979-12-25', 'Commercial'),
 	(424, 'Jay', NULL, 'Mares', 'ED047455B', '1978-10-20', 'Commercial'),
 	(425, 'Ronald', 'L.', 'Marcovecchio', 'KV098725J', '1987-02-04', 'Commercial'),
 	(426, 'Samuel', 'N.', 'Manzanares', 'XB307209W', '1982-01-12', 'Litigation'),
@@ -401,7 +401,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(520, 'Michael', 'L.', 'Kobylinski', 'ZL483698T', '1969-11-14', 'Commercial'),
 	(521, 'Corinna', NULL, 'Kleinerman', 'MG865016A', '1966-10-23', 'HR'),
 	(522, 'Luis', NULL, 'Kleinerman', 'JR236403Q', '1966-11-07', 'HR');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(523, 'Randall', NULL, 'Kitt', 'IA458347Y', '1987-01-11', 'Commercial'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(523, 'Randall', NULL, 'Kitt', 'IA458347Y', '1987-01-11', 'Commercial'),
 	(524, 'Stephanie', NULL, 'Kirilov', 'OI905733G', '1981-03-31', 'Commercial'),
 	(525, 'Eli', NULL, 'King', 'NT241932W', '1966-01-28', 'Litigation'),
 	(526, 'Lester', 'J.', 'King', 'KZ687176J', '1973-09-14', 'Customer Relations'),
@@ -501,7 +501,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(620, 'Jill', 'J.', 'Hodges', 'AY561782G', '1985-12-26', 'Customer Relations'),
 	(621, 'Alice', NULL, 'Hite', 'HS366986U', '1984-03-01', 'HR'),
 	(622, 'Gina', 'N.', 'Hite', 'QJ919087J', '1993-12-28', 'Customer Relations');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(623, 'James', 'J.', 'Hirsch', 'AX296181P', '1967-03-05', 'Customer Relations'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(623, 'James', 'J.', 'Hirsch', 'AX296181P', '1967-03-05', 'Customer Relations'),
 	(624, 'Jane', NULL, 'Hirota', 'AC136922O', '1988-09-18', 'Commercial'),
 	(625, 'Kristine', 'J.', 'Hink', 'GV772368F', '1993-05-02', 'Litigation'),
 	(626, 'Teanna', 'M.', 'Hines', 'ES178152H', '1967-06-05', 'Commercial'),
@@ -601,7 +601,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(720, 'Garth', NULL, 'Giakoumakis', 'IO012095G', '1971-01-17', 'HR'),
 	(721, 'Dorothy', 'J.', 'Getzinger', 'NL799299L', '1983-03-13', 'Customer Relations'),
 	(722, 'Judith', 'B.', 'German', 'AI063893N', '1981-12-06', 'HR');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(723, 'John', NULL, 'Geist', 'XK446729V', '1991-03-06', 'Commercial'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(723, 'John', NULL, 'Geist', 'XK446729V', '1991-03-06', 'Commercial'),
 	(724, 'Susan', 'E.', 'Gehring', 'KJ537174I', '1966-03-10', 'Litigation'),
 	(725, 'Liam', 'J.', 'Gee', 'SB618986Q', '1989-12-21', 'HR'),
 	(726, 'Mihail', NULL, 'Gates', 'QO924744H', '1984-04-11', 'Customer Relations'),
@@ -701,7 +701,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(820, 'Bob', NULL, 'Desai', 'DM148216J', '1984-08-23', 'Customer Relations'),
 	(821, 'Jean', 'J.', 'Dennis', 'NK997269W', '1975-02-22', 'HR'),
 	(822, 'Michael', NULL, 'Deniut', 'PJ115368Y', '1974-05-17', 'HR');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(823, 'Eddie', 'M.', 'Dempsey', 'TL352905O', '1976-01-07', 'Commercial'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(823, 'Eddie', 'M.', 'Dempsey', 'TL352905O', '1976-01-07', 'Commercial'),
 	(824, 'Juanita', 'J.', 'Demott Jr', 'FH057195T', '1967-05-09', 'Customer Relations'),
 	(825, 'Peter', NULL, 'Demicell', 'XA015656S', '1984-03-10', 'Customer Relations'),
 	(826, 'Curtis', 'P.', 'Delmarco', 'CM072162T', '1989-03-26', 'Commercial'),
@@ -801,7 +801,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(920, 'Robertson', NULL, 'Carnes', 'UL790978S', '1992-11-05', 'Customer Relations'),
 	(921, 'Jolie', NULL, 'Carmody', 'XR359310F', '1969-06-26', 'HR'),
 	(922, 'Roger', NULL, 'Carmichael', 'HF950512M', '1972-01-29', 'Commercial');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(923, 'A.', 'Francesca', 'Carlson', 'IZ304065C', '1975-01-30', 'Customer Relations'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(923, 'A.', 'Francesca', 'Carlson', 'IZ304065C', '1975-01-30', 'Customer Relations'),
 	(924, 'Bonnie', 'B.', 'Carlson', 'FJ141333U', '1974-02-22', 'Commercial'),
 	(925, 'Gloria', 'J.', 'Carlisle', 'RG900948G', '1991-11-08', 'Litigation'),
 	(926, 'Linda', NULL, 'Carey', 'NU596855S', '1976-11-12', 'Commercial'),
@@ -901,7 +901,7 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(1020, 'Alan', 'L.', 'Bergin', 'XQ468558C', '1978-11-02', 'Litigation'),
 	(1021, 'Hillaine', 'N.', 'Berger', 'TY832084I', '1980-09-04', 'Commercial'),
 	(1022, 'Bobby', NULL, 'Berger', 'ER424299K', '1971-02-21', 'Commercial');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(1023, 'Barbara', NULL, 'Berge', 'NC102805F', '1976-03-02', 'Commercial'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(1023, 'Barbara', NULL, 'Berge', 'NC102805F', '1976-03-02', 'Commercial'),
 	(1024, 'Jon', NULL, 'Berge', 'HZ929919B', '1977-03-26', 'Commercial'),
 	(1025, 'Julia', NULL, 'Berg', 'VP409994W', '1991-04-30', 'Litigation'),
 	(1026, 'Marie', 'E.', 'Berch', 'UR180099N', '1990-05-27', 'HR'),
@@ -1001,15 +1001,15 @@ INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [Emplo
 	(1120, 'David', 'R.', 'Acevedo', 'KW702800W', '1974-08-07', 'Customer Relations'),
 	(1121, 'Rebecca', 'A.', 'Abolrous', 'CW642373N', '1976-05-22', 'Customer Relations'),
 	(1122, 'Dorothy', 'B.', 'Abercrombie', 'YI940573H', '1966-09-07', 'Litigation');
-INSERT INTO [dbo].[tblEmployee3] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(1123, 'Carol Ann', 'F.', 'Abercrombie', 'EV388053U', '1987-02-01', 'Litigation'),
+INSERT INTO [dbo].[tblEmployee] ( [EmployeeNumber], [EmployeeFirstName], [EmployeeMiddleName], [EmployeeLastName], [EmployeeGovernmentID], [DateOfBirth], [Department]) VALUES 	(1123, 'Carol Ann', 'F.', 'Abercrombie', 'EV388053U', '1987-02-01', 'Litigation'),
 	(1124, 'Scott', 'M.', 'Abel', 'LF569337J', '1983-09-13', 'HR'),
 	(1125, 'Jim', NULL, 'Abbas', 'QC172094F', '1980-11-09', 'Litigation');
 
--- Populating tblTransaction3
+-- Populating tblTransaction
 
-create table [dbo].[tblTransaction3] ([Amount] smallmoney NOT NULL, [DateOfTransaction] smalldatetime NOT NULL, [EmployeeNumber] int NOT NULL)
+create table [dbo].[tblTransaction] ([Amount] smallmoney NOT NULL, [DateOfTransaction] smalldatetime NOT NULL, [EmployeeNumber] int NOT NULL)
 	
-INSERT INTO [dbo].[tblTransaction3]  ([Amount], [DateOfTransaction], [EmployeeNumber]) 
+INSERT INTO [dbo].[tblTransaction]  ([Amount], [DateOfTransaction], [EmployeeNumber]) 
 VALUES 	(-964.05, '20150526', 658),
 	(-105.23, '20150914', 987),
 	(-506.8, '20150505', 695),
@@ -1110,7 +1110,7 @@ VALUES 	(-964.05, '20150526', 658),
 	(-428.31, '20140925', 723),
 	(643.94, '20141118', 564),
 	(424.34, '20151022', 769);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-349.52, '20140419', 486),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-349.52, '20140419', 486),
 	(-783.89, '20151110', 722),
 	(964.31, '20150610', 513),
 	(-355.55, '20150706', 749),
@@ -1210,7 +1210,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-839.23, '20151022', 842),
 	(807.47, '20150412', 552),
 	(-396.34, '20140202', 812);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-473.43, '20150721', 1125),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-473.43, '20150721', 1125),
 	(-573.11, '20150822', 640),
 	(-53.13, '20140505', 49),
 	(278.01, '20150512', 185),
@@ -1310,7 +1310,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(995.64, '20140319', 260),
 	(-250.92, '20140913', 1082),
 	(616.18, '20140103', 389);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(71.84, '20140212', 504),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(71.84, '20140212', 504),
 	(243.73, '20150624', 282),
 	(953.95, '20150203', 308),
 	(155.49, '20140604', 651),
@@ -1410,7 +1410,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(684.68, '20150423', 632),
 	(137.22, '20140710', 916),
 	(-482.6, '20151011', 488);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(108.73, '20151031', 805),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(108.73, '20151031', 805),
 	(998.29, '20150427', 196),
 	(580.85, '20150814', 100),
 	(419.69, '20140907', 1083),
@@ -1510,7 +1510,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(26.85, '20150316', 22),
 	(107.95, '20140914', 359),
 	(914.66, '20140314', 595);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(844.77, '20141028', 930),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(844.77, '20141028', 930),
 	(733.13, '20140306', 448),
 	(-114.44, '20151020', 1068),
 	(935.64, '20151022', 707),
@@ -1610,7 +1610,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(177.95, '20151213', 1076),
 	(469.99, '20151230', 486),
 	(986.76, '20140916', 6);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(609.03, '20150307', 927),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(609.03, '20150307', 927),
 	(16.69, '20150113', 961),
 	(364.46, '20150820', 985),
 	(642.34, '20140205', 1087),
@@ -1710,7 +1710,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-866.33, '20141113', 319),
 	(-596.94, '20150507', 382),
 	(-860.66, '20150611', 1076);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-488.58, '20150822', 912),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-488.58, '20150822', 912),
 	(-652.29, '20140209', 811),
 	(-295.04, '20151001', 279),
 	(-567.66, '20140615', 46),
@@ -1810,7 +1810,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-370, '20140324', 787),
 	(-831.61, '20140726', 438),
 	(-510.27, '20140420', 1021);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(441.37, '20150314', 914),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(441.37, '20150314', 914),
 	(366.62, '20140720', 27),
 	(-130.88, '20150612', 735),
 	(11.41, '20141209', 1024),
@@ -1910,7 +1910,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(280.26, '20141017', 68),
 	(110.46, '20150203', 689),
 	(846.59, '20150417', 390);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(358.09, '20151223', 149),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(358.09, '20151223', 149),
 	(-503.04, '20140519', 617),
 	(-120.02, '20140421', 950),
 	(14.02, '20151001', 508),
@@ -2010,7 +2010,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(67.3, '20140817', 332),
 	(28.15, '20140119', 893),
 	(83.36, '20150623', 6);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(49.43, '20150830', 992),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(49.43, '20150830', 992),
 	(386.46, '20140617', 554),
 	(406.18, '20141008', 156),
 	(526.13, '20151223', 977),
@@ -2110,7 +2110,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-72.52, '20140302', 593),
 	(474.49, '20140214', 577),
 	(-242.76, '20150610', 843);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(915.79, '20151023', 815),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(915.79, '20151023', 815),
 	(969.61, '20140905', 657),
 	(989.83, '20150317', 1101),
 	(835.91, '20141230', 592),
@@ -2210,7 +2210,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(579.59, '20150715', 595),
 	(882.56, '20150815', 719),
 	(-910.7, '20141117', 1122);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-554.01, '20150709', 498),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-554.01, '20150709', 498),
 	(150.85, '20151124', 795),
 	(-884.6, '20150524', 947),
 	(780.32, '20150612', 280),
@@ -2310,7 +2310,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(414.23, '20150215', 185),
 	(992.31, '20151019', 581),
 	(-489.62, '20150421', 921);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-335.85, '20140315', 543),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-335.85, '20140315', 543),
 	(-397.57, '20140723', 745),
 	(-614.29, '20150219', 203),
 	(421.5, '20151011', 214),
@@ -2410,7 +2410,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-418.91, '20150328', 51),
 	(530.54, '20150605', 901),
 	(-492.19, '20150523', 751);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(90.57, '20150910', 258),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(90.57, '20150910', 258),
 	(-667.67, '20151221', 351),
 	(245.34, '20140802', 207),
 	(117.21, '20140531', 131),
@@ -2510,7 +2510,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-151.98, '20140405', 453),
 	(-510.22, '20150530', 240),
 	(394.59, '20150921', 799);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(950.69, '20150504', 1097),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(950.69, '20150504', 1097),
 	(20.46, '20140406', 294),
 	(786.22, '20141114', 123),
 	(-166.13, '20150826', 104),
@@ -2610,7 +2610,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-861.57, '20140301', 507),
 	(358.9, '20140410', 377),
 	(81.33, '20140310', 400);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-366.99, '20141214', 327),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-366.99, '20141214', 327),
 	(883.61, '20151023', 177),
 	(-103.94, '20150829', 770),
 	(390.11, '20150201', 591),
@@ -2710,7 +2710,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-60.96, '20140420', 889),
 	(-346.33, '20140322', 871),
 	(492.74, '20151010', 719);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-375.39, '20150530', 348),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-375.39, '20150530', 348),
 	(-460.89, '20140709', 658),
 	(-616.88, '20141017', 1011),
 	(-111.28, '20141218', 86),
@@ -2810,7 +2810,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-793.48, '20140515', 497),
 	(993.36, '20151202', 275),
 	(-271.57, '20150818', 93);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(450.73, '20141124', 1072),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(450.73, '20141124', 1072),
 	(-867.65, '20140112', 118),
 	(697.38, '20140208', 592),
 	(75.45, '20150223', 893),
@@ -2910,7 +2910,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-576.77, '20151115', 124),
 	(-514.98, '20150423', 54),
 	(-630.93, '20140903', 661);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(858.12, '20150306', 461),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(858.12, '20150306', 461),
 	(-113.19, '20151020', 208),
 	(-905.71, '20140915', 678),
 	(461.24, '20150226', 574),
@@ -3010,7 +3010,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-600.01, '20150909', 49),
 	(-454.35, '20150820', 451),
 	(576.26, '20150714', 968);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(442.59, '20140902', 157),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(442.59, '20140902', 157),
 	(944.21, '20141228', 821),
 	(-946.12, '20150624', 132),
 	(876.64, '20150421', 308),
@@ -3110,7 +3110,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(853.2, '20140403', 503),
 	(33.94, '20141209', 538),
 	(-598.12, '20150510', 443);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(915.19, '20150120', 229),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(915.19, '20150120', 229),
 	(928.77, '20140811', 473),
 	(163, '20150623', 472),
 	(470.63, '20150302', 1080),
@@ -3210,7 +3210,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-781.12, '20140926', 873),
 	(48.49, '20140530', 871),
 	(414.24, '20141111', 803);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(863.02, '20140907', 884),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(863.02, '20140907', 884),
 	(753.49, '20150716', 1081),
 	(648.38, '20141229', 191),
 	(401.43, '20150616', 988),
@@ -3310,7 +3310,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-685.13, '20150427', 482),
 	(-842.47, '20141003', 853),
 	(677.74, '20140113', 1090);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-112.39, '20141106', 789),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(-112.39, '20141106', 789),
 	(-251.76, '20150907', 504),
 	(-473.35, '20150905', 114),
 	(309.51, '20140905', 213),
@@ -3410,7 +3410,7 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(216.35, '20150901', 172),
 	(-118.96, '20150625', 145),
 	(-845.26, '20150606', 925);
-INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(868.26, '20150526', 698),
+INSERT INTO [dbo].[tblTransaction]  ( [Amount], [DateOfTransaction], [EmployeeNumber]) VALUES 	(868.26, '20150526', 698),
 	(721.2, '20140301', 928),
 	(768.78, '20140801', 667),
 	(350.59, '20150228', 615),
@@ -3511,10 +3511,10 @@ INSERT INTO [dbo].[tblTransaction3]  ( [Amount], [DateOfTransaction], [EmployeeN
 	(-868.51, '20150623', 764),
 	(-909.29, '20140628', 526);
 
--- Create and populate tblDepartment3
+-- Create and populate tblDepartment
 
-create table [dbo].[tblDepartment3] ([Department] varchar(19) NULL, [DepartmentHead] varchar(19) NULL)
-INSERT INTO [dbo].[tblDepartment3] ( [Department], [DepartmentHead]) VALUES 
+create table [dbo].[tblDepartment] ([Department] varchar(19) NULL, [DepartmentHead] varchar(19) NULL)
+INSERT INTO [dbo].[tblDepartment] ( [Department], [DepartmentHead]) VALUES 
 	('Accounts', 'James'),
 	('Commercial', 'Brayan'),
 	('Customer Relations', 'Andrew'),
@@ -3523,10 +3523,10 @@ INSERT INTO [dbo].[tblDepartment3] ( [Department], [DepartmentHead]) VALUES
 
 -- Add changes made in Session 2
 
-INSERT INTO tblEmployee3([EmployeeFirstName],[EmployeeMiddleName],
+INSERT INTO tblEmployee([EmployeeFirstName],[EmployeeMiddleName],
 [EmployeeLastName],[EmployeeGovernmentID],[DateOfBirth],[Department],[EmployeeNumber])
 VALUES ('Jossef', 'H', 'Wright', 'TX593671R', '19711224', 'Litigation',131)
 
-INSERT INTO tblEmployee3
+INSERT INTO tblEmployee
 VALUES (1, 'Dylan', 'A', 'Word', 'HN513777D', '19920914', 'Customer Relations'),
 (2,'Jossef', 'H', 'Wright', 'TX593671R', '19711224', 'Litigation')
