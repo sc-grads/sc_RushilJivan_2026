@@ -1,0 +1,42 @@
+name: Teams PR Notifications
+
+on:
+  pull_request:
+    types:
+      - opened
+      - review_requested
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Teams Notification
+        env:
+          WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+
+            if [ "${{ github.event.action }}" = "opened" ]; then
+              MESSAGE="🚀 New Pull Request Created by ${{ github.actor }}"
+
+            elif [ "${{ github.event.action }}" = "review_requested" ]; then
+              MESSAGE="👀 Review Requested from ${{ github.event.requested_reviewer.login }}"
+            fi
+
+          elif [ "$EVENT_NAME" = "pull_request_review" ]; then
+
+            if [ "${{ github.event.review.state }}" = "approved" ]; then
+              MESSAGE="✅ Pull Request Approved by ${{ github.actor }}"
+            fi
+
+          fi
+
+          curl -H "Content-Type: application/json" \
+          -d "{\"text\":\"$MESSAGE\"}" \
+          $WEBHOOK_URL
