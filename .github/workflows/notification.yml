@@ -3,7 +3,10 @@ name: GitHub-MS Teams Events Integration
 on:
   push:
   pull_request:
+    types: [opened, review_requested, closed]
   create:
+  pull_request_review:
+    types: [submitted]
  
 jobs:
   notify-teams:
@@ -15,23 +18,27 @@ jobs:
           EVENT_NAME="${{ github.event_name }}"
  
           if [ "$EVENT_NAME" = "push" ]; then
-            MESSAGE=" Push event in ${{ github.repository }} by ${{ github.actor }}.\n\nCommit: ${{ github.event.head_commit.message }}\n ${{ github.event.head_commit.url }}"
+            MESSAGE=" Push event in ${{ github.repository }} by ${{ github.actor }}.\n\nCommit: ${{ github.event.head_commit.message }}\n${{ github.event.head_commit.url }}"
          
-          elif [ "$EVENT_NAME" = "pull_request" ]; then
-            MESSAGE=" Pull Request event in ${{ github.repository }} by ${{ github.actor }}.\n\nTitle: ${{ github.event.pull_request.title }}\n ${{ github.event.pull_request.html_url }}"
+          elif [ "$EVENT_NAME" = "create" ]; then
+            MESSAGE=" Create event in ${{ github.repository }} by ${{ github.actor }}.\nRef: ${{ github.ref }}"
          
-
+          elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.action }}" = "opened" ]; then
+            MESSAGE=" Pull Request Created in ${{ github.repository }} by ${{ github.actor }}.\n\nTitle: ${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}"
+         
           elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.action }}" = "review_requested" ]; then 
-            MESSAGE=" Approval Requested Repository: ${{ github.repository }} Created By: ${{ github.actor }} Reviewer: ${{ github.event.requested_reviewer.login }} Status: Review Requested  ${{ github.event.pull_request.html_url }}"  
-          
+            MESSAGE=" Approval Requested in ${{ github.repository }}.\n\nCreated By: ${{ github.event.pull_request.user.login }}\nReviewer: ${{ github.event.requested_reviewer.login }}\nStatus: Review Requested\n${{ github.event.pull_request.html_url }}"
           
           elif [ "${{ github.event_name }}" = "pull_request_review" ] && [ "${{ github.event.review.state }}" = "approved" ]; then 
-            MESSAGE=" Pull Request Approved Repository: ${{ github.repository }} Approved By: ${{ github.actor }} PR Author: ${{ github.event.pull_request.user.login }} Status: Approved  ${{ github.event.pull_request.html_url }}"
+            MESSAGE=" Pull Request Approved in ${{ github.repository }}.\n\nApproved By: ${{ github.actor }}\nPR Author: ${{ github.event.pull_request.user.login }}\nStatus: Approved\n${{ github.event.pull_request.html_url }}"
+          
+          elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.action }}" = "closed" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            MESSAGE=" Pull Request Merged in ${{ github.repository }}.\n\nMerged By: ${{ github.actor }}\nTitle: ${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}"
           
           else
-            MESSAGE=" Create event in ${{ github.repository }} by ${{ github.actor }}.\nRef: ${{ github.ref }}"
+            exit 0
           fi
  
           curl -H "Content-Type: application/json" \
           -d "{\"text\": \"$MESSAGE\"}" \
-          ${{ secrets.TEAMS_WEBHOOK }}
+          "${{ secrets.TEAMS_WEBHOOK }}"
