@@ -1,5 +1,6 @@
 name: SQL Deployment Pipeline
 
+
 on:
   push:
     branches: [ "main" ]
@@ -9,6 +10,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Run SQL script
+        run: sqlcmd -i cicd-project/sql/deploy.sql
+        
       - name: Checkout repo
         uses: actions/checkout@v4
 
