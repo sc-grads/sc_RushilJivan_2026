@@ -22,6 +22,9 @@ jobs:
          
           elif [ "$EVENT_NAME" = "create" ]; then
             MESSAGE=" Create event in ${{ github.repository }} by ${{ github.actor }}.\nRef: ${{ github.ref }}"
+
+          elif [ "$EVENT_NAME" = "create" ] && [ "${{ github.ref_type }}" = "branch" ]; then 
+            MESSAGE=" New Branch Created in ${{ github.repository }} by ${{ github.actor }}.Branch Name: ${{ github.ref }} Repository: ${{ github.repository }}"  
          
           elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.action }}" = "opened" ]; then
             MESSAGE=" Pull Request Created in ${{ github.repository }} by ${{ github.actor }}.\n\nTitle: ${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}"
@@ -34,6 +37,8 @@ jobs:
           
           elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.action }}" = "closed" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
             MESSAGE=" Pull Request Merged in ${{ github.repository }}.\n\nMerged By: ${{ github.actor }}\nTitle: ${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}"
+          
+      
           
           else
             exit 0
