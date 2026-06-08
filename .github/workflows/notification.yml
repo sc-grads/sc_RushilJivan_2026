@@ -1,42 +1,29 @@
-name: Teams PR Notifications
-
+name: GitHub-MS Teams Events Integration
+ 
 on:
+  push:
   pull_request:
-    types:
-      - opened
-      - review_requested
-  pull_request_review:
-    types:
-      - submitted
-
+  create:
+ 
 jobs:
-  notify:
+  notify-teams:
     runs-on: ubuntu-latest
-
+ 
     steps:
-      - name: Send Teams Notification
-        env:
-          WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      - name: Send message to MS Teams
         run: |
           EVENT_NAME="${{ github.event_name }}"
-
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-
-            if [ "${{ github.event.action }}" = "opened" ]; then
-              MESSAGE="🚀 New Pull Request Created by ${{ github.actor }}"
-
-            elif [ "${{ github.event.action }}" = "review_requested" ]; then
-              MESSAGE="👀 Review Requested from ${{ github.event.requested_reviewer.login }}"
-            fi
-
-          elif [ "$EVENT_NAME" = "pull_request_review" ]; then
-
-            if [ "${{ github.event.review.state }}" = "approved" ]; then
-              MESSAGE="✅ Pull Request Approved by ${{ github.actor }}"
-            fi
-
+ 
+          if [ "$EVENT_NAME" = "push" ]; then
+            MESSAGE="🚀 Push event in ${{ github.repository }} by ${{ github.actor }}.\n\nCommit: ${{ github.event.head_commit.message }}\n🔗 ${{ github.event.head_commit.url }}"
+         
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            MESSAGE="📌 Pull Request event in ${{ github.repository }} by ${{ github.actor }}.\n\nTitle: ${{ github.event.pull_request.title }}\n🔗 ${{ github.event.pull_request.html_url }}"
+         
+          else
+            MESSAGE="📦 Create event in ${{ github.repository }} by ${{ github.actor }}.\nRef: ${{ github.ref }}"
           fi
-
+ 
           curl -H "Content-Type: application/json" \
-          -d "{\"text\":\"$MESSAGE\"}" \
-          $WEBHOOK_URL
+          -d "{\"text\": \"$MESSAGE\"}" \
+          ${{ secrets.TEAMS_WEBHOOK }}
