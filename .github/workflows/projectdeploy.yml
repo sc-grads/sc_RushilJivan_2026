@@ -8,8 +8,11 @@ jobs:
   deploy:
     runs-on: windows-latest
 
+    environment:
+      name: production
+
     steps:
-      # STEP 1: Get your repo code
+      # STEP 1: Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -18,12 +21,30 @@ jobs:
         run: |
           choco install sqlcmd -y
 
-      # STEP 3: Run SQL Deployment Script
+      # STEP 3: Send Teams approval request (BEFORE deployment)
+      - name: Send approval request to Teams
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "Approval required: SQL deployment is waiting in GitHub Actions."
+          } | ConvertTo-Json
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body $body
+
+      # STEP 4: Run SQL Deployment Script (ONLY after approval)
       - name: Run Deployment Script
+        shell: pwsh
         env:
           SQL_SERVER: ${{ secrets.SQL_SERVER }}
           SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
           SQL_USER: ${{ secrets.SQL_USER }}
           SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
         run: |
-          sqlcmd -S "$env:SQL_SERVER" -d "$env:SQL_DATABASE" -U "$env:SQL_USER" -P "$env:SQL_PASSWORD" -i "cicd-project/sql/deploy.sql"
+          sqlcmd -S "$env:SQL_SERVER" `
+                 -d "$env:SQL_DATABASE" `
+                 -U "$env:SQL_USER" `
+                 -P "$env:SQL_PASSWORD" `
+                 -i "cicd-project/sql/deploy.sql"
