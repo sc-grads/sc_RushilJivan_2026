@@ -7,12 +7,12 @@
   DTS:CreatorName="MYLENOVOI7\KameswaraSarma"
   DTS:DTSID="{14D0EF11-2D34-46C0-9F0E-F20F8EB7B035}"
   DTS:ExecutableType="Microsoft.Package"
-  DTS:LastModifiedProductVersion="13.0.4001.0"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
   DTS:LocaleID="1033"
   DTS:ObjectName="01_ExportToFlatFileDemo"
   DTS:PackageType="5"
-  DTS:VersionBuild="1"
-  DTS:VersionGUID="{EA8F0676-DE55-44B5-B3FC-8049C8C8CC6A}">
+  DTS:VersionBuild="2"
+  DTS:VersionGUID="{40D9D044-E08E-41A5-A8C6-BCF4A6119A7A}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -71,12 +71,26 @@
       </DTS:ObjectData>
     </DTS:ConnectionManager>
     <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[LAPTOP-66HI94H2.AdventureWorks2025]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{9FB75335-8971-447E-81F0-F54989A78DAB}"
+      DTS:ObjectName="LAPTOP-66HI94H2.AdventureWorks2025">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=LAPTOP-66HI94H2;Initial Catalog=AdventureWorks2025;Provider=MSOLEDBSQL19.1;Integrated Security=SSPI;Application Name=SSIS-01_ExportToFlatFileDemo-{9FB75335-8971-447E-81F0-F54989A78DAB}LAPTOP-66HI94H2.AdventureWorks2025;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[LocalHost.AdventureWorks2014]"
       DTS:CreationName="OLEDB"
       DTS:DTSID="{9B5998D0-6093-4C35-A055-6418A08A4CC3}"
       DTS:ObjectName="LocalHost.AdventureWorks2014">
       <DTS:ObjectData>
         <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
           DTS:ConnectionString="Data Source=.;Initial Catalog=AdventureWorks2014;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -122,7 +136,7 @@
                   dataType="System.String"
                   description="The SQL command to be executed."
                   name="SqlCommand"
-                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
                 <property
                   dataType="System.String"
                   description="The variable that contains the SQL command to be executed."
@@ -148,8 +162,8 @@
               <connections>
                 <connection
                   refId="Package\Data Flow Task\Department Details.Connections[OleDbConnection]"
-                  connectionManagerID="Package.ConnectionManagers[LocalHost.AdventureWorks2014]"
-                  connectionManagerRefId="Package.ConnectionManagers[LocalHost.AdventureWorks2014]"
+                  connectionManagerID="Package.ConnectionManagers[LAPTOP-66HI94H2.AdventureWorks2025]"
+                  connectionManagerRefId="Package.ConnectionManagers[LAPTOP-66HI94H2.AdventureWorks2025]"
                   description="The OLE DB runtime connection used to access the database."
                   name="OleDbConnection" />
               </connections>
@@ -280,6 +294,10 @@
                   description="Specifies the text to write to the destination file before any data is written."
                   expressionType="Notify"
                   name="Header" />
+                <property
+                  dataType="System.Boolean"
+                  description="When text qualifier is enabled, specifies whether the text qualifier in the data written to the destination file will be escaped or not."
+                  name="EscapeQualifier">false</property>
               </properties>
               <connections>
                 <connection
@@ -382,7 +400,7 @@
       <GraphLayout
         Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
-          Size="169.6,41.6"
+          Size="167.2,41.6"
           Id="Package\Data Flow Task\Department Details"
           TopLeft="211.2,75.2" />
         <NodeLayout
@@ -391,13 +409,13 @@
           TopLeft="220.8,220" />
         <EdgeLayout
           Id="Package\Data Flow Task.Paths[OLE DB Source Output]"
-          TopLeft="296,116.8">
+          TopLeft="294.8,116.8">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
-              EndConnector="10.4,103.2"
+              EndConnector="11.6,103.2"
               Start="0,0"
-              End="10.4,95.7">
+              End="11.6,95.7">
               <mssgle:Curve.Segments>
                 <mssgle:SegmentCollection
                   Capacity="5">
@@ -408,13 +426,13 @@
                     Point2="0,51.6"
                     Point3="4,51.6" />
                   <mssgle:LineSegment
-                    End="6.39999999999998,51.6" />
+                    End="7.60000000000002,51.6" />
                   <mssgle:CubicBezierSegment
-                    Point1="6.39999999999998,51.6"
-                    Point2="10.4,51.6"
-                    Point3="10.4,55.6" />
+                    Point1="7.60000000000002,51.6"
+                    Point2="11.6,51.6"
+                    Point3="11.6,55.6" />
                   <mssgle:LineSegment
-                    End="10.4,95.7" />
+                    End="11.6,95.7" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>

@@ -1,36 +1,35 @@
 ﻿<?xml version="1.0"?>
 <DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
   DTS:refId="Package"
-  DTS:CreationDate="1/2/2017 12:06:00 PM"
+  DTS:CreationDate="6/9/2026 9:51:40 AM"
   DTS:CreationName="Microsoft.Package"
-  DTS:CreatorComputerName="MYLENOVOI7"
-  DTS:CreatorName="MYLENOVOI7\KameswaraSarma"
-  DTS:DTSID="{3DF3288F-CD49-4B2B-A6DF-F0362E8F1654}"
+  DTS:CreatorComputerName="LAPTOP-66HI94H2"
+  DTS:CreatorName="LAPTOP-66HI94H2\Rushil Jivan"
+  DTS:DTSID="{97F6A927-0868-4906-8CA1-DD6808094E5E}"
   DTS:ExecutableType="Microsoft.Package"
   DTS:LastModifiedProductVersion="17.0.1016.0"
-  DTS:LocaleID="1033"
-  DTS:ObjectName="02_CharacterMapDemo"
+  DTS:LocaleID="7177"
+  DTS:ObjectName="Package2"
   DTS:PackageType="5"
   DTS:VersionBuild="2"
-  DTS:VersionGUID="{6362650C-87ED-444A-8C6A-FF00D6F83F2A}">
+  DTS:VersionGUID="{6640B49F-308A-4DBB-8141-1DBC695D4230}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[Flat File Connection Manager]"
       DTS:CreationName="FLATFILE"
-      DTS:DTSID="{437F56C4-F2F3-4AFC-B850-0B2AE64AEDDF}"
+      DTS:DTSID="{5723DEF0-ACC5-4E67-8B6A-069350D9CF7B}"
       DTS:ObjectName="Flat File Connection Manager">
       <DTS:ObjectData>
         <DTS:ConnectionManager
           DTS:Format="Delimited"
-          DTS:LocaleID="1033"
+          DTS:LocaleID="7177"
           DTS:HeaderRowDelimiter="_x000D__x000A_"
-          DTS:ColumnNamesInFirstDataRow="True"
           DTS:RowDelimiter=""
           DTS:TextQualifier="_x003C_none_x003E_"
           DTS:CodePage="1252"
-          DTS:ConnectionString="H:\Outputs\CMOutput.csv">
+          DTS:ConnectionString="C:\sc_RushilJivan_2026\Mastering SSIS - Part 1\Outputs\DepartmentsDetails.csv">
           <DTS:FlatFileColumns>
             <DTS:FlatFileColumn
               DTS:ColumnType="Delimited"
@@ -38,7 +37,7 @@
               DTS:DataType="2"
               DTS:TextQualified="True"
               DTS:ObjectName="DepartmentID"
-              DTS:DTSID="{55F1191E-F583-48B8-A320-4CEFF1A02F3D}"
+              DTS:DTSID="{9431A0A8-DE78-4078-B555-745346EB193B}"
               DTS:CreationName="" />
             <DTS:FlatFileColumn
               DTS:ColumnType="Delimited"
@@ -47,7 +46,7 @@
               DTS:DataType="130"
               DTS:TextQualified="True"
               DTS:ObjectName="Name"
-              DTS:DTSID="{EEC46438-9628-4505-819E-C36EE12DB1E0}"
+              DTS:DTSID="{195584DB-A555-40C8-B566-A1888A9C2CA3}"
               DTS:CreationName="" />
             <DTS:FlatFileColumn
               DTS:ColumnType="Delimited"
@@ -56,24 +55,15 @@
               DTS:DataType="130"
               DTS:TextQualified="True"
               DTS:ObjectName="GroupName"
-              DTS:DTSID="{3CAEE16E-7714-4773-A883-B32EB9407624}"
-              DTS:CreationName="" />
-            <DTS:FlatFileColumn
-              DTS:ColumnType="Delimited"
-              DTS:ColumnDelimiter="_x002C_"
-              DTS:DataType="135"
-              DTS:TextQualified="True"
-              DTS:ObjectName="ModifiedDate"
-              DTS:DTSID="{8113BAF0-F1A8-4C17-BE52-1F07ABF7BAC4}"
+              DTS:DTSID="{8956D085-1383-4817-AF58-6CB8DFFE5C8C}"
               DTS:CreationName="" />
             <DTS:FlatFileColumn
               DTS:ColumnType="Delimited"
               DTS:ColumnDelimiter="_x000D__x000A_"
-              DTS:MaximumWidth="50"
-              DTS:DataType="130"
+              DTS:DataType="135"
               DTS:TextQualified="True"
-              DTS:ObjectName="DepartmentName"
-              DTS:DTSID="{1D304A72-AFA3-4580-8164-D7D62AEB0C74}"
+              DTS:ObjectName="ModifiedDate"
+              DTS:DTSID="{4E7969DC-FA56-446A-B7AF-BB6B7315380C}"
               DTS:CreationName="" />
           </DTS:FlatFileColumns>
         </DTS:ConnectionManager>
@@ -82,25 +72,25 @@
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[LAPTOP-66HI94H2.AdventureWorks2025]"
       DTS:CreationName="OLEDB"
-      DTS:DTSID="{634EF429-E1E0-4817-A519-D6FD3B092E47}"
+      DTS:DTSID="{9957536F-4D9E-4C01-A830-1C1614499D5E}"
       DTS:ObjectName="LAPTOP-66HI94H2.AdventureWorks2025">
       <DTS:ObjectData>
         <DTS:ConnectionManager
           DTS:ConnectRetryCount="1"
           DTS:ConnectRetryInterval="5"
-          DTS:ConnectionString="Data Source=LAPTOP-66HI94H2;Initial Catalog=AdventureWorks2025;Provider=MSOLEDBSQL19.1;Integrated Security=SSPI;Application Name=SSIS-02_CharacterMapDemo-{634EF429-E1E0-4817-A519-D6FD3B092E47}LAPTOP-66HI94H2.AdventureWorks2025;Auto Translate=False;" />
+          DTS:ConnectionString="Data Source=LAPTOP-66HI94H2;Initial Catalog=AdventureWorks2025;Provider=MSOLEDBSQL19.1;Integrated Security=SSPI;Application Name=SSIS-Package2-{9957536F-4D9E-4C01-A830-1C1614499D5E}LAPTOP-66HI94H2.AdventureWorks2025;Auto Translate=False;" />
       </DTS:ObjectData>
     </DTS:ConnectionManager>
     <DTS:ConnectionManager
-      DTS:refId="Package.ConnectionManagers[LocalHost.AdventureWorks2014]"
+      DTS:refId="Package.ConnectionManagers[LAPTOP-66HI94H2.SSIS]"
       DTS:CreationName="OLEDB"
-      DTS:DTSID="{C79BD8C2-793F-466F-9E11-64699DDB4FB6}"
-      DTS:ObjectName="LocalHost.AdventureWorks2014">
+      DTS:DTSID="{52724822-5B5F-4C33-B223-566BC89AAC21}"
+      DTS:ObjectName="LAPTOP-66HI94H2.SSIS">
       <DTS:ObjectData>
         <DTS:ConnectionManager
           DTS:ConnectRetryCount="1"
           DTS:ConnectRetryInterval="5"
-          DTS:ConnectionString="Data Source=.;Initial Catalog=AdventureWorks2014;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+          DTS:ConnectionString="Data Source=LAPTOP-66HI94H2;Initial Catalog=SSIS;Provider=SQLOLEDB.1;Integrated Security=SSPI;Application Name=SSIS-Package2-{52724822-5B5F-4C33-B223-566BC89AAC21}LAPTOP-66HI94H2.SSIS;Auto Translate=False;" />
       </DTS:ObjectData>
     </DTS:ConnectionManager>
   </DTS:ConnectionManagers>
@@ -110,7 +100,7 @@
       DTS:refId="Package\Data Flow Task"
       DTS:CreationName="Microsoft.Pipeline"
       DTS:Description="Data Flow Task"
-      DTS:DTSID="{7BA3912A-8E13-4406-AE0C-CF243C1E26C6}"
+      DTS:DTSID="{1EEAF918-0DED-4E34-93E5-7335136BD13F}"
       DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
       DTS:ObjectName="Data Flow Task"
@@ -121,106 +111,13 @@
           version="1">
           <components>
             <component
-              refId="Package\Data Flow Task\Character Map"
-              componentClassID="Microsoft.CharacterMap"
-              contactInfo="Character Map;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;2"
-              description="Specifies the string operations to apply."
-              name="Character Map"
-              usesDispositions="true"
-              version="2">
-              <inputs>
-                <input
-                  refId="Package\Data Flow Task\Character Map.Inputs[Character Map Input]"
-                  name="Character Map Input">
-                  <inputColumns>
-                    <inputColumn
-                      refId="Package\Data Flow Task\Character Map.Inputs[Character Map Input].Columns[Name]"
-                      cachedDataType="wstr"
-                      cachedLength="50"
-                      cachedName="Name"
-                      lineageId="Package\Data Flow Task\OLE DB Source.Outputs[OLE DB Source Output].Columns[Name]" />
-                    <inputColumn
-                      refId="Package\Data Flow Task\Character Map.Inputs[Character Map Input].Columns[GroupName]"
-                      cachedDataType="wstr"
-                      cachedLength="50"
-                      cachedName="GroupName"
-                      errorOrTruncationOperation="Map Column"
-                      lineageId="Package\Data Flow Task\OLE DB Source.Outputs[OLE DB Source Output].Columns[GroupName]"
-                      truncationRowDisposition="FailComponent"
-                      usageType="readWrite">
-                      <properties>
-                        <property
-                          dataType="System.UInt32"
-                          name="MapFlags"
-                          typeConverter="LCMappingType">256</property>
-                      </properties>
-                    </inputColumn>
-                  </inputColumns>
-                  <externalMetadataColumns />
-                </input>
-              </inputs>
-              <outputs>
-                <output
-                  refId="Package\Data Flow Task\Character Map.Outputs[Character Map Output]"
-                  exclusionGroup="1"
-                  name="Character Map Output"
-                  synchronousInputId="Package\Data Flow Task\Character Map.Inputs[Character Map Input]">
-                  <outputColumns>
-                    <outputColumn
-                      refId="Package\Data Flow Task\Character Map.Outputs[Character Map Output].Columns[DepartmentName]"
-                      dataType="wstr"
-                      errorOrTruncationOperation="Map Column"
-                      length="50"
-                      lineageId="Package\Data Flow Task\Character Map.Outputs[Character Map Output].Columns[DepartmentName]"
-                      name="DepartmentName"
-                      truncationRowDisposition="FailComponent">
-                      <properties>
-                        <property
-                          dataType="System.UInt32"
-                          description="Specifies the string operations to apply."
-                          name="MapFlags"
-                          typeConverter="LCMappingType">512</property>
-                        <property
-                          containsID="true"
-                          dataType="System.Int32"
-                          description="Specifies the lineage identifier of the input column to which operations apply."
-                          name="InputColumnLineageID">#{Package\Data Flow Task\OLE DB Source.Outputs[OLE DB Source Output].Columns[Name]}</property>
-                      </properties>
-                    </outputColumn>
-                  </outputColumns>
-                  <externalMetadataColumns />
-                </output>
-                <output
-                  refId="Package\Data Flow Task\Character Map.Outputs[Character Map Error Output]"
-                  exclusionGroup="1"
-                  isErrorOut="true"
-                  name="Character Map Error Output"
-                  synchronousInputId="Package\Data Flow Task\Character Map.Inputs[Character Map Input]">
-                  <outputColumns>
-                    <outputColumn
-                      refId="Package\Data Flow Task\Character Map.Outputs[Character Map Error Output].Columns[ErrorCode]"
-                      dataType="i4"
-                      lineageId="Package\Data Flow Task\Character Map.Outputs[Character Map Error Output].Columns[ErrorCode]"
-                      name="ErrorCode"
-                      specialFlags="1" />
-                    <outputColumn
-                      refId="Package\Data Flow Task\Character Map.Outputs[Character Map Error Output].Columns[ErrorColumn]"
-                      dataType="i4"
-                      lineageId="Package\Data Flow Task\Character Map.Outputs[Character Map Error Output].Columns[ErrorColumn]"
-                      name="ErrorColumn"
-                      specialFlags="2" />
-                  </outputColumns>
-                  <externalMetadataColumns />
-                </output>
-              </outputs>
-            </component>
-            <component
               refId="Package\Data Flow Task\Flat File Destination"
               componentClassID="Microsoft.FlatFileDestination"
-              contactInfo="Flat File Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              contactInfo="Flat File Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;1"
               description="Flat File Destination"
-              localeId="1033"
-              name="Flat File Destination">
+              localeId="7177"
+              name="Flat File Destination"
+              version="1">
               <properties>
                 <property
                   dataType="System.Boolean"
@@ -275,13 +172,6 @@
                       cachedName="ModifiedDate"
                       externalMetadataColumnId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input].ExternalColumns[ModifiedDate]"
                       lineageId="Package\Data Flow Task\OLE DB Source.Outputs[OLE DB Source Output].Columns[ModifiedDate]" />
-                    <inputColumn
-                      refId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input].Columns[DepartmentName]"
-                      cachedDataType="wstr"
-                      cachedLength="50"
-                      cachedName="DepartmentName"
-                      externalMetadataColumnId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input].ExternalColumns[DepartmentName]"
-                      lineageId="Package\Data Flow Task\Character Map.Outputs[Character Map Output].Columns[DepartmentName]" />
                   </inputColumns>
                   <externalMetadataColumns
                     isUsed="True">
@@ -303,11 +193,6 @@
                       refId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input].ExternalColumns[ModifiedDate]"
                       dataType="dbTimeStamp"
                       name="ModifiedDate" />
-                    <externalMetadataColumn
-                      refId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input].ExternalColumns[DepartmentName]"
-                      dataType="wstr"
-                      length="50"
-                      name="DepartmentName" />
                   </externalMetadataColumns>
                 </input>
               </inputs>
@@ -337,7 +222,7 @@
                   dataType="System.String"
                   description="The SQL command to be executed."
                   name="SqlCommand"
-                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
                 <property
                   dataType="System.String"
                   description="The variable that contains the SQL command to be executed."
@@ -481,13 +366,8 @@
           </components>
           <paths>
             <path
-              refId="Package\Data Flow Task.Paths[Character Map Output]"
-              endId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input]"
-              name="Character Map Output"
-              startId="Package\Data Flow Task\Character Map.Outputs[Character Map Output]" />
-            <path
               refId="Package\Data Flow Task.Paths[OLE DB Source Output]"
-              endId="Package\Data Flow Task\Character Map.Inputs[Character Map Input]"
+              endId="Package\Data Flow Task\Flat File Destination.Inputs[Flat File Destination Input]"
               name="OLE DB Source Output"
               startId="Package\Data Flow Task\OLE DB Source.Outputs[OLE DB Source Output]" />
           </paths>
@@ -510,7 +390,7 @@
         <NodeLayout
           Size="150.4,41.6"
           Id="Package\Data Flow Task"
-          TopLeft="148.571431101585,105.835295601947" />
+          TopLeft="150.833325092164,63.2666662267182" />
       </GraphLayout>
     </LayoutInfo>
   </Package>
@@ -518,67 +398,29 @@
     design-time-name="Package\Data Flow Task">
     <LayoutInfo>
       <GraphLayout
-        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
-          Size="146.4,41.6"
-          Id="Package\Data Flow Task\Character Map"
-          TopLeft="165.142859955223,142.541178469674" />
-        <NodeLayout
-          Size="149.6,41.6"
+          Size="152,41.6"
           Id="Package\Data Flow Task\OLE DB Source"
-          TopLeft="154.857145494344,56.2823537305152" />
+          TopLeft="169.999997466803,74.9999988824129" />
         <NodeLayout
-          Size="171.2,41.6"
+          Size="170.4,41.6"
           Id="Package\Data Flow Task\Flat File Destination"
-          TopLeft="153.714288332024,223.905885493137" />
+          TopLeft="165.999997526407,228.999996587634" />
         <EdgeLayout
           Id="Package\Data Flow Task.Paths[OLE DB Source Output]"
-          TopLeft="229.657145494344,97.8823537305152">
+          TopLeft="248.599997496605,116.599998882413">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
-              EndConnector="8.68571446087896,44.6588247391592"
+              EndConnector="0,112.399997705221"
               Start="0,0"
-              End="8.68571446087896,37.1588247391592">
+              End="0,104.899997705221">
               <mssgle:Curve.Segments>
                 <mssgle:SegmentCollection
                   Capacity="5">
                   <mssgle:LineSegment
-                    End="0,18.3294123695796" />
-                  <mssgle:CubicBezierSegment
-                    Point1="0,18.3294123695796"
-                    Point2="0,22.3294123695796"
-                    Point3="4,22.3294123695796" />
-                  <mssgle:LineSegment
-                    End="4.68571446087896,22.3294123695796" />
-                  <mssgle:CubicBezierSegment
-                    Point1="4.68571446087896,22.3294123695796"
-                    Point2="8.68571446087896,22.3294123695796"
-                    Point3="8.68571446087896,26.3294123695796" />
-                  <mssgle:LineSegment
-                    End="8.68571446087896,37.1588247391592" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-        <EdgeLayout
-          Id="Package\Data Flow Task.Paths[Character Map Output]"
-          TopLeft="238.828574143624,184.141178469674">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="0,39.7647070234622"
-              Start="0,0"
-              End="0,32.2647070234622">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,32.2647070234622" />
+                    End="0,104.899997705221" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>
