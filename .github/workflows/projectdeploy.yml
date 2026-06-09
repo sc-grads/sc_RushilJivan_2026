@@ -26,8 +26,4 @@ jobs:
           SQL_USER: ${{ secrets.SQL_USER }}
           SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
         run: |
-          sqlcmd -S $env:SQL_SERVER `
-                 -d $env:SQL_DATABASE `
-                 -U $env:SQL_USER `
-                 -P $env:SQL_PASSWORD `
-                 -i cicd-project/sql/deploy.sql
+          sqlcmd -S "$env:SQL_SERVER" -d "$env:SQL_DATABASE" -U "$env:SQL_USER" -P "$env:SQL_PASSWORD" -i "cicd-project/sql/deploy.sql"
