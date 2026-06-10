@@ -6,14 +6,14 @@ on:
 jobs:
 
   # =========================
-  # DEV TEST JOB
+  # JOB 1: DEV TEST
   # =========================
   dev-test:
     runs-on: windows-latest
 
     steps:
 
-      # DEV NOTIFICATION
+      # NOTIFY
       - name: Dev Notification
         shell: pwsh
         run: |
@@ -26,8 +26,8 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      # DEV DEPLOYMENT
-      - name: Deploy Dev
+      # DEPLOY (REUSABLE TEMPLATE)
+      - name: Run Dev Deployment
         uses: ./.github/workflows/sql-template.yml
 
         with:
@@ -36,7 +36,7 @@ jobs:
 
 
   # =========================
-  # PRODUCTION JOB
+  # JOB 2: PRODUCTION
   # =========================
   production:
     needs: dev-test
@@ -44,7 +44,7 @@ jobs:
 
     steps:
 
-      # PRODUCTION NOTIFICATION
+      # NOTIFY
       - name: Production Notification
         shell: pwsh
         run: |
@@ -57,8 +57,8 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      # PRODUCTION DEPLOYMENT
-      - name: Deploy Production
+      # DEPLOY
+      - name: Run Production Deployment
         uses: ./.github/workflows/sql-template.yml
 
         with:
