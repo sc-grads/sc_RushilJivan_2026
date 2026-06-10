@@ -1,0 +1,41 @@
+name: SQL Deployment Template
+
+on:
+  workflow_call:
+    inputs:
+      sql_server:
+        required: true
+        type: string
+      sql_database:
+        required: true
+        type: string
+      sql_user:
+        required: true
+        type: string
+      sql_password:
+        required: true
+        type: string
+      script_path:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install SQLCMD
+        run: |
+          choco install sqlcmd -y
+
+      - name: Run SQL Script
+        shell: pwsh
+        run: |
+          sqlcmd -S "${{ inputs.sql_server }}" `
+          -d "${{ inputs.sql_database }}" `
+          -U "${{ inputs.sql_user }}" `
+          -P "${{ inputs.sql_password }}" `
+          -i "${{ inputs.script_path }}"   

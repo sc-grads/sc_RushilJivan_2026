@@ -12,29 +12,38 @@ jobs:
       name: production
 
     steps:
-      # STEP 1: Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # STEP 2: Install SQLCMD
+
+
+
+        
       - name: Install SQLCMD
         run: |
           choco install sqlcmd -y
 
-      # STEP 3: Send Teams approval request (BEFORE deployment)
+
+
+
+
       - name: Send approval request to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "Approval required: SQL deployment is waiting in GitHub Actions."
-          } | ConvertTo-Json
+            text = "SQL Deployment Approval Required`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nThe deployment is awaiting approval in GitHub Actions."
+          }
 
           Invoke-RestMethod -Method Post `
             -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
             -ContentType "application/json" `
-            -Body $body
+            -Body ($body | ConvertTo-Json)
 
-      # STEP 4: Run SQL Deployment Script (ONLY after approval)
+
+
+
+
+
       - name: Run Deployment Script
         shell: pwsh
         env:
@@ -48,3 +57,38 @@ jobs:
                  -U "$env:SQL_USER" `
                  -P "$env:SQL_PASSWORD" `
                  -i "cicd-project/sql/deploy.sql"
+
+
+
+
+
+
+      - name: Deployment success message
+        if: success()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL Deployment Successful`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+
+
+
+      - name: Deployment failure message
+        if: failure()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL Deployment Failed`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
