@@ -2,12 +2,13 @@ name: SQL Deployment Pipeline
 
 on:
   push:
-    #branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
 
   # =========================
-  # JOB 1: INITIAL TEAM NOTIFICATION
+  # JOB 1: LOCAL APPROVAL REQUEST
   # =========================
   notify-local:
     runs-on: windows-latest
@@ -17,8 +18,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nApproval required in GitHub before deployment.
-            Approve here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nApprove in GitHub before deployment.`n`nRun Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -28,65 +28,23 @@ jobs:
 
 
   # =========================
-  # JOB 2: LOCAL DEPLOYMENT
+  # JOB 2: LOCAL DEPLOYMENT (REUSABLE TEMPLATE)
   # =========================
   deploy-local:
     needs: notify-local
-    runs-on: windows-latest
+    uses: ./.github/workflows/sql-deploy-template.yml
 
-    environment:
-      name: production
+    with:
+      sql_server: ${{ secrets.SQL_SERVER }}
+      sql_database: ${{ secrets.SQL_DATABASE }}
+      sql_user: ${{ secrets.SQL_USER }}
+      sql_password: ${{ secrets.SQL_PASSWORD }}
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install SQLCMD
-        run: choco install sqlcmd -y
-
-      - name: Deploy to LOCAL SQL Server
-        shell: pwsh
-        env:
-          SQL_SERVER: ${{ secrets.SQL_SERVER }}
-          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
-          SQL_USER: ${{ secrets.SQL_USER }}
-          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
-        run: |
-          sqlcmd -S "$env:SQL_SERVER" `
-                 -d "$env:SQL_DATABASE" `
-                 -U "$env:SQL_USER" `
-                 -P "$env:SQL_PASSWORD" `
-                 -i "cicd-project/sql/deploy.sql"
-
-      - name: Local failure message
-        if: failure()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "LOCAL SQL DEPLOYMENT FAILED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
-
-      - name: Local success message
-        if: success()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "LOCAL SQL DEPLOYMENT SUCCESSFUL`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
+    secrets: inherit
 
 
   # =========================
-  # JOB 3: PARTNER TEAM NOTIFICATION
+  # JOB 3: PARTNER APPROVAL REQUEST
   # =========================
   notify-partner:
     needs: deploy-local
@@ -97,8 +55,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApproval required before deploying to partner server.
-            Approve here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApprove in GitHub before deployment.`n`nRun Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -108,55 +65,35 @@ jobs:
 
 
   # =========================
-  # JOB 4: PARTNER DEPLOYMENT
+  # JOB 4: PARTNER DEPLOYMENT (REUSABLE TEMPLATE)
   # =========================
   deploy-partner:
     needs: notify-partner
-    runs-on: windows-latest
+    uses: ./.github/workflows/sql-deploy-template.yml
 
-    environment:
-      name: partner-production
+    with:
+      sql_server: ${{ secrets.PARTNER_SQL_SERVER }}
+      sql_database: ${{ secrets.SQL_DATABASE }}
+      sql_user: ${{ secrets.PARTNER_SQL_USER }}
+      sql_password: ${{ secrets.PARTNER_SQL_PASSWORD }}
+
+    secrets: inherit
+
+
+  # =========================
+  # FINAL SUCCESS MESSAGE
+  # =========================
+  success:
+    needs: [deploy-local, deploy-partner]
+    runs-on: windows-latest
+    if: success()
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install SQLCMD
-        run: choco install sqlcmd -y
-
-      - name: Deploy to PARTNER SQL Server
-        shell: pwsh
-        env:
-          SQL_SERVER: ${{ secrets.PARTNER_SQL_SERVER }}
-          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
-          SQL_USER: ${{ secrets.PARTNER_SQL_USER }}
-          SQL_PASSWORD: ${{ secrets.PARTNER_SQL_PASSWORD }}
-        run: |
-          sqlcmd -S "$env:SQL_SERVER" `
-                 -d "$env:SQL_DATABASE" `
-                 -U "$env:SQL_USER" `
-                 -P "$env:SQL_PASSWORD" `
-                 -i "cicd-project/sql/deploy.sql"
-
-      - name: Partner failure message
-        if: failure()
+      - name: Success message to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "PARTNER SQL DEPLOYMENT FAILED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
-
-      - name: Partner success message
-        if: success()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "PARTNER SQL DEPLOYMENT SUCCESSFUL`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `

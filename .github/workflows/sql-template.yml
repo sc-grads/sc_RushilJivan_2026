@@ -6,16 +6,16 @@ on:
       sql_server:
         required: true
         type: string
+
       sql_database:
         required: true
         type: string
+
       sql_user:
         required: true
         type: string
+
       sql_password:
-        required: true
-        type: string
-      script_path:
         required: true
         type: string
 
@@ -24,18 +24,26 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # =========================
+      # STEP 1: Checkout Code
+      # =========================
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # =========================
+      # STEP 2: Install SQLCMD
+      # =========================
       - name: Install SQLCMD
-        run: |
-          choco install sqlcmd -y
+        run: choco install sqlcmd -y
 
-      - name: Run SQL Script
+      # =========================
+      # STEP 3: Run SQL Script
+      # =========================
+      - name: Execute SQL Deployment Script
         shell: pwsh
         run: |
           sqlcmd -S "${{ inputs.sql_server }}" `
-          -d "${{ inputs.sql_database }}" `
-          -U "${{ inputs.sql_user }}" `
-          -P "${{ inputs.sql_password }}" `
-          -i "${{ inputs.script_path }}"   
+                 -d "${{ inputs.sql_database }}" `
+                 -U "${{ inputs.sql_user }}" `
+                 -P "${{ inputs.sql_password }}" `
+                 -i "cicd-project/sql/deploy.sql"
