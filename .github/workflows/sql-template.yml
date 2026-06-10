@@ -9,9 +9,13 @@ on:
 
     secrets:
       SQL_SERVER:
+        required: true
       SQL_DATABASE:
+        required: true
       SQL_USER:
+        required: true
       SQL_PASSWORD:
+        required: true
 
 jobs:
   deploy:
@@ -26,7 +30,7 @@ jobs:
       - name: Install SQLCMD
         run: choco install sqlcmd -y
 
-      - name: Run SQL
+      - name: Run SQL Script
         shell: pwsh
         env:
           SQL_SERVER: ${{ secrets.SQL_SERVER }}

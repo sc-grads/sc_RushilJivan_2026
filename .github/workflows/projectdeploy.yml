@@ -5,62 +5,54 @@ on:
 
 jobs:
 
-  # =========================
-  # JOB 1: DEV TEST
-  # =========================
   dev-test:
     runs-on: windows-latest
 
     steps:
-
-      # NOTIFY
-      - name: Dev Notification
+      - name: Dev Notify
         shell: pwsh
         run: |
           $body = @{
-            text = "DEV TEST DEPLOYMENT STARTED`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "DEV STARTED`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `
             -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
+            -Body ($body | ConvertTo-Json) `
+            -ContentType "application/json"
 
-      # DEPLOY (REUSABLE TEMPLATE)
-      - name: Run Dev Deployment
-        uses: ./.github/workflows/sql-template.yml
-
-        with:
-          target_env: production
-          secrets: inherit
-
-
-  # =========================
-  # JOB 2: PRODUCTION
-  # =========================
-  production:
+  dev-deploy:
     needs: dev-test
+    uses: ./.github/workflows/sql-template.yml
+
+    with:
+      target_env: production
+
+    secrets: inherit
+
+
+  production:
+    needs: dev-deploy
     runs-on: windows-latest
 
     steps:
-
-      # NOTIFY
-      - name: Production Notification
+      - name: Prod Notify
         shell: pwsh
         run: |
           $body = @{
-            text = "PRODUCTION DEPLOYMENT STARTED (APPROVAL REQUIRED)`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "PROD STARTED`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `
             -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
+            -Body ($body | ConvertTo-Json) `
+            -ContentType "application/json"
 
-      # DEPLOY
-      - name: Run Production Deployment
-        uses: ./.github/workflows/sql-template.yml
+  prod-deploy:
+    needs: production
+    uses: ./.github/workflows/sql-template.yml
 
-        with:
-          target_env: partner-production
-          secrets: inherit
+    with:
+      target_env: partner-production
+
+    secrets: inherit
