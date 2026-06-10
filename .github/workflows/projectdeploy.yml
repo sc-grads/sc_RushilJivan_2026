@@ -12,12 +12,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # Notify
+
+      # DEV NOTIFICATION
       - name: Dev Notification
         shell: pwsh
         run: |
           $body = @{
-            text = "DEV TEST STARTED`nRepo: ${{ github.repository }}`
+            text = "DEV TEST DEPLOYMENT STARTED`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -25,11 +26,12 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      # Deploy
+      # DEV DEPLOYMENT
       - name: Deploy Dev
         uses: ./.github/workflows/sql-template.yml
+
         with:
-          target_env: production 
+          target_env: production
           secrets: inherit
 
 
@@ -41,12 +43,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # Notify
+
+      # PRODUCTION NOTIFICATION
       - name: Production Notification
         shell: pwsh
         run: |
           $body = @{
-            text = "PRODUCTION STARTED (APPROVAL EXPECTED)`nRepo: ${{ github.repository }}"
+            text = "PRODUCTION DEPLOYMENT STARTED (APPROVAL REQUIRED)`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -54,9 +57,10 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      # Deploy
+      # PRODUCTION DEPLOYMENT
       - name: Deploy Production
         uses: ./.github/workflows/sql-template.yml
+
         with:
           target_env: partner-production
           secrets: inherit
