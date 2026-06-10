@@ -5,33 +5,19 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy:
+
+  # =========================
+  # JOB 1: Notify Teams FIRST
+  # =========================
+  notify:
     runs-on: windows-latest
 
-    environment:
-      name: production
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-
-
-
-        
-      - name: Install SQLCMD
-        run: |
-          choco install sqlcmd -y
-
-
-
-
-
       - name: Send approval request to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL Deployment Approval Required`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nThe deployment is awaiting approval in GitHub Actions."
+            text = "SQL Deployment Approval Required`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nPlease approve in GitHub Actions before deployment proceeds."
           }
 
           Invoke-RestMethod -Method Post `
@@ -40,10 +26,28 @@ jobs:
             -Body ($body | ConvertTo-Json)
 
 
+            
+  # =========================
+  # JOB 2: Deploy (After Approval)
+  # =========================
+  deploy:
+    needs: notify
+    runs-on: windows-latest
 
+    environment:
+      name: production
 
+    steps:
+      # Checkout repo
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
+      # Install SQLCMD
+      - name: Install SQLCMD
+        run: |
+          choco install sqlcmd -y
 
+      # Run SQL Deployment
       - name: Run Deployment Script
         shell: pwsh
         env:
@@ -58,11 +62,7 @@ jobs:
                  -P "$env:SQL_PASSWORD" `
                  -i "cicd-project/sql/deploy.sql"
 
-
-
-
-
-
+      # Success notification
       - name: Deployment success message
         if: success()
         shell: pwsh
@@ -76,10 +76,7 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-
-
-
-
+      # Failure notification
       - name: Deployment failure message
         if: failure()
         shell: pwsh
