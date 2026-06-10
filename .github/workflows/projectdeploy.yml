@@ -9,17 +9,15 @@ jobs:
   # DEV TEST JOB
   # =========================
   dev-test:
-
     runs-on: windows-latest
 
     steps:
-
-      # Notify Teams
-      - name: Dev Test Notification
+      # Notify
+      - name: Dev Notification
         shell: pwsh
         run: |
           $body = @{
-            text = "DEV TEST DEPLOYMENT STARTED`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "DEV TEST STARTED`nRepo: ${{ github.repository }}`
           }
 
           Invoke-RestMethod -Method Post `
@@ -27,30 +25,28 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      # Deploy using your WORKING template
-      - name: Run Dev Deployment
+      # Deploy
+      - name: Deploy Dev
         uses: ./.github/workflows/sql-template.yml
-        secrets: inherit
-
         with:
-          target_env: production
+          target_env: production 
+          secrets: inherit
+
 
   # =========================
   # PRODUCTION JOB
   # =========================
   production:
-
     needs: dev-test
     runs-on: windows-latest
 
     steps:
-
-      # Notify Teams
+      # Notify
       - name: Production Notification
         shell: pwsh
         run: |
           $body = @{
-            text = "PRODUCTION DEPLOYMENT REQUESTED (APPROVAL REQUIRED)`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "PRODUCTION STARTED (APPROVAL EXPECTED)`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -58,10 +54,9 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      # Deploy using SAME template (but different environment)
-      - name: Run Production Deployment
+      # Deploy
+      - name: Deploy Production
         uses: ./.github/workflows/sql-template.yml
-        secrets: inherit
-
         with:
           target_env: partner-production
+          secrets: inherit
