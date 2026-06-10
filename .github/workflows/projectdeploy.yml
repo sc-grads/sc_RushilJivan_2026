@@ -2,23 +2,24 @@ name: SQL Deployment Pipeline
 
 on:
   push:
-   # branches:
-    #  - main
 
 jobs:
 
   # =========================
-  # DEV TEST (LOCAL DEPLOYMENT)
+  # DEV TEST JOB
   # =========================
   dev-test:
+
     runs-on: windows-latest
 
     steps:
-      - name: Send Dev Test notification to Teams
+
+      # Notify Teams
+      - name: Dev Test Notification
         shell: pwsh
         run: |
           $body = @{
-            text = "DEV TEST SQL DEPLOYMENT STARTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "DEV TEST DEPLOYMENT STARTED`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -26,52 +27,30 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      - name: Run Local Deployment
+      # Deploy using your WORKING template
+      - name: Run Dev Deployment
         uses: ./.github/workflows/sql-template.yml
         secrets: inherit
 
-      - name: Local Success Message
-        if: success()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "DEV TEST DEPLOYMENT SUCCESSFUL`nRepo: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
-
-      - name: Local Failure Message
-        if: failure()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "DEV TEST DEPLOYMENT FAILED`nRepo: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
+        with:
+          target_env: production
 
   # =========================
-  # PRODUCTION (PARTNER DEPLOYMENT)
+  # PRODUCTION JOB
   # =========================
   production:
+
     needs: dev-test
     runs-on: windows-latest
 
-    environment:
-      name: partner-production
-
     steps:
-      - name: Send Production notification to Teams
+
+      # Notify Teams
+      - name: Production Notification
         shell: pwsh
         run: |
           $body = @{
-            text = "PRODUCTION SQL DEPLOYMENT STARTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nAPPROVAL REQUIRED BEFORE EXECUTION"
+            text = "PRODUCTION DEPLOYMENT REQUESTED (APPROVAL REQUIRED)`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -79,32 +58,10 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-      - name: Run Partner Deployment
+      # Deploy using SAME template (but different environment)
+      - name: Run Production Deployment
         uses: ./.github/workflows/sql-template.yml
         secrets: inherit
 
-      - name: Production Success Message
-        if: success()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "PRODUCTION DEPLOYMENT SUCCESSFUL`nRepo: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
-
-      - name: Production Failure Message
-        if: failure()
-        shell: pwsh
-        run: |
-          $body = @{
-            text = "PRODUCTION DEPLOYMENT FAILED`nRepo: ${{ github.repository }}"
-          }
-
-          Invoke-RestMethod -Method Post `
-            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -ContentType "application/json" `
-            -Body ($body | ConvertTo-Json)
+        with:
+          target_env: partner-production
