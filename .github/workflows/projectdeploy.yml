@@ -2,13 +2,13 @@ name: SQL Deployment Pipeline
 
 on:
   push:
-    #branches:
-     # - main
+    branches:
+      - main
 
 jobs:
 
   # =========================
-  # LOCAL APPROVAL REQUEST
+  # LOCAL NOTIFICATION
   # =========================
   notify-local:
     runs-on: windows-latest
@@ -18,7 +18,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApprove in GitHub Actions.`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -27,15 +27,18 @@ jobs:
             -Body ($body | ConvertTo-Json)
 
   # =========================
-  # LOCAL DEPLOYMENT
+  # LOCAL DEPLOYMENT (PRODUCTION)
   # =========================
   deploy-local:
     needs: notify-local
     uses: ./.github/workflows/sql-template.yml
+
+    with:
+      target_env: production
     secrets: inherit
 
   # =========================
-  # PARTNER APPROVAL REQUEST
+  # PARTNER NOTIFICATION
   # =========================
   notify-partner:
     needs: deploy-local
@@ -46,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApprove in GitHub Actions.`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -60,10 +63,13 @@ jobs:
   deploy-partner:
     needs: notify-partner
     uses: ./.github/workflows/sql-template.yml
+
+    with:
+      target_env: partner-production
     secrets: inherit
 
   # =========================
-  # FINAL SUCCESS MESSAGE
+  # SUCCESS MESSAGE
   # =========================
   success:
     needs: [deploy-local, deploy-partner]
@@ -75,7 +81,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `

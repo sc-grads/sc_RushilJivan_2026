@@ -2,6 +2,20 @@ name: SQL Deployment Template
 
 on:
   workflow_call:
+    inputs:
+      target_env:
+        required: true
+        type: string
+
+    secrets:
+      SQL_SERVER:
+        required: true
+      SQL_DATABASE:
+        required: true
+      SQL_USER:
+        required: true
+      SQL_PASSWORD:
+        required: true
 
 jobs:
   deploy:
