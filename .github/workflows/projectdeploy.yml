@@ -13,7 +13,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "DEV STARTED`nRepo: ${{ github.repository }}"
+            text = "DEV TEST DEPLOYMENT STARTED`nRepo: ${{ github.repository }} Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -40,7 +40,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "PROD STARTED`nRepo: ${{ github.repository }}"
+            text = "PRODUCTION DEPLOYMENT STARTED - REQUIRES APPROVAL: `nRepo: ${{ github.repository }} Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} "
           }
 
           Invoke-RestMethod -Method Post `
@@ -56,3 +56,48 @@ jobs:
       target_env: partner-production
 
     secrets: inherit
+
+
+
+
+
+      # SUCCESS MESSAGE
+ 
+  success:
+    needs: [dev-test, production]
+    runs-on: windows-latest
+    if: success()
+
+    steps:
+      - name: Success message
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+
+  
+  failure:
+    needs: [dev-test, production]
+    runs-on: windows-latest
+    if: failure()
+
+    steps:
+      - name: Failure message
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL CI/CD PIPELINE FAILED`n`nRepository: ${{ github.repository }}`nTriggered By: ${{ github.actor }}`nCheck GitHub Actions logs for details."
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
