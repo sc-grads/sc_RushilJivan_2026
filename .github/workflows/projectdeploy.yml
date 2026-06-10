@@ -31,7 +31,7 @@ jobs:
   # =========================
   deploy-local:
     needs: notify-local
-    uses: ./.github/workflows/sql-deploy-template.yml
+    uses: ./.github/workflows/sql-template.yml
     secrets: inherit
 
   # =========================
@@ -59,7 +59,7 @@ jobs:
   # =========================
   deploy-partner:
     needs: notify-partner
-    uses: ./.github/workflows/sql-deploy-template.yml
+    uses: ./.github/workflows/sql-template.yml
     secrets: inherit
 
   # =========================
