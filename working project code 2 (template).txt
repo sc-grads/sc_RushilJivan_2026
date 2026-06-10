@@ -1,0 +1,109 @@
+name: SQL Deployment Pipeline
+
+on:
+  push:
+   # branches:
+    #  - main
+
+jobs:
+
+  # LOCAL NOTIFICATION
+
+  notify-local:
+    runs-on: windows-latest
+
+    steps:
+      - name: Send local deployment request to Teams
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+  # LOCAL DEPLOYMENT
+
+  deploy-local:
+    needs: notify-local
+    uses: ./.github/workflows/sql-template.yml
+    secrets: inherit
+
+    with:
+      target_env: production
+
+
+  # PARTNER NOTIFICATION
+
+  notify-partner:
+    needs: deploy-local
+    runs-on: windows-latest
+
+    steps:
+      - name: Send partner deployment request to Teams
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+  # PARTNER DEPLOYMENT
+  deploy-partner:
+    needs: notify-partner
+    uses: ./.github/workflows/sql-template.yml
+    secrets: inherit
+
+    with:
+      target_env: partner-production
+
+
+  # SUCCESS MESSAGE
+ 
+  success:
+    needs: [deploy-local, deploy-partner]
+    runs-on: windows-latest
+    if: success()
+
+    steps:
+      - name: Success message
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+
+  
+  failure:
+    needs: [deploy-local, deploy-partner]
+    runs-on: windows-latest
+    if: failure()
+
+    steps:
+      - name: Failure message
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL CI/CD PIPELINE FAILED`n`nRepository: ${{ github.repository }}`nTriggered By: ${{ github.actor }}`nCheck GitHub Actions logs for details."
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)

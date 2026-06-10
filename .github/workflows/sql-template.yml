@@ -2,46 +2,22 @@ name: SQL Deployment Template
 
 on:
   workflow_call:
-    inputs:
-      target_env:
-        required: true
-        type: string
-
-    secrets:
-      SQL_SERVER:
-        required: true
-      SQL_DATABASE:
-        required: true
-      SQL_USER:
-        required: true
-      SQL_PASSWORD:
-        required: true
 
 jobs:
   deploy:
     runs-on: windows-latest
 
-    # 🔥 THIS IS WHAT CREATES THE APPROVAL PAUSE
-    environment:
-      name: ${{ inputs.target_env }}
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install SQLCMD
         run: choco install sqlcmd -y
 
       - name: Run SQL Script
         shell: pwsh
-        env:
-          SQL_SERVER: ${{ secrets.SQL_SERVER }}
-          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
-          SQL_USER: ${{ secrets.SQL_USER }}
-          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
         run: |
-          sqlcmd -S "$env:SQL_SERVER" `
-                 -d "$env:SQL_DATABASE" `
-                 -U "$env:SQL_USER" `
-                 -P "$env:SQL_PASSWORD" `
+          sqlcmd -S "${{ secrets.SQL_SERVER }}" `
+                 -d "${{ secrets.SQL_DATABASE }}" `
+                 -U "${{ secrets.SQL_USER }}" `
+                 -P "${{ secrets.SQL_PASSWORD }}" `
                  -i "cicd-project/sql/deploy.sql"

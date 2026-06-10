@@ -8,17 +8,47 @@ on:
 jobs:
 
   # =========================
-  # LOCAL NOTIFICATION
+  # DEV TEST (LOCAL DEPLOYMENT)
   # =========================
-  notify-local:
+  dev-test:
     runs-on: windows-latest
 
     steps:
-      - name: Send local deployment request to Teams
+      - name: Send Dev Test notification to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "DEV TEST SQL DEPLOYMENT STARTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+      - name: Run Local Deployment
+        uses: ./.github/workflows/sql-template.yml
+        secrets: inherit
+
+      - name: Local Success Message
+        if: success()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "DEV TEST DEPLOYMENT SUCCESSFUL`nRepo: ${{ github.repository }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+      - name: Local Failure Message
+        if: failure()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "DEV TEST DEPLOYMENT FAILED`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -27,29 +57,21 @@ jobs:
             -Body ($body | ConvertTo-Json)
 
   # =========================
-  # LOCAL DEPLOYMENT (PAUSES HERE)
+  # PRODUCTION (PARTNER DEPLOYMENT)
   # =========================
-  deploy-local:
-    needs: notify-local
-    uses: ./.github/workflows/sql-template.yml
-    secrets: inherit
-
-    with:
-      target_env: production
-
-  # =========================
-  # PARTNER NOTIFICATION
-  # =========================
-  notify-partner:
-    needs: deploy-local
+  production:
+    needs: dev-test
     runs-on: windows-latest
 
+    environment:
+      name: partner-production
+
     steps:
-      - name: Send partner deployment request to Teams
+      - name: Send Production notification to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "PRODUCTION SQL DEPLOYMENT STARTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nAPPROVAL REQUIRED BEFORE EXECUTION"
           }
 
           Invoke-RestMethod -Method Post `
@@ -57,31 +79,16 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-  # =========================
-  # PARTNER DEPLOYMENT (PAUSES HERE)
-  # =========================
-  deploy-partner:
-    needs: notify-partner
-    uses: ./.github/workflows/sql-template.yml
-    secrets: inherit
+      - name: Run Partner Deployment
+        uses: ./.github/workflows/sql-template.yml
+        secrets: inherit
 
-    with:
-      target_env: partner-production
-
-  # =========================
-  # SUCCESS MESSAGE
-  # =========================
-  success:
-    needs: [deploy-local, deploy-partner]
-    runs-on: windows-latest
-    if: success()
-
-    steps:
-      - name: Success message
+      - name: Production Success Message
+        if: success()
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`
+            text = "PRODUCTION DEPLOYMENT SUCCESSFUL`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -89,20 +96,12 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-
-
-  
-  failure:
-    needs: [deploy-local, deploy-partner]
-    runs-on: windows-latest
-    if: failure()
-
-    steps:
-      - name: Failure message
+      - name: Production Failure Message
+        if: failure()
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL CI/CD PIPELINE FAILED`n`nRepository: ${{ github.repository }}`nTriggered By: ${{ github.actor }}`nCheck GitHub Actions logs for details."
+            text = "PRODUCTION DEPLOYMENT FAILED`nRepo: ${{ github.repository }}"
           }
 
           Invoke-RestMethod -Method Post `
