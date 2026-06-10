@@ -17,7 +17,8 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nApproval required in GitHub before deployment."
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nApproval required in GitHub before deployment.
+            Approve here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -96,7 +97,8 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApproval required before deploying to partner server."
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApproval required before deploying to partner server.
+            Approve here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
