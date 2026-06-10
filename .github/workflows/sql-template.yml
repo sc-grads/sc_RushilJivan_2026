@@ -21,6 +21,10 @@ jobs:
   deploy:
     runs-on: windows-latest
 
+    # 🔥 THIS IS WHAT CREATES THE APPROVAL PAUSE
+    environment:
+      name: ${{ inputs.target_env }}
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

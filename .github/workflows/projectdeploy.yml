@@ -27,15 +27,15 @@ jobs:
             -Body ($body | ConvertTo-Json)
 
   # =========================
-  # LOCAL DEPLOYMENT (PRODUCTION)
+  # LOCAL DEPLOYMENT (PAUSES HERE)
   # =========================
   deploy-local:
     needs: notify-local
     uses: ./.github/workflows/sql-template.yml
+    secrets: inherit
 
     with:
       target_env: production
-    secrets: inherit
 
   # =========================
   # PARTNER NOTIFICATION
@@ -58,15 +58,15 @@ jobs:
             -Body ($body | ConvertTo-Json)
 
   # =========================
-  # PARTNER DEPLOYMENT
+  # PARTNER DEPLOYMENT (PAUSES HERE)
   # =========================
   deploy-partner:
     needs: notify-partner
     uses: ./.github/workflows/sql-template.yml
+    secrets: inherit
 
     with:
       target_env: partner-production
-    secrets: inherit
 
   # =========================
   # SUCCESS MESSAGE
@@ -81,7 +81,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}"
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`
           }
 
           Invoke-RestMethod -Method Post `
