@@ -88,3 +88,24 @@ jobs:
             -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
+
+
+
+  
+  failure:
+    needs: [deploy-local, deploy-partner]
+    runs-on: windows-latest
+    if: failure()
+
+    steps:
+      - name: Failure message
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL CI/CD PIPELINE FAILED`n`nRepository: ${{ github.repository }}`nTriggered By: ${{ github.actor }}`nCheck GitHub Actions logs for details."
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
