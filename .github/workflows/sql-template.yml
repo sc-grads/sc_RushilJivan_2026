@@ -2,48 +2,28 @@ name: SQL Deployment Template
 
 on:
   workflow_call:
-    inputs:
-      sql_server:
-        required: true
-        type: string
-
-      sql_database:
-        required: true
-        type: string
-
-      sql_user:
-        required: true
-        type: string
-
-      sql_password:
-        required: true
-        type: string
 
 jobs:
   deploy:
     runs-on: windows-latest
 
     steps:
-      # =========================
-      # STEP 1: Checkout Code
-      # =========================
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # =========================
-      # STEP 2: Install SQLCMD
-      # =========================
       - name: Install SQLCMD
         run: choco install sqlcmd -y
 
-      # =========================
-      # STEP 3: Run SQL Script
-      # =========================
-      - name: Execute SQL Deployment Script
+      - name: Run SQL Script
         shell: pwsh
+        env:
+          SQL_SERVER: ${{ secrets.SQL_SERVER }}
+          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
+          SQL_USER: ${{ secrets.SQL_USER }}
+          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
         run: |
-          sqlcmd -S "${{ inputs.sql_server }}" `
-                 -d "${{ inputs.sql_database }}" `
-                 -U "${{ inputs.sql_user }}" `
-                 -P "${{ inputs.sql_password }}" `
+          sqlcmd -S "$env:SQL_SERVER" `
+                 -d "$env:SQL_DATABASE" `
+                 -U "$env:SQL_USER" `
+                 -P "$env:SQL_PASSWORD" `
                  -i "cicd-project/sql/deploy.sql"

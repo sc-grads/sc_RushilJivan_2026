@@ -8,7 +8,7 @@ on:
 jobs:
 
   # =========================
-  # JOB 1: LOCAL APPROVAL REQUEST
+  # LOCAL APPROVAL REQUEST
   # =========================
   notify-local:
     runs-on: windows-latest
@@ -18,7 +18,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nApprove in GitHub before deployment.`n`nRun Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApprove in GitHub Actions.`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -26,25 +26,16 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-
   # =========================
-  # JOB 2: LOCAL DEPLOYMENT (REUSABLE TEMPLATE)
+  # LOCAL DEPLOYMENT
   # =========================
   deploy-local:
     needs: notify-local
     uses: ./.github/workflows/sql-deploy-template.yml
-
-    with:
-      sql_server: ${{ secrets.SQL_SERVER }}
-      sql_database: ${{ secrets.SQL_DATABASE }}
-      sql_user: ${{ secrets.SQL_USER }}
-      sql_password: ${{ secrets.SQL_PASSWORD }}
-
     secrets: inherit
 
-
   # =========================
-  # JOB 3: PARTNER APPROVAL REQUEST
+  # PARTNER APPROVAL REQUEST
   # =========================
   notify-partner:
     needs: deploy-local
@@ -55,7 +46,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApprove in GitHub before deployment.`n`nRun Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApprove in GitHub Actions.`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
@@ -63,22 +54,13 @@ jobs:
             -ContentType "application/json" `
             -Body ($body | ConvertTo-Json)
 
-
   # =========================
-  # JOB 4: PARTNER DEPLOYMENT (REUSABLE TEMPLATE)
+  # PARTNER DEPLOYMENT
   # =========================
   deploy-partner:
     needs: notify-partner
     uses: ./.github/workflows/sql-deploy-template.yml
-
-    with:
-      sql_server: ${{ secrets.PARTNER_SQL_SERVER }}
-      sql_database: ${{ secrets.SQL_DATABASE }}
-      sql_user: ${{ secrets.PARTNER_SQL_USER }}
-      sql_password: ${{ secrets.PARTNER_SQL_PASSWORD }}
-
     secrets: inherit
-
 
   # =========================
   # FINAL SUCCESS MESSAGE
@@ -89,7 +71,7 @@ jobs:
     if: success()
 
     steps:
-      - name: Success message to Teams
+      - name: Success message
         shell: pwsh
         run: |
           $body = @{
