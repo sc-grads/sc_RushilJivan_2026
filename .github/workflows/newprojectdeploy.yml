@@ -1,0 +1,16 @@
+name: SQL Deployment Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/sql-template.yml
+
+    with:
+      sql_server: ${{ secrets.SQL_SERVER }}
+      sql_database: ${{ secrets.SQL_DATABASE }}
+      sql_user: ${{ secrets.SQL_USER }}
+      sql_password: ${{ secrets.SQL_PASSWORD }}
+      script_path: "cicd-project/sql/deploy.sql"

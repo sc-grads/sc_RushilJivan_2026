@@ -8,26 +8,87 @@ jobs:
   deploy:
     runs-on: windows-latest
 
+    environment:
+      name: production
+
     steps:
-      # STEP 1: Get your repo code
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # STEP 2: Install SQLCMD
+
+
+
+        
       - name: Install SQLCMD
         run: |
           choco install sqlcmd -y
 
-      # STEP 3: Run SQL Deployment Script
+
+
+
+
+      - name: Send approval request to Teams
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL Deployment Approval Required`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nThe deployment is awaiting approval in GitHub Actions."
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+
+
+
+
       - name: Run Deployment Script
+        shell: pwsh
         env:
           SQL_SERVER: ${{ secrets.SQL_SERVER }}
           SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
           SQL_USER: ${{ secrets.SQL_USER }}
           SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
         run: |
-          sqlcmd -S $env:SQL_SERVER `
-                 -d $env:SQL_DATABASE `
-                 -U $env:SQL_USER `
-                 -P $env:SQL_PASSWORD `
-                 -i cicd-project/sql/deploy.sql
+          sqlcmd -S "$env:SQL_SERVER" `
+                 -d "$env:SQL_DATABASE" `
+                 -U "$env:SQL_USER" `
+                 -P "$env:SQL_PASSWORD" `
+                 -i "cicd-project/sql/deploy.sql"
+
+
+
+
+
+
+      - name: Deployment success message
+        if: success()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL Deployment Successful`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+
+
+
+      - name: Deployment failure message
+        if: failure()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "SQL Deployment Failed`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
