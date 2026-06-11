@@ -25,7 +25,24 @@ jobs:
       name: ${{ inputs.target_env }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Production Approved Notification
+        if: ${{ inputs.target_env == 'partner-production' }}
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "PRODUCTION DEPLOYMENT APPROVED`nApproved by reviewer and deployment is now starting."
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Install SQLCMD
         run: choco install sqlcmd -y
