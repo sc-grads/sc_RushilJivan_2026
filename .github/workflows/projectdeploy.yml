@@ -61,10 +61,10 @@ jobs:
 
 
 
-      # SUCCESS MESSAGE
+    
  
   success:
-    needs: [dev-test, production]
+    needs: [dev-deploy, prod-deploy]
     runs-on: windows-latest
     if: success()
 
@@ -85,7 +85,7 @@ jobs:
 
   
   failure:
-    needs: [dev-test, production]
+    needs: [dev-deploy, prod-deploy]
     runs-on: windows-latest
     if: failure()
 
