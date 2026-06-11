@@ -16,7 +16,6 @@ GO
 
 
 
--- Create Users table if it does not exist
 IF OBJECT_ID('dbo.Users', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.Users
@@ -36,7 +35,11 @@ BEGIN
 END
 GO
 
--- Insert sample users only if table is empty
+
+
+
+
+
 IF NOT EXISTS (SELECT 1 FROM dbo.Users)
 BEGIN
     INSERT INTO dbo.Users
@@ -80,5 +83,11 @@ END
 GO
 
 INSERT INTO dbo.DeploymentLog (Message)
-VALUES ('Deployment executed from CI/CD pipeline');
+VALUES 
+(
+    CONCAT(
+        'Deployment executed from CI/CD pipeline at ',
+        CONVERT(VARCHAR, GETDATE(), 120)
+    )
+);
 GO

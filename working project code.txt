@@ -1,0 +1,165 @@
+name: SQL Deployment Pipeline
+
+on:
+  push:
+    #branches: [ "main" ]
+
+jobs:
+
+  # =========================
+  # JOB 1: INITIAL TEAM NOTIFICATION
+  # =========================
+  notify-local:
+    runs-on: windows-latest
+
+    steps:
+      - name: Send local deployment request to Teams
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`nBranch: ${{ github.ref_name }}`n`nApproval required in GitHub before deployment.
+            Approve here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+  # =========================
+  # JOB 2: LOCAL DEPLOYMENT
+  # =========================
+  deploy-local:
+    needs: notify-local
+    runs-on: windows-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install SQLCMD
+        run: choco install sqlcmd -y
+
+      - name: Deploy to LOCAL SQL Server
+        shell: pwsh
+        env:
+          SQL_SERVER: ${{ secrets.SQL_SERVER }}
+          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
+          SQL_USER: ${{ secrets.SQL_USER }}
+          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
+        run: |
+          sqlcmd -S "$env:SQL_SERVER" `
+                 -d "$env:SQL_DATABASE" `
+                 -U "$env:SQL_USER" `
+                 -P "$env:SQL_PASSWORD" `
+                 -i "cicd-project/sql/deploy.sql"
+
+      - name: Local failure message
+        if: failure()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "LOCAL SQL DEPLOYMENT FAILED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+      - name: Local success message
+        if: success()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "LOCAL SQL DEPLOYMENT SUCCESSFUL`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+  # =========================
+  # JOB 3: PARTNER TEAM NOTIFICATION
+  # =========================
+  notify-partner:
+    needs: deploy-local
+    runs-on: windows-latest
+
+    steps:
+      - name: Send partner deployment request to Teams
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}`n`nApproval required before deploying to partner server.
+            Approve here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+
+  # =========================
+  # JOB 4: PARTNER DEPLOYMENT
+  # =========================
+  deploy-partner:
+    needs: notify-partner
+    runs-on: windows-latest
+
+    environment:
+      name: partner-production
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install SQLCMD
+        run: choco install sqlcmd -y
+
+      - name: Deploy to PARTNER SQL Server
+        shell: pwsh
+        env:
+          SQL_SERVER: ${{ secrets.PARTNER_SQL_SERVER }}
+          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
+          SQL_USER: ${{ secrets.PARTNER_SQL_USER }}
+          SQL_PASSWORD: ${{ secrets.PARTNER_SQL_PASSWORD }}
+        run: |
+          sqlcmd -S "$env:SQL_SERVER" `
+                 -d "$env:SQL_DATABASE" `
+                 -U "$env:SQL_USER" `
+                 -P "$env:SQL_PASSWORD" `
+                 -i "cicd-project/sql/deploy.sql"
+
+      - name: Partner failure message
+        if: failure()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "PARTNER SQL DEPLOYMENT FAILED`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
+
+      - name: Partner success message
+        if: success()
+        shell: pwsh
+        run: |
+          $body = @{
+            text = "PARTNER SQL DEPLOYMENT SUCCESSFUL`n`nRequested By: ${{ github.actor }}`nRepository: ${{ github.repository }}"
+          }
+
+          Invoke-RestMethod -Method Post `
+            -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
