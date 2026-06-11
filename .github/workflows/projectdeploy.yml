@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}"
           }
 
           Invoke-RestMethod -Method Post `
