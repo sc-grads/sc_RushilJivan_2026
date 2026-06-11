@@ -2,69 +2,75 @@ name: SQL Deployment Pipeline
 
 on:
   push:
+   # branches:
+    #  - main
 
 jobs:
 
-  dev-test:
+  # LOCAL NOTIFICATION
+
+  notify-local:
     runs-on: windows-latest
 
     steps:
-      - name: Dev Notify
+      - name: Send local deployment request to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "DEV TEST DEPLOYMENT STARTED`nRepo: ${{ github.repository }} Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text = "LOCAL SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
             -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -Body ($body | ConvertTo-Json) `
-            -ContentType "application/json"
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
 
-  dev-deploy:
-    needs: dev-test
+
+  # LOCAL DEPLOYMENT
+
+  deploy-local:
+    needs: notify-local
     uses: ./.github/workflows/sql-template.yml
+    secrets: inherit
 
     with:
       target_env: production
 
-    secrets: inherit
 
+  # PARTNER NOTIFICATION
 
-  production:
-    needs: dev-deploy
+  notify-partner:
+    needs: deploy-local
     runs-on: windows-latest
 
     steps:
-      - name: Prod Notify
+      - name: Send partner deployment request to Teams
         shell: pwsh
         run: |
           $body = @{
-            text = "PRODUCTION DEPLOYMENT STARTED - REQUIRES APPROVAL: `nRepo: ${{ github.repository }} Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} "
+            text = "PARTNER SQL DEPLOYMENT REQUESTED`n`nRequested By: ${{ github.actor }}`nRepo: ${{ github.repository }}`nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
 
           Invoke-RestMethod -Method Post `
             -Uri "${{ secrets.TEAMS_WEBHOOK }}" `
-            -Body ($body | ConvertTo-Json) `
-            -ContentType "application/json"
+            -ContentType "application/json" `
+            -Body ($body | ConvertTo-Json)
 
-  prod-deploy:
-    needs: production
+
+  # PARTNER DEPLOYMENT
+  deploy-partner:
+    needs: notify-partner
     uses: ./.github/workflows/sql-template.yml
+    secrets: inherit
 
     with:
       target_env: partner-production
 
-    secrets: inherit
 
-
-
-
-
-    
+  # SUCCESS MESSAGE
  
   success:
-    needs: [dev-deploy, prod-deploy]
+    needs: [deploy-local, deploy-partner]
     runs-on: windows-latest
     if: success()
 
@@ -73,7 +79,7 @@ jobs:
         shell: pwsh
         run: |
           $body = @{
-            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}"
+            text = "SQL CI/CD PIPELINE COMPLETED SUCCESSFULLY`n(Local + Partner Deployment)`n`nRequested By: ${{ github.actor }}`
           }
 
           Invoke-RestMethod -Method Post `
@@ -85,7 +91,7 @@ jobs:
 
   
   failure:
-    needs: [dev-deploy, prod-deploy]
+    needs: [deploy-local, deploy-partner]
     runs-on: windows-latest
     if: failure()
 
