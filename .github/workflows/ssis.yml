@@ -5,11 +5,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch: # Allows manual trigger directly from the GitHub Actions dashboard
+  workflow_dispatch: 
 
 jobs:
   build-and-deploy:
-    # CHANGED: Runs on your local machine to inherit Windows Authentication natively
     runs-on: self-hosted
 
     steps:
@@ -17,44 +16,62 @@ jobs:
       uses: actions/checkout@v4
 
     # ==========================================
-    # PHASE 1: CONTINUOUS INTEGRATION (BUILD)
+    # PHASE 1: CONTINUOUS INTEGRATION (COMPILATION VIA DEVENV)
     # ==========================================
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+    - name: Locate Visual Studio DevEnv Tool
+      shell: powershell
+      run: |
+        $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property productPath
+        if (-not $vsPath) { 
+            $vsPath = & "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property productPath 
+        }
+        $devenvDir = Split-Path $vsPath
+        $devenvCom = Join-Path $devenvDir "devenv.com"
+        
+        if (Test-Path $devenvCom) {
+            Write-Host "Found Visual Studio compiler at: $devenvCom"
+            echo "DEVENV_PATH=$devenvCom" | Out-File -FilePath $env:GITHUB_ENV -Append
+        } else {
+            Throw "CRITICAL ERROR: Visual Studio (devenv.com) was not found on this self-hosted runner."
+        }
 
     - name: Build SSIS Project to ISPAC
+      shell: powershell
       run: |
-        # Compiles your project file into a deployment-ready binary (.ispac)
-        msbuild .\TimesheetNew.dtproj /p:Configuration=Development /p:PackageID=""
+        # FIXED: Added your explicit subfolder path wrapped in quotes to handle the space character cleanly
+        & "${{ env:DEVENV_PATH }}" ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\TimesheetNew.dtproj" /Build "Development"
+        
+        # FIXED: Verifies generation inside the subfolder's target bin path
+        if (Test-Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac") {
+            Write-Host "Success: .ispac deployment bundle created cleanly."
+        } else {
+            Throw "Build completed, but the compiled .ispac artifact was not found inside the target bin path."
+        }
 
     - name: Upload Compiled Package Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ssis-deployment-package
-        path: bin/Development/*.ispac
+        # FIXED: Points exactly to the subfolder's deployment binary output directory
+        path: .\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac
 
     # ==========================================
-    # PHASE 2: CONTINUOUS DEPLOYMENT (SHIPPING)
+    # PHASE 2: CONTINUOUS DEPLOYMENT (SHIPPING VIA LOCAL WINDOWS AUTH)
     # ==========================================
     - name: Deploy to SSISDB Catalog
       if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       shell: powershell
       run: |
-        # Load the SQL Server Management Integration Services assembly natively
         [Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
         
-        # CHANGED: Uses Integrated Security=True for pure Windows Authentication
-        $serverName = "."  # Connects directly to the local instance running on this host
+        $serverName = "."  
         $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=True;"
         
-        # Open connection straight to the database engine host
         $sqlConnection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
         $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($sqlConnection)
         
-        # Target the core SSISDB ecosystem
         $catalog = $integrationServices.Catalogs["SSISDB"]
         
-        # Check if the folder exists, create it safely if it doesn't
         $folderName = "TimesheetDeployments"
         if (-not $catalog.Folders.Contains($folderName)) {
             $folder = New-Object Microsoft.SqlServer.Management.IntegrationServices.CatalogFolder($catalog, $folderName, "Automated timesheet ETL folder.")
@@ -63,13 +80,12 @@ jobs:
             $folder = $catalog.Folders[$folderName]
         }
         
-        # Locate the freshly generated build path from Phase 1
-        $projectPath = Get-ChildItem -Path "bin/Development/*.ispac" | Select-Object -ExpandProperty FullName
+        # FIXED: Points the deployment target collection straight into your nested subfolder
+        $projectPath = Get-ChildItem -Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac" | Select-Object -ExpandProperty FullName
         $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
         
         Write-Host "Deploying project $projectName to folder $folderName using local Windows Auth credentials..."
         $ispacBytes = [System.IO.File]::ReadAllBytes($projectPath)
         
-        # Push binary directly into SSISDB
         $folder.DeployProject($projectName, $ispacBytes)
         Write-Host "Deployment completed successfully!"
