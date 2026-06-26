@@ -1,0 +1,75 @@
+name: SSIS CI-CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual trigger directly from the GitHub Actions dashboard
+
+jobs:
+  build-and-deploy:
+    # CHANGED: Runs on your local machine to inherit Windows Authentication natively
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # ==========================================
+    # PHASE 1: CONTINUOUS INTEGRATION (BUILD)
+    # ==========================================
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build SSIS Project to ISPAC
+      run: |
+        # Compiles your project file into a deployment-ready binary (.ispac)
+        msbuild .\TimesheetNew.dtproj /p:Configuration=Development /p:PackageID=""
+
+    - name: Upload Compiled Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ssis-deployment-package
+        path: bin/Development/*.ispac
+
+    # ==========================================
+    # PHASE 2: CONTINUOUS DEPLOYMENT (SHIPPING)
+    # ==========================================
+    - name: Deploy to SSISDB Catalog
+      if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      shell: powershell
+      run: |
+        # Load the SQL Server Management Integration Services assembly natively
+        [Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
+        
+        # CHANGED: Uses Integrated Security=True for pure Windows Authentication
+        $serverName = "."  # Connects directly to the local instance running on this host
+        $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=True;"
+        
+        # Open connection straight to the database engine host
+        $sqlConnection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+        $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($sqlConnection)
+        
+        # Target the core SSISDB ecosystem
+        $catalog = $integrationServices.Catalogs["SSISDB"]
+        
+        # Check if the folder exists, create it safely if it doesn't
+        $folderName = "TimesheetDeployments"
+        if (-not $catalog.Folders.Contains($folderName)) {
+            $folder = New-Object Microsoft.SqlServer.Management.IntegrationServices.CatalogFolder($catalog, $folderName, "Automated timesheet ETL folder.")
+            $folder.Create()
+        } else {
+            $folder = $catalog.Folders[$folderName]
+        }
+        
+        # Locate the freshly generated build path from Phase 1
+        $projectPath = Get-ChildItem -Path "bin/Development/*.ispac" | Select-Object -ExpandProperty FullName
+        $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
+        
+        Write-Host "Deploying project $projectName to folder $folderName using local Windows Auth credentials..."
+        $ispacBytes = [System.IO.File]::ReadAllBytes($projectPath)
+        
+        # Push binary directly into SSISDB
+        $folder.DeployProject($projectName, $ispacBytes)
+        Write-Host "Deployment completed successfully!"
