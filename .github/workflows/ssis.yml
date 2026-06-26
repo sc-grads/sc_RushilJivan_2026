@@ -38,10 +38,9 @@ jobs:
     - name: Build SSIS Project to ISPAC
       shell: powershell
       run: |
-        # FIXED: Added your explicit subfolder path wrapped in quotes to handle the space character cleanly
-        & "${{ env:DEVENV_PATH }}" ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\TimesheetNew.dtproj" /Build "Development"
+        # FIXED: Syntax updated to env.DEVENV_PATH
+        & "${{ env.DEVENV_PATH }}" ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\TimesheetNew.dtproj" /Build "Development"
         
-        # FIXED: Verifies generation inside the subfolder's target bin path
         if (Test-Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac") {
             Write-Host "Success: .ispac deployment bundle created cleanly."
         } else {
@@ -52,7 +51,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ssis-deployment-package
-        # FIXED: Points exactly to the subfolder's deployment binary output directory
         path: .\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac
 
     # ==========================================
@@ -80,7 +78,6 @@ jobs:
             $folder = $catalog.Folders[$folderName]
         }
         
-        # FIXED: Points the deployment target collection straight into your nested subfolder
         $projectPath = Get-ChildItem -Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac" | Select-Object -ExpandProperty FullName
         $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
         
