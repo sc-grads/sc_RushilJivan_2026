@@ -14,6 +14,9 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      with:
+        # Bypasses the broken tracking references in your Git history
+        submodules: false  
 
     # ==========================================
     # PHASE 1: CONTINUOUS INTEGRATION (COMPILATION VIA DEVENV)
@@ -38,7 +41,7 @@ jobs:
     - name: Build SSIS Project to ISPAC
       shell: powershell
       run: |
-        # Compiles the SSIS project using the precise subfolder path wrapped in quotes
+        # Compiles the SSIS project using your precise subfolder path
         & "${{ env.DEVENV_PATH }}" ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\TimesheetNew.dtproj" /Build "Development"
         
         # Verifies that the compiled binary deployment bundle was generated successfully
@@ -67,8 +70,9 @@ jobs:
         }
         Import-Module SqlServer -DisableNameChecking
 
-        # Target server connection matched to your exact named instance
-        $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
+        # Escaped backslashes protect the named instance text structure from string truncation
+        $serverName = "LAPTOP-66HI94H2\\Rushil Jivan"
+        $fallbackServer = "localhost\\Rushil Jivan"
         $folderName = "TimesheetDeployments"
         
         # Locate the compiled binary package and read it into memory as a hex string
@@ -79,9 +83,9 @@ jobs:
         $fileBytes = [System.IO.File]::ReadAllBytes($projectPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        Write-Host "Deploying directly via SSISDB stored procedures on $serverName..."
+        Write-Host "Preparing direct T-SQL deployment script..."
         
-        # Fixed multi-line string encapsulation to bypass YAML syntax exceptions
+        # Safe query string encapsulation that passes cleanly through the GitHub Actions YAML linter
         $deployQuery = "
         SET NOCOUNT ON;
         IF NOT EXISTS (SELECT 1 FROM [SSISDB].[catalog].[folders] WHERE name = '$folderName')
@@ -95,7 +99,13 @@ jobs:
             @project_stream = @project_binary;
         "
 
-        # Execute the injection block directly against your target instance
-        Invoke-Sqlcmd -ServerInstance $serverName -Database "master" -Query $deployQuery
-        
-        Write-Host "Deployment completed successfully!"
+        # Sequential connectivity try/catch block to overcome background runner permissions
+        try {
+            Write-Host "Attempting deployment to primary instance: $serverName..."
+            Invoke-Sqlcmd -ServerInstance $serverName -Database "master" -Query $deployQuery -ConnectionTimeout 10
+            Write-Host "Deployment completed successfully via primary instance!"
+        } catch {
+            Write-Warning "Primary connection failed. Attempting local loopback fallback: $fallbackServer..."
+            Invoke-Sqlcmd -ServerInstance $fallbackServer -Database "master" -Query $deployQuery -ConnectionTimeout 15
+            Write-Host "Deployment completed successfully via fallback instance!"
+        }
