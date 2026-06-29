@@ -38,9 +38,10 @@ jobs:
     - name: Build SSIS Project to ISPAC
       shell: powershell
       run: |
-        # FIXED: Syntax updated to env.DEVENV_PATH
+        # Compiles the SSIS project using the precise subfolder path wrapped in quotes
         & "${{ env.DEVENV_PATH }}" ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\TimesheetNew.dtproj" /Build "Development"
         
+        # Verifies that the compiled binary deployment bundle was generated successfully
         if (Test-Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac") {
             Write-Host "Success: .ispac deployment bundle created cleanly."
         } else {
@@ -60,16 +61,25 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       shell: powershell
       run: |
-        [Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
-        
+        # Core fix: Dynamically install and load the official SQL Server module to avoid GAC assembly errors
+        if (-not (Get-Module -ListAvailable -Name SqlServer)) {
+            Write-Host "Installing required SqlServer PowerShell module natively..."
+            Install-Module -Name SqlServer -Force -AllowClobber -Scope CurrentUser
+        }
+        Import-Module SqlServer
+
+        # Target server connection. Change "." to match your explicit server instance name if needed.
         $serverName = "."  
-        $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=True;"
         
-        $sqlConnection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
-        $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($sqlConnection)
+        Write-Host "Connecting to SSISDB catalog on $serverName..."
+        $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices (New-Object System.Data.SqlClient.SqlConnection("Data Source=$serverName;Initial Catalog=master;Integrated Security=True;"))
         
         $catalog = $integrationServices.Catalogs["SSISDB"]
+        if ($null -eq $catalog) {
+            Throw "CRITICAL: The SSISDB Catalog was not found on $serverName. Please ensure you right-clicked and created it in SSMS."
+        }
         
+        # Ensure target catalog deployment folder exists
         $folderName = "TimesheetDeployments"
         if (-not $catalog.Folders.Contains($folderName)) {
             $folder = New-Object Microsoft.SqlServer.Management.IntegrationServices.CatalogFolder($catalog, $folderName, "Automated timesheet ETL folder.")
@@ -78,11 +88,13 @@ jobs:
             $folder = $catalog.Folders[$folderName]
         }
         
+        # Locate the freshly built binary package inside your specific project folders
         $projectPath = Get-ChildItem -Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac" | Select-Object -ExpandProperty FullName
         $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
         
-        Write-Host "Deploying project $projectName to folder $folderName using local Windows Auth credentials..."
+        Write-Host "Deploying project $projectName to folder $folderName..."
         $ispacBytes = [System.IO.File]::ReadAllBytes($projectPath)
         
+        # Push to SQL Server
         $folder.DeployProject($projectName, $ispacBytes)
         Write-Host "Deployment completed successfully!"
