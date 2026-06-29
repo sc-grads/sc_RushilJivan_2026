@@ -55,30 +55,47 @@ jobs:
         path: .\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac
 
     # ==========================================
-    # PHASE 2: CONTINUOUS DEPLOYMENT (SHIPPING VIA LOCAL WINDOWS AUTH)
+    # PHASE 2: CONTINUOUS DEPLOYMENT (T-SQL DATABASE ENGINE INJECTION)
     # ==========================================
     - name: Deploy to SSISDB Catalog
       if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       shell: powershell
       run: |
-        # Force install/import of the modern SqlServer module if missing
         if (-not (Get-Module -ListAvailable -Name SqlServer)) {
-            Write-Host "Installing required SqlServer PowerShell module natively..."
+            Write-Host "Installing required SqlServer PowerShell module..."
             Install-Module -Name SqlServer -Force -AllowClobber -Scope CurrentUser
         }
         Import-Module SqlServer -DisableNameChecking
 
         # Target server connection matched to your exact named instance
-        $serverName = "LAPTOP-66HI94H2\Rushil Jivan"  
+        $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
         $folderName = "TimesheetDeployments"
         
-        # Locate the compiled binary package
+        # Locate the compiled binary package and read it into memory as a hex string
         $projectPath = Get-ChildItem -Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac" | Select-Object -ExpandProperty FullName
         $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
         
-        Write-Host "Deploying project $projectName to SSISDB:\$folderName via Publish-MtsProject..."
+        Write-Host "Reading $projectName binary package data..."
+        $fileBytes = [System.IO.File]::ReadAllBytes($projectPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
+
+        Write-Host "Deploying directly via SSISDB stored procedures on $serverName..."
         
-        # Deploy using the native compiled cmdlet for reliability across runner contexts
-        Publish-MtsProject -InstanceName $serverName -CatalogName "SSISDB" -FolderName $folderName -ProjectFilePath $projectPath
+        # Fixed multi-line string encapsulation to bypass YAML syntax exceptions
+        $deployQuery = "
+        SET NOCOUNT ON;
+        IF NOT EXISTS (SELECT 1 FROM [SSISDB].[catalog].[folders] WHERE name = '$folderName')
+        BEGIN
+            EXEC [SSISDB].[catalog].[create_folder] @folder_name = '$folderName';
+        END
+        DECLARE @project_binary VARBINARY(MAX) = $hexString;
+        EXEC [SSISDB].[catalog].[deploy_project] 
+            @folder_name = '$folderName', 
+            @project_name = '$projectName', 
+            @project_stream = @project_binary;
+        "
+
+        # Execute the injection block directly against your target instance
+        Invoke-Sqlcmd -ServerInstance $serverName -Database "master" -Query $deployQuery
         
         Write-Host "Deployment completed successfully!"
