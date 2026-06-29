@@ -57,7 +57,7 @@ jobs:
         name: ssis-deployment-package
         path: .\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac
 
-    # ==========================================
+# ==========================================
     # PHASE 2: CONTINUOUS DEPLOYMENT (T-SQL DATABASE ENGINE INJECTION)
     # ==========================================
     - name: Deploy to SSISDB Catalog
@@ -70,12 +70,11 @@ jobs:
         }
         Import-Module SqlServer -DisableNameChecking
 
-        # Escaped backslashes protect the named instance text structure from string truncation
-        $serverName = "LAPTOP-66HI94H2\\Rushil Jivan"
-        $fallbackServer = "localhost\\Rushil Jivan"
+        # Fixed to use literal single backslashes
+        $serverName = 'LAPTOP-66HI94H2\Rushil Jivan'
+        $fallbackServer = 'localhost\Rushil Jivan'
         $folderName = "TimesheetDeployments"
         
-        # Locate the compiled binary package and read it into memory as a hex string
         $projectPath = Get-ChildItem -Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac" | Select-Object -ExpandProperty FullName
         $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
         
@@ -85,7 +84,6 @@ jobs:
 
         Write-Host "Preparing direct T-SQL deployment script..."
         
-        # Safe query string encapsulation that passes cleanly through the GitHub Actions YAML linter
         $deployQuery = "
         SET NOCOUNT ON;
         IF NOT EXISTS (SELECT 1 FROM [SSISDB].[catalog].[folders] WHERE name = '$folderName')
@@ -99,7 +97,6 @@ jobs:
             @project_stream = @project_binary;
         "
 
-        # Sequential connectivity try/catch block to overcome background runner permissions
         try {
             Write-Host "Attempting deployment to primary instance: $serverName..."
             Invoke-Sqlcmd -ServerInstance $serverName -Database "master" -Query $deployQuery -ConnectionTimeout 10
