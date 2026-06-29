@@ -15,7 +15,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
-        # Bypasses the broken tracking references in your Git history
+        # Prevents broken submodule tracking references from failing the checkout phase
         submodules: false  
 
     # ==========================================
@@ -41,7 +41,7 @@ jobs:
     - name: Build SSIS Project to ISPAC
       shell: powershell
       run: |
-        # Compiles the SSIS project using your precise subfolder path
+        # Compiles the SSIS project using the designated directory path
         & "${{ env.DEVENV_PATH }}" ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\TimesheetNew.dtproj" /Build "Development"
         
         # Verifies that the compiled binary deployment bundle was generated successfully
@@ -57,24 +57,14 @@ jobs:
         name: ssis-deployment-package
         path: .\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac
 
-# ==========================================
-    # PHASE 2: CONTINUOUS DEPLOYMENT (T-SQL DATABASE ENGINE INJECTION)
+    # ==========================================
+    # PHASE 2: DIAGNOSTIC LOCAL CONNECTION DEPLOYMENT
     # ==========================================
     - name: Deploy to SSISDB Catalog
       if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       shell: powershell
       run: |
-        if (-not (Get-Module -ListAvailable -Name SqlServer)) {
-            Write-Host "Installing required SqlServer PowerShell module..."
-            Install-Module -Name SqlServer -Force -AllowClobber -Scope CurrentUser
-        }
-        Import-Module SqlServer -DisableNameChecking
-
-        # Fixed to use literal single backslashes
-        $serverName = 'LAPTOP-66HI94H2\Rushil Jivan'
-        $fallbackServer = 'localhost\Rushil Jivan'
-        $folderName = "TimesheetDeployments"
-        
+        # Locate the freshly built binary package and unpack it into memory as a hex string
         $projectPath = Get-ChildItem -Path ".\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac" | Select-Object -ExpandProperty FullName
         $projectName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
         
@@ -82,8 +72,9 @@ jobs:
         $fileBytes = [System.IO.File]::ReadAllBytes($projectPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        Write-Host "Preparing direct T-SQL deployment script..."
+        $folderName = "TimesheetDeployments"
         
+        # Standard multi-line string encapsulation to bypass YAML syntax exceptions
         $deployQuery = "
         SET NOCOUNT ON;
         IF NOT EXISTS (SELECT 1 FROM [SSISDB].[catalog].[folders] WHERE name = '$folderName')
@@ -97,12 +88,33 @@ jobs:
             @project_stream = @project_binary;
         "
 
-        try {
-            Write-Host "Attempting deployment to primary instance: $serverName..."
-            Invoke-Sqlcmd -ServerInstance $serverName -Database "master" -Query $deployQuery -ConnectionTimeout 10
-            Write-Host "Deployment completed successfully via primary instance!"
-        } catch {
-            Write-Warning "Primary connection failed. Attempting local loopback fallback: $fallbackServer..."
-            Invoke-Sqlcmd -ServerInstance $fallbackServer -Database "master" -Query $deployQuery -ConnectionTimeout 15
-            Write-Host "Deployment completed successfully via fallback instance!"
+        # Diagnostic connection strings matrix using single quotes for clean literal execution
+        $targets = @(
+            @{ Name = "Standard Named Instance"; ConnectionString = "Server=localhost\Rushil Jivan;Database=master;Integrated Security=True;TrustServerCertificate=True;" },
+            @{ Name = "Network Named Instance";  ConnectionString = "Server=LAPTOP-66HI94H2\Rushil Jivan;Database=master;Integrated Security=True;TrustServerCertificate=True;" },
+            @{ Name = "Default Port Loopback";   ConnectionString = "Server=127.0.0.1,1433;Database=master;Integrated Security=True;TrustServerCertificate=True;" }
+        )
+
+        $success = $false
+        foreach ($target in $targets) {
+            Write-Host "--- Testing Connection Channel: $($target.Name) ---"
+            
+            $connection = New-Object System.Data.SqlClient.SqlConnection($target.ConnectionString)
+            $command = New-Object System.Data.SqlClient.SqlCommand($deployQuery, $connection)
+            
+            try {
+                $connection.Open()
+                $command.ExecuteNonQuery() | Out-Null
+                Write-Host "SUCCESS: Connected and Deployed via $($target.Name)!"
+                $success = $true
+                break
+            } catch {
+                Write-Warning "Failed path $($target.Name): $_"
+            } finally {
+                $connection.Close()
+            }
+        }
+
+        if (-not $success) {
+            Throw "CRITICAL: All local database connection pathways failed. Proceed to check service runtime logs for permission profiles."
         }
