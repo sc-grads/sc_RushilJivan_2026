@@ -17,9 +17,11 @@ jobs:
       with:
         submodules: false  
 
-    # ==========================================
-    # PHASE 1: CONTINUOUS INTEGRATION (COMPILATION VIA DEVENV)
-    # ==========================================
+ 
+
+
+    # CONTINUOUS INTEGRATION 
+   
     - name: Locate Visual Studio DevEnv Tool
       shell: powershell
       run: |
@@ -54,9 +56,9 @@ jobs:
         name: ssis-deployment-package
         path: .\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\*.ispac
 
-    # ==========================================
-    # PHASE 2: CONTINUOUS DEPLOYMENT (LOCAL LOOPBACK PORT INJECTION)
-    # ==========================================
+  
+    # CONTINUOUS DEPLOYMENT 
+   
     - name: Deploy to SSISDB Catalog
       if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
       shell: powershell
