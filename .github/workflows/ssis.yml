@@ -13,4 +13,4 @@ jobs:
     steps:
     - name: Run Agent Job Locally
       run: |
-        sqlcmd -S "LAPTOP-66HI94H2\Rushil Jivan" -E -d "msdb" -Q "EXEC dbo.sp_start_job @job_name = N'ETL_Timesheet';"
+        sqlcmd -S \"LAPTOP-66HI94H2\Rushil Jivan\" -E -d "msdb" -Q "EXEC dbo.sp_start_job @job_name = N'ETL_Timesheet';"
