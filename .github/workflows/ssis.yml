@@ -1,0 +1,16 @@
+name: Trigger SSMS Agent Job via Local Runner
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  trigger-sql-job:
+    # CRITICAL: This tells GitHub to run the script on YOUR laptop, not in the cloud
+    runs-on: self-hosted  
+
+    steps:
+    - name: Run Agent Job Locally
+      run: |
+        sqlcmd -S "LAPTOP-66HI94H2\Rushil Jivan" -E -d "msdb" -Q "EXEC dbo.sp_start_job @job_name = N'ETL_Timesheet';"
