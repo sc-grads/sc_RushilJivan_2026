@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-   # branches: [ "main" ]
+    #branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -16,10 +16,8 @@ jobs:
     - name: Deploy SSIS Project via T-SQL Stream
       shell: powershell
       run: |
-        # Define the path based on your repository structure
         $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
-        # Fallback check: If the workspace path doubled up your repo folder name, shift down one level
         if (-not (Test-Path -Path $ispacPath)) {
             Write-Host "Primary path not found. Testing workspace folder structural correction path..."
             $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
@@ -38,27 +36,18 @@ jobs:
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        # 2. Execute T-SQL to create folder and deploy project directly inside the engine
+        # 2. Build T-SQL query by joining an array to prevent whitespace compiler traps
         Write-Host "Deploying directly to SSISDB via T-SQL stored procedures..."
-        $deploySql = @"
-        USE [SSISDB];
-        
-        -- Ensure folder exists
-        IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')
-        BEGIN
-            EXEC [catalog].[create_folder] @folder_name = N'TimesDeployments';
-        END
-
-        -- Deploy binary stream directly
-        DECLARE @project_stream VARBINARY(MAX) = $hexString;
-        
-        EXEC [catalog].[deploy_project] 
-            @folder_name = N'TimesheetDeployments', 
-            @project_name = N'TimesheetNew', 
-            @project_stream = @project_stream;
-
-
-            "@
+        $sqlLines = @(
+            "USE [SSISDB];",
+            "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')",
+            "BEGIN",
+            "    EXEC [catalog].[create_folder] @folder_name = N'TimesheetDeployments';",
+            "END",
+            "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+            "EXEC [catalog].[deploy_project] @folder_name = N'TimesheetDeployments', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+        )
+        $deploySql = $sqlLines -join "`n"
 
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $deploySql -QueryTimeout 120
         Write-Host "SSIS Project successfully deployed directly to SSISDB Catalog."
@@ -66,50 +55,20 @@ jobs:
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
       run: |
-        $sqlScript = @"
-        USE [msdb];
-
-        -- 1. CLEANUP: Clear any older iterations of the job to ensure clean builds
-        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')
-        BEGIN
-            EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;
-        END;
-
-        -- 2. CREATE THE AGENT CONTROLLER JOB
-        DECLARE @JobID BINARY(16);
-        EXEC dbo.sp_add_job 
-            @job_name = N'ETL_Timesheet_Job', 
-            @enabled = 1, 
-            @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.',
-            @job_id = @JobID OUTPUT;
-
-        -- 3. ATTACH WORKFLOW STEP: Point directly to the explicit Package1.dtsx file
-        EXEC dbo.sp_add_jobstep 
-            @job_id = @JobID, 
-            @step_name = N'Execute SSIS Package', 
-            @subsystem = N'SSIS', 
-            @command = N'/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\"LAPTOP-66HI94H2\Rushil Jivan\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1', 
-            @retry_attempts = 0, 
-            @retry_interval = 0;
-
-        -- 4. CREATE 1-MINUTE SCHEDULE
-        EXEC dbo.sp_add_jobschedule 
-            @job_id = @JobID, 
-            @name = N'EveryMinuteSchedule', 
-            @enabled = 1, 
-            @freq_type = 4,         
-            @freq_interval = 1,     
-            @freq_subday_type = 4,  
-            @freq_subday_interval = 1, 
-            @active_start_date = 20260101, 
-            @active_end_date = 99991231,
-            @active_start_time = 0,
-            @active_end_time = 235959;
-
-        -- 5. INSTANCE ROUTING LINKAGE
-        EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';
-
-        "@
+        # Build the SQL Agent job config without here-strings
+        $jobLines = @(
+            "USE [msdb];",
+            "IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')",
+            "BEGIN",
+            "    EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;",
+            "END",
+            "DECLARE @JobID BINARY(16);",
+            "EXEC dbo.sp_add_job @job_name = N'ETL_Timesheet_Job', @enabled = 1, @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.', @job_id = @JobID OUTPUT;",
+            "EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = N'/ISSERVER \"\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"\" /SERVER \"\"LAPTOP-66HI94H2\Rushil Jivan\"\" /Par \"\"$ServerOption::LOGGING_LEVEL(Int16)\"\";1', @retry_attempts = 0, @retry_interval = 0;",
+            "EXEC dbo.sp_add_jobschedule @job_id = @JobID, @name = N'EveryMinuteSchedule', @enabled = 1, @freq_type = 4, @freq_interval = 1, @freq_subday_type = 4, @freq_subday_interval = 1, @active_start_date = 20260101, @active_end_date = 99991231, @active_start_time = 0, @active_end_time = 235959;",
+            "EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';"
+        )
+        $sqlScript = $jobLines -join "`n"
         
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
         Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
