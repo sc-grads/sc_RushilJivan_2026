@@ -1,4 +1,4 @@
-name: Trigger SSMS Agent Job via Local Runner
+name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
@@ -6,11 +6,80 @@ on:
   workflow_dispatch:
 
 jobs:
-  trigger-sql-job:
-    # CRITICAL: This tells GitHub to run the script on YOUR laptop, not in the cloud
-    runs-on: self-hosted  
+  deploy-pipeline:
+    runs-on: self-hosted  # Executes directly on your laptop
 
     steps:
-    - name: Run Agent Job Locally
+    - name: Checkout Repository Code
+      uses: actions/checkout@v4
+
+    - name: Deploy SSIS Package to Catalog
+      shell: powershell
       run: |
-        sqlcmd -S \"LAPTOP-66HI94H2\Rushil Jivan\" -E -d "msdb" -Q "EXEC dbo.sp_start_job @job_name = N'ETL_Timesheet';"
+        # 1. Load the SSIS assemblies
+        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
+        
+        $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimeSheetNew.ispac" 
+        
+        # 2. Connect to SSISDB
+        $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=SSPI;"
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+        $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($connection)
+        
+        $catalog = $integrationServices.Catalogs["SSISDB"]
+        $folder = $catalog.Folders["TimesheetProject"]
+        
+        # 3. Read and deploy the .ispac project file
+        [byte[]]$projectContent = [System.IO.File]::ReadAllBytes($ispacPath)
+        $folder.DeployProject("TimesheetDeployment", $projectContent)
+        Write-Host "SSIS Project successfully deployed to Catalog."
+
+    - name: Deploy and Configure SQL Server Agent Job
+      shell: powershell
+      run: |
+        # We put the SQL commands into a text string right here inside the workflow
+        $sqlScript = @"
+        USE [msdb];
+
+        -- 1. CLEANUP: Drop the job if it exists so we don't get 'already exists' errors
+        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')
+        BEGIN
+            EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;
+        END;
+
+        -- 2. CREATE THE JOB
+        DECLARE @JobID BINARY(16);
+        EXEC dbo.sp_add_job 
+            @job_name = N'ETL_Timesheet_Job', 
+            @enabled = 1, 
+            @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.',
+            @job_id = @JobID OUTPUT;
+
+        -- 3. ADD THE STEP (Points to your SSIS catalog package)
+        EXEC dbo.sp_add_jobstep 
+            @job_id = @JobID, 
+            @step_name = N'Execute SSIS Package', 
+            @subsystem = N'SSIS', 
+            @command = N'/ISSERVER "\"\SSISDB\TimesheetProject\TimesheetDeployment\Package.dtsx\"" /SERVER "\"LAPTOP-66HI94H2\Rushil Jivan\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1', 
+            @retry_attempts = 0, 
+            @retry_interval = 0;
+
+        -- 4. CREATE THE 1-MINUTE SCHEDULE
+        EXEC dbo.sp_add_jobschedule 
+            @job_id = @JobID, 
+            @name = N'EveryMinuteSchedule', 
+            @enabled = 1, 
+            @freq_type = 4, 
+            @freq_interval = 1, 
+            @freq_subday_type = 4, 
+            @freq_subday_interval = 1, 
+            @active_start_date = 20260101,
+            @active_end_date = 99991231,
+            @active_start_time = 0,
+            @active_end_time = 235959;
+
+        -- 5. ATTACH TO LOCAL SERVER
+        EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';
+
+        "@Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
