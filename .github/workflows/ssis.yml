@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy-pipeline:
-    runs-on: self-hosted  # Executes directly on your laptop
+    runs-on: self-hosted  # Executes directly on your laptop via your local runner
 
     steps:
     - name: Checkout Repository Code
@@ -16,21 +16,40 @@ jobs:
     - name: Deploy SSIS Package to Catalog
       shell: powershell
       run: |
-        # 1. Load the SSIS assemblies
+        # 1. Force-load SQL Server Management Assemblies from local installation paths
+        $TargetDLLs = @(
+            "Microsoft.SqlServer.Management.Sdk.Sfc.dll", 
+            "Microsoft.SqlServer.ConnectionInfo.dll", 
+            "Microsoft.SqlServer.Management.IntegrationServices.dll"
+        )
+        
+        # Hunt down the specific DLL files inside your Program Files directory
+        foreach ($dll in $TargetDLLs) {
+            $FoundFile = Get-ChildItem -Path "C:\Program Files\Microsoft SQL Server" -Filter $dll -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($FoundFile) {
+                [System.Reflection.Assembly]::LoadFrom($FoundFile.FullName) | Out-Null
+            }
+        }
+
+        # Fallback registration names to ensure system context is satisfied
+        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.ConnectionInfo") | Out-Null
         [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
         
+        # Configuration details matching your specific machine environment
         $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
-        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimeSheetNew.ispac" 
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
-        # 2. Connect to SSISDB
+        # 2. Connect to local SSISDB Catalog
         $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=SSPI;"
         $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
-        $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($connection)
+        
+        # Direct type evaluation using brackets to eliminate ambiguity
+        $integrationServices = New-Object ([Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices]) $connection
         
         $catalog = $integrationServices.Catalogs["SSISDB"]
         $folder = $catalog.Folders["TimesheetProject"]
         
-        # 3. Read and deploy the .ispac project file
+        # 3. Read the binary array contents of the compiled .ispac and deploy it
         [byte[]]$projectContent = [System.IO.File]::ReadAllBytes($ispacPath)
         $folder.DeployProject("TimesheetDeployment", $projectContent)
         Write-Host "SSIS Project successfully deployed to Catalog."
@@ -38,17 +57,18 @@ jobs:
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
       run: |
-        # We put the SQL commands into a text string right here inside the workflow
+        # Embed the automated SQL configuration logic inside a safe PowerShell string block
         $sqlScript = @"
         USE [msdb];
 
-        -- 1. CLEANUP: Drop the job if it exists so we don't get 'already exists' errors
+        -- 1. CLEANUP: Clear any older iterations of the job to ensure clean builds
         IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')
         BEGIN
+            EXEC dbo.sysjobs_updates_disabled_check @@SPID; -- Safety hook execution check
             EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;
         END;
 
-        -- 2. CREATE THE JOB
+        -- 2. CREATE THE AGENT CONTROLLER JOB
         DECLARE @JobID BINARY(16);
         EXEC dbo.sp_add_job 
             @job_name = N'ETL_Timesheet_Job', 
@@ -56,7 +76,7 @@ jobs:
             @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.',
             @job_id = @JobID OUTPUT;
 
-        -- 3. ADD THE STEP (Points to your SSIS catalog package)
+        -- 3. ATTACH WORKFLOW STEP: Point directly to the newly pushed Integration Services package
         EXEC dbo.sp_add_jobstep 
             @job_id = @JobID, 
             @step_name = N'Execute SSIS Package', 
@@ -65,21 +85,25 @@ jobs:
             @retry_attempts = 0, 
             @retry_interval = 0;
 
-        -- 4. CREATE THE 1-MINUTE SCHEDULE
+        -- 4. CREATE 1-MINUTE CRON INTERVAL SCHEDULE
         EXEC dbo.sp_add_jobschedule 
             @job_id = @JobID, 
             @name = N'EveryMinuteSchedule', 
             @enabled = 1, 
-            @freq_type = 4, 
-            @freq_interval = 1, 
-            @freq_subday_type = 4, 
-            @freq_subday_interval = 1, 
-            @active_start_date = 20260101,
+            @freq_type = 4,         -- Daily evaluation interval
+            @freq_interval = 1,     -- Triggers every calendar day
+            @freq_subday_type = 4,  -- Units set to minutes
+            @freq_subday_interval = 1, -- Triggers every 1 minute
+            @active_start_date = 20260101, -- Operational setup alignment
             @active_end_date = 99991231,
             @active_start_time = 0,
             @active_end_time = 235959;
 
-        -- 5. ATTACH TO LOCAL SERVER
+        -- 5. INSTANCE ROUTING LINKAGE
         EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';
-
-        "@Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
+        
+        
+        "@
+        # Fire the query using the local loopback port connection
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
+        Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
