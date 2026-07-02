@@ -17,9 +17,24 @@ jobs:
       shell: powershell
       run: |
         $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
+        
+        # Define the path based on your repository structure
         $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
-        # 1. Hunt down the native SQL Server Deployment Wizard executive file on your laptop
+        # Fallback check: If the workspace path doubled up your repo folder name, shift down one level
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Host "Primary path not found. Testing workspace folder structural correction path..."
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+            $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
+        }
+
+        # Clear error exit safety if the file is completely missing from the runner check directory
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Error "CRITICAL: Could not locate TimesheetNew.ispac on the file system. Check repository path structures."
+            exit 1
+        }
+        
+        # Hunt down the native SQL Server Deployment Wizard executive file on your laptop
         $deployWizard = Get-ChildItem -Path "C:\Program Files\Microsoft SQL Server" -Filter "ISDeploymentWizard.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
         
         if (-not $deployWizard) {
@@ -32,28 +47,26 @@ jobs:
         }
         
         Write-Host "Found deployment engine at: $deployWizard"
-        Write-Host "Deploying file: $ispacPath"
+        Write-Host "Verified active target file: $ispacPath"
         
-        # 2. Run the deployment silently in server-to-server mode (/Silent)
-        # Destination format: /DestinationServer:"Server" /DestinationPath:"/SSISDB/FolderName/ProjectName"
+        # Run the deployment silently in server-to-server mode (/Silent)
         & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"$serverName" /DestinationPath:"/SSISDB/TimesheetProject/TimesheetDeployment"
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host "SSIS Project successfully deployed to Catalog via native CLI."
         } else {
-            Write-Error "Deployment wizard failed with exit code $LASTEXITCODE"
+            Write-Error "Deployment wizard failed with exit code $LASTEXITCODE. Verify that the SSISDB catalog and folder path '/SSISDB/TimesheetProject' exists in SSMS."
             exit 1
         }
 
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
       run: |
-        # Embed the automated SQL configuration logic inside a safe PowerShell string block
         $sqlScript = @"
         USE [msdb];
 
         -- 1. CLEANUP: Clear any older iterations of the job to ensure clean builds
-        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet')
+        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')
         BEGIN
             EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;
         END;
@@ -80,10 +93,10 @@ jobs:
             @job_id = @JobID, 
             @name = N'EveryMinuteSchedule', 
             @enabled = 1, 
-            @freq_type = 4,         -- Daily evaluation interval
-            @freq_interval = 1,     -- Triggers every calendar day
-            @freq_subday_type = 4,  -- Units set to minutes
-            @freq_subday_interval = 1, -- Triggers every 1 minute
+            @freq_type = 4,         
+            @freq_interval = 1,     
+            @freq_subday_type = 4,  
+            @freq_subday_interval = 1, 
             @active_start_date = 20260101, 
             @active_end_date = 99991231,
             @active_start_time = 0,
@@ -91,7 +104,7 @@ jobs:
 
         -- 5. INSTANCE ROUTING LINKAGE
         EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';
-        
+
         "@
         
         # Fire the query using the local loopback port connection
