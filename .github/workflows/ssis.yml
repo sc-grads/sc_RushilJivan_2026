@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+   # branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
