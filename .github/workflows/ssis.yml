@@ -64,7 +64,7 @@ jobs:
             "END",
             "DECLARE @JobID BINARY(16);",
             "EXEC dbo.sp_add_job @job_name = N'ETL_Timesheet_Job', @enabled = 1, @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.', @job_id = @JobID OUTPUT;",
-            "EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = N'/ISSERVER \"\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"\" /SERVER \"\"LAPTOP-66HI94H2\Rushil Jivan\"\" /Par \"\"$ServerOption::LOGGING_LEVEL(Int16)\"\";1', @retry_attempts = 0, @retry_interval = 0;",
+            "EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = N'/ISSERVER \"\"\SSISDB\TimesheetDeployments\TimesheetNew\Packages\Package1.dtsx\"\" /SERVER \"\"LAPTOP-66HI94H2\Rushil Jivan\"\" /Par \"\"$ServerOption::LOGGING_LEVEL(Int16)\"\";1', @retry_attempts = 0, @retry_interval = 0;",
             "EXEC dbo.sp_add_jobschedule @job_id = @JobID, @name = N'EveryMinuteSchedule', @enabled = 1, @freq_type = 4, @freq_interval = 1, @freq_subday_type = 4, @freq_subday_interval = 1, @active_start_date = 20260101, @active_end_date = 99991231, @active_start_time = 0, @active_end_time = 235959;",
             "EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';"
         )
