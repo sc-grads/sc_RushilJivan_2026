@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-    #branches: [ "main" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -13,46 +13,37 @@ jobs:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
 
-    - name: Deploy SSIS Package to Catalog
+    - name: Deploy SSIS Package via Command Line Utility
       shell: powershell
       run: |
-        # 1. Force-load SQL Server Management Assemblies from local installation paths
-        $TargetDLLs = @(
-            "Microsoft.SqlServer.Management.Sdk.Sfc.dll", 
-            "Microsoft.SqlServer.ConnectionInfo.dll", 
-            "Microsoft.SqlServer.Management.IntegrationServices.dll"
-        )
-        
-        # Hunt down the specific DLL files inside your Program Files directory
-        foreach ($dll in $TargetDLLs) {
-            $FoundFile = Get-ChildItem -Path "C:\Program Files\Microsoft SQL Server" -Filter $dll -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($FoundFile) {
-                [System.Reflection.Assembly]::LoadFrom($FoundFile.FullName) | Out-Null
-            }
-        }
-
-        # Fallback registration names to ensure system context is satisfied
-        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.ConnectionInfo") | Out-Null
-        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
-        
-        # Configuration details matching your specific machine environment
         $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
         $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
-        # 2. Connect to local SSISDB Catalog
-        $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=SSPI;"
-        $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+        # 1. Hunt down the native SQL Server Deployment Wizard executive file on your laptop
+        $deployWizard = Get-ChildItem -Path "C:\Program Files\Microsoft SQL Server" -Filter "ISDeploymentWizard.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
         
-        # Direct type evaluation using brackets to eliminate ambiguity
-        $integrationServices = New-Object ([Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices]) $connection
+        if (-not $deployWizard) {
+            $deployWizard = Get-ChildItem -Path "C:\Program Files (x86)\Microsoft SQL Server" -Filter "ISDeploymentWizard.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+        }
         
-        $catalog = $integrationServices.Catalogs["SSISDB"]
-        $folder = $catalog.Folders["TimesheetProject"]
+        if (-not $deployWizard) {
+            Write-Error "Could not find ISDeploymentWizard.exe on this computer. Ensure SSMS or Client Tools SDK is installed."
+            exit 1
+        }
         
-        # 3. Read the binary array contents of the compiled .ispac and deploy it
-        [byte[]]$projectContent = [System.IO.File]::ReadAllBytes($ispacPath)
-        $folder.DeployProject("TimesheetDeployment", $projectContent)
-        Write-Host "SSIS Project successfully deployed to Catalog."
+        Write-Host "Found deployment engine at: $deployWizard"
+        Write-Host "Deploying file: $ispacPath"
+        
+        # 2. Run the deployment silently in server-to-server mode (/Silent)
+        # Destination format: /DestinationServer:"Server" /DestinationPath:"/SSISDB/FolderName/ProjectName"
+        & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"$serverName" /DestinationPath:"/SSISDB/TimesheetProject/TimesheetDeployment"
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "SSIS Project successfully deployed to Catalog via native CLI."
+        } else {
+            Write-Error "Deployment wizard failed with exit code $LASTEXITCODE"
+            exit 1
+        }
 
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
@@ -62,9 +53,8 @@ jobs:
         USE [msdb];
 
         -- 1. CLEANUP: Clear any older iterations of the job to ensure clean builds
-        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')
+        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet')
         BEGIN
-            EXEC dbo.sysjobs_updates_disabled_check @@SPID; -- Safety hook execution check
             EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;
         END;
 
@@ -94,7 +84,7 @@ jobs:
             @freq_interval = 1,     -- Triggers every calendar day
             @freq_subday_type = 4,  -- Units set to minutes
             @freq_subday_interval = 1, -- Triggers every 1 minute
-            @active_start_date = 20260101, -- Operational setup alignment
+            @active_start_date = 20260101, 
             @active_end_date = 99991231,
             @active_start_time = 0,
             @active_end_time = 235959;
@@ -102,8 +92,8 @@ jobs:
         -- 5. INSTANCE ROUTING LINKAGE
         EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';
         
-        
         "@
+        
         # Fire the query using the local loopback port connection
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
         Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
