@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-    #branches: [ "main" ]
+  #  branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -48,14 +48,37 @@ jobs:
         
         Write-Host "Found deployment engine at: $deployWizard"
         Write-Host "Verified active target file: $ispacPath"
-        
-        # Run the deployment silently in server-to-server mode (/Silent)
-        & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"$serverName" /DestinationPath:"/SSISDB/TimesheetProject/TimesheetDeployment"
+
+        # 1. Ensure the correct SSISDB Folder (TimesheetDeployments) exists
+        Write-Host "Verifying target folder 'TimesheetDeployments' exists in SSISDB..."
+        $createFolderSql = @"
+        IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'SSISDB')
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM [SSISDB].[catalog].[folders] WHERE name = 'TimesheetDeployments')
+            BEGIN
+                EXEC [SSISDB].[catalog].[create_folder] @folder_name = N'TimesheetDeployments';
+                PRINT 'Folder TimesheetDeployments successfully created.';
+            END
+            ELSE
+            BEGIN
+                PRINT 'Folder TimesheetDeployments already exists.';
+            END
+        END
+        ELSE
+        BEGIN
+            RAISERROR('SSISDB Catalog database was not found on this SQL Server instance.', 16, 1);
+        END
+
+        "@
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $createFolderSql
+
+        # 2. Run the deployment silently using your precise project destination path mapping
+        & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"$serverName" /DestinationPath:"/SSISDB/TimesheetDeployments/TimesheetNew"
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host "SSIS Project successfully deployed to Catalog via native CLI."
         } else {
-            Write-Error "Deployment wizard failed with exit code $LASTEXITCODE. Verify that the SSISDB catalog and folder path '/SSISDB/TimesheetProject' exists in SSMS."
+            Write-Error "Deployment wizard failed with exit code $LASTEXITCODE. Double check that integration services features are active on your local instance."
             exit 1
         }
 
@@ -79,12 +102,12 @@ jobs:
             @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.',
             @job_id = @JobID OUTPUT;
 
-        -- 3. ATTACH WORKFLOW STEP: Point directly to the newly pushed Integration Services package
+        -- 3. ATTACH WORKFLOW STEP: Point directly to the explicit Package1.dtsx file path pathing you defined
         EXEC dbo.sp_add_jobstep 
             @job_id = @JobID, 
             @step_name = N'Execute SSIS Package', 
             @subsystem = N'SSIS', 
-            @command = N'/ISSERVER "\"\SSISDB\TimesheetProject\TimesheetDeployment\Package.dtsx\"" /SERVER "\"LAPTOP-66HI94H2\Rushil Jivan\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1', 
+            @command = N'/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\"LAPTOP-66HI94H2\Rushil Jivan\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1', 
             @retry_attempts = 0, 
             @retry_interval = 0;
 
