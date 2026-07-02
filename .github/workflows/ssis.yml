@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-   # branches: [ "main" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
         -- Ensure folder exists
         IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')
         BEGIN
-            EXEC [catalog].[create_folder] @folder_name = N'TimesheetDeployments';
+            EXEC [catalog].[create_folder] @folder_name = N'TimesDeployments';
         END
 
         -- Deploy binary stream directly
@@ -56,6 +56,7 @@ jobs:
             @folder_name = N'TimesheetDeployments', 
             @project_name = N'TimesheetNew', 
             @project_stream = @project_stream;
+
 
             "@
 
