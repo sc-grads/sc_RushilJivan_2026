@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-  #  branches: [ "main" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -72,14 +72,21 @@ jobs:
         "@
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $createFolderSql
 
-        # 2. Run the deployment silently using your precise project destination path mapping
-        & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"$serverName" /DestinationPath:"/SSISDB/TimesheetDeployments/TimesheetNew"
+        # 2. Run the deployment silently using literal quotes to handle the instance name space cleanly
+        Write-Host "Executing deployment wizard connection..."
+        & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:".\Rushil Jivan" /DestinationPath:"/SSISDB/TimesheetDeployments/TimesheetNew"
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host "SSIS Project successfully deployed to Catalog via native CLI."
         } else {
-            Write-Error "Deployment wizard failed with exit code $LASTEXITCODE. Double check that integration services features are active on your local instance."
-            exit 1
+            Write-Host "Local alias attempt complete. Testing secondary explicit netbios connection string..."
+            & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"localhost\Rushil Jivan" /DestinationPath:"/SSISDB/TimesheetDeployments/TimesheetNew"
+            
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Deployment wizard failed with exit code $LASTEXITCODE. Verify your instance named configuration properties."
+                exit 1
+            }
+            Write-Host "SSIS Project successfully deployed via fallback pipeline routing."
         }
 
     - name: Deploy and Configure SQL Server Agent Job
