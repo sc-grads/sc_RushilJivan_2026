@@ -2,7 +2,7 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-  #  branches: [ "main" ]
+   # branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -13,11 +13,9 @@ jobs:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
 
-    - name: Deploy SSIS Package via Command Line Utility
+    - name: Deploy SSIS Project via T-SQL Stream
       shell: powershell
       run: |
-        $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
-        
         # Define the path based on your repository structure
         $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
@@ -28,66 +26,41 @@ jobs:
             $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
         }
 
-        # Clear error exit safety if the file is completely missing from the runner check directory
         if (-not (Test-Path -Path $ispacPath)) {
-            Write-Error "CRITICAL: Could not locate TimesheetNew.ispac on the file system. Check repository path structures."
+            Write-Error "CRITICAL: Could not locate TimesheetNew.ispac on the file system."
             exit 1
         }
         
-        # Hunt down the native SQL Server Deployment Wizard executive file on your laptop
-        $deployWizard = Get-ChildItem -Path "C:\Program Files\Microsoft SQL Server" -Filter "ISDeploymentWizard.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-        
-        if (-not $deployWizard) {
-            $deployWizard = Get-ChildItem -Path "C:\Program Files (x86)\Microsoft SQL Server" -Filter "ISDeploymentWizard.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-        }
-        
-        if (-not $deployWizard) {
-            Write-Error "Could not find ISDeploymentWizard.exe on this computer. Ensure SSMS or Client Tools SDK is installed."
-            exit 1
-        }
-        
-        Write-Host "Found deployment engine at: $deployWizard"
         Write-Host "Verified active target file: $ispacPath"
 
-        # 1. Ensure the correct SSISDB Folder (TimesheetDeployments) exists
-        Write-Host "Verifying target folder 'TimesheetDeployments' exists in SSISDB..."
-        $createFolderSql = @"
-        IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'SSISDB')
-        BEGIN
-            IF NOT EXISTS (SELECT 1 FROM [SSISDB].[catalog].[folders] WHERE name = 'TimesheetDeployments')
-            BEGIN
-                EXEC [SSISDB].[catalog].[create_folder] @folder_name = N'TimesheetDeployments';
-                PRINT 'Folder TimesheetDeployments successfully created.';
-            END
-            ELSE
-            BEGIN
-                PRINT 'Folder TimesheetDeployments already exists.';
-            END
-        END
-        ELSE
-        BEGIN
-            RAISERROR('SSISDB Catalog database was not found on this SQL Server instance.', 16, 1);
-        END
+        # 1. Read the .ispac file as a hex string for SQL Server binary ingestion
+        Write-Host "Reading project file binary stream..."
+        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        "@
-        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $createFolderSql
-
-        # 2. Run the deployment silently using literal quotes to handle the instance name space cleanly
-        Write-Host "Executing deployment wizard connection..."
-        & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:".\Rushil Jivan" /DestinationPath:"/SSISDB/TimesheetDeployments/TimesheetNew"
+        # 2. Execute T-SQL to create folder and deploy project directly inside the engine
+        Write-Host "Deploying directly to SSISDB via T-SQL stored procedures..."
+        $deploySql = @"
+        USE [SSISDB];
         
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "SSIS Project successfully deployed to Catalog via native CLI."
-        } else {
-            Write-Host "Local alias attempt complete. Testing secondary explicit netbios connection string..."
-            & $deployWizard /Silent /SourcePath:"$ispacPath" /DestinationServer:"localhost\Rushil Jivan" /DestinationPath:"/SSISDB/TimesheetDeployments/TimesheetNew"
-            
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "Deployment wizard failed with exit code $LASTEXITCODE. Verify your instance named configuration properties."
-                exit 1
-            }
-            Write-Host "SSIS Project successfully deployed via fallback pipeline routing."
-        }
+        -- Ensure folder exists
+        IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')
+        BEGIN
+            EXEC [catalog].[create_folder] @folder_name = N'TimesheetDeployments';
+        END
+
+        -- Deploy binary stream directly
+        DECLARE @project_stream VARBINARY(MAX) = $hexString;
+        
+        EXEC [catalog].[deploy_project] 
+            @folder_name = N'TimesheetDeployments', 
+            @project_name = N'TimesheetNew', 
+            @project_stream = @project_stream;
+
+            "@
+
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $deploySql -QueryTimeout 120
+        Write-Host "SSIS Project successfully deployed directly to SSISDB Catalog."
 
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
@@ -109,7 +82,7 @@ jobs:
             @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.',
             @job_id = @JobID OUTPUT;
 
-        -- 3. ATTACH WORKFLOW STEP: Point directly to the explicit Package1.dtsx file path pathing you defined
+        -- 3. ATTACH WORKFLOW STEP: Point directly to the explicit Package1.dtsx file
         EXEC dbo.sp_add_jobstep 
             @job_id = @JobID, 
             @step_name = N'Execute SSIS Package', 
@@ -118,7 +91,7 @@ jobs:
             @retry_attempts = 0, 
             @retry_interval = 0;
 
-        -- 4. CREATE 1-MINUTE CRON INTERVAL SCHEDULE
+        -- 4. CREATE 1-MINUTE SCHEDULE
         EXEC dbo.sp_add_jobschedule 
             @job_id = @JobID, 
             @name = N'EveryMinuteSchedule', 
@@ -137,6 +110,5 @@ jobs:
 
         "@
         
-        # Fire the query using the local loopback port connection
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
         Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
