@@ -9,7 +9,7 @@ jobs:
   # STAGE 1: Deploys directly to your laptop via your local runner
   deploy-local:
     name: Local Laptop Deployment
-    runs-on: self-hosted  
+    runs-on: rushil-laptop  
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
