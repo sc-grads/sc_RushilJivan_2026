@@ -6,9 +6,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-pipeline:
-    runs-on: self-hosted  # Executes directly on your laptop via your local runner
-
+  # STAGE 1: Deploys directly to your laptop via your local runner
+  deploy-local:
+    name: Local Laptop Deployment
+    runs-on: self-hosted  
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
@@ -31,13 +32,9 @@ jobs:
         
         Write-Host "Verified active target file: $ispacPath"
 
-        # 1. Read the .ispac file as a hex string for SQL Server binary ingestion
-        Write-Host "Reading project file binary stream..."
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        # 2. Build T-SQL query by joining an array to prevent whitespace compiler traps
-        Write-Host "Deploying directly to SSISDB via T-SQL stored procedures..."
         $sqlLines = @(
             "USE [SSISDB];",
             "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')",
@@ -55,7 +52,6 @@ jobs:
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
       run: |
-        # Using single-quoted strings lets us pass quotes and backslashes directly without escaping traps
         $jobLines = @(
             'USE [msdb];',
             'IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N''ETL_Timesheet_Job'')',
@@ -72,3 +68,69 @@ jobs:
         
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
         Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
+
+  # STAGE 2: Deploys onto your partner's server after stage 1 completes cleanly
+  deploy-partner:
+    name: Partner Server Deployment
+    needs: deploy-local  # Enforces sequential order
+    runs-on: partner-prod-runner  # <--- Triggers the partner runner application
+    steps:
+    - name: Checkout Repository Code
+      uses: actions/checkout@v4
+
+    - name: Deploy SSIS Project via T-SQL Stream (Partner)
+      shell: powershell
+      run: |
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+        
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Host "Primary path not found. Testing workspace folder structural correction path..."
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+            $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
+        }
+
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Error "CRITICAL: Could not locate TimesheetNew.ispac on the partner runner file system."
+            exit 1
+        }
+        
+        Write-Host "Verified active target file: $ispacPath"
+
+        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
+
+        $sqlLines = @(
+            "USE [SSISDB];",
+            "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')",
+            "BEGIN",
+            "    EXEC [catalog].[create_folder] @folder_name = N'TimesheetDeployments';",
+            "END",
+            "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+            "EXEC [catalog].[deploy_project] @folder_name = N'TimesheetDeployments', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+        )
+        $deploySql = $sqlLines -join "`n"
+
+        # Still connects via 127.0.0.1 since the execution drops right inside their host server
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $deploySql -QueryTimeout 120
+        Write-Host "SSIS Project successfully deployed directly to Partner SSISDB Catalog."
+
+    - name: Deploy and Configure SQL Server Agent Job (Partner)
+      shell: powershell
+      run: |
+        $jobLines = @(
+            'USE [msdb];',
+            'IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N''ETL_Timesheet_Job'')',
+            'BEGIN',
+            '    EXEC dbo.sp_delete_job @job_name = N''ETL_Timesheet_Job'', @delete_unused_schedule = 1;',
+            'END',
+            'DECLARE @JobID BINARY(16);',
+            'EXEC dbo.sp_add_job @job_name = N''ETL_Timesheet_Job'', @enabled = 1, @description = N''Automated 1-minute runner for Partner Timesheet and Leave pipeline.'', @job_id = @JobID OUTPUT;',
+            # Note: Remember to switch out "PARTNER-SERVER-NAME" here with their actual server identity
+            'EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N''Execute SSIS Package'', @subsystem = N''SSIS'', @command = N''/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\"PARTNER-SERVER-NAME\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1'', @retry_attempts = 0, @retry_interval = 0;',
+            'EXEC dbo.sp_add_jobschedule @job_id = @JobID, @name = N''EveryMinuteSchedule'', @enabled = 1, @freq_type = 4, @freq_interval = 1, @freq_subday_type = 4, @freq_subday_interval = 1, @active_start_date = 20260101, @active_end_date = 99991231, @active_start_time = 80000, @active_end_time = 170000;',
+            'EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N''(local)'';'
+        )
+        $sqlScript = $jobLines -join "`n"
+        
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
+        Write-Host "Partner SQL Server Agent Job successfully configured."
