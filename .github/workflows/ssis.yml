@@ -73,7 +73,7 @@ jobs:
   deploy-partner:
     name: Partner Server Deployment
     needs: deploy-local  # Enforces sequential order
-    runs-on: partner-prod-runner  # <--- Triggers the partner runner application
+    runs-on: lwazi-laptop  # <--- Triggers the partner runner application
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
