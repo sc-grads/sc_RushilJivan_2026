@@ -9,7 +9,7 @@ jobs:
   # STAGE 1: Deploys directly to your laptop via your local runner
   deploy-local:
     name: Local Laptop Deployment
-    runs-on: rushil-laptop  
+    runs-on: ["self-hosted", "rushil-laptop"]  
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
@@ -73,7 +73,7 @@ jobs:
   deploy-partner:
     name: Partner Server Deployment
     needs: deploy-local  # Enforces sequential order
-    runs-on: self-hosted  # <--- Triggers the partner runner application
+    runs-on: ["self-hosted", "lwazi-laptop"]  # <--- Triggers the partner runner application
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
