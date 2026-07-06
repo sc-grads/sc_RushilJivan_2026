@@ -2,84 +2,146 @@ name: Deploy SSIS and Agent Job Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    #branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  deploy-pipeline:
-    runs-on: self-hosted  # Executes directly on your laptop
-
+  # STAGE 1: Deploys directly to your laptop via your local runner (UNTOUCHED)
+  deploy-local:
+    name: Local Laptop Deployment
+    runs-on: rushil-laptop  
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
 
-    - name: Deploy SSIS Package to Catalog
+    - name: Deploy SSIS Project via T-SQL Stream
       shell: powershell
       run: |
-        # 1. Load the SSIS assemblies
-        [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
-        $serverName = "LAPTOP-66HI94H2\Rushil Jivan"
-        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimeSheetNew.ispac" 
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Host "Primary path not found. Testing workspace folder structural correction path..."
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+            $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
+        }
+
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Error "CRITICAL: Could not locate TimesheetNew.ispac on the file system."
+            exit 1
+        }
         
-        # 2. Connect to SSISDB
-        $connectionString = "Data Source=$serverName;Initial Catalog=master;Integrated Security=SSPI;"
-        $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
-        $integrationServices = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($connection)
-        
-        $catalog = $integrationServices.Catalogs["SSISDB"]
-        $folder = $catalog.Folders["TimesheetProject"]
-        
-        # 3. Read and deploy the .ispac project file
-        [byte[]]$projectContent = [System.IO.File]::ReadAllBytes($ispacPath)
-        $folder.DeployProject("TimesheetDeployment", $projectContent)
-        Write-Host "SSIS Project successfully deployed to Catalog."
+        Write-Host "Verified active target file: $ispacPath"
+
+        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
+
+        $sqlLines = @(
+            "USE [SSISDB];",
+            "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')",
+            "BEGIN",
+            "    EXEC [catalog].[create_folder] @folder_name = N'TimesheetDeployments';",
+            "END",
+            "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+            "EXEC [catalog].[deploy_project] @folder_name = N'TimesheetDeployments', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+        )
+        $deploySql = $sqlLines -join "`n"
+
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $deploySql -QueryTimeout 120
+        Write-Host "SSIS Project successfully deployed directly to SSISDB Catalog."
 
     - name: Deploy and Configure SQL Server Agent Job
       shell: powershell
       run: |
-        # We put the SQL commands into a text string right here inside the workflow
-        $sqlScript = @"
-        USE [msdb];
+        $jobLines = @(
+            'USE [msdb];',
+            'IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N''ETL_Timesheet_Job'')',
+            'BEGIN',
+            '    EXEC dbo.sp_delete_job @job_name = N''ETL_Timesheet_Job'', @delete_unused_schedule = 1;',
+            'END',
+            'DECLARE @JobID BINARY(16);',
+            'EXEC dbo.sp_add_job @job_name = N''ETL_Timesheet_Job'', @enabled = 1, @description = N''Automated 1-minute runner for Timesheet and Leave SSIS pipeline.'', @job_id = @JobID OUTPUT;',
+            'EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N''Execute SSIS Package'', @subsystem = N''SSIS'', @command = N''/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\"LAPTOP-66HI94H2\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1'', @retry_attempts = 0, @retry_interval = 0;',
+            'EXEC dbo.sp_add_jobschedule @job_id = @JobID, @name = N''EveryMinuteSchedule'', @enabled = 1, @freq_type = 4, @freq_interval = 1, @freq_subday_type = 4, @freq_subday_interval = 1, @active_start_date = 20260101, @active_end_date = 99991231, @active_start_time = 80000, @active_end_time = 170000;',
+            'EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N''(local)'';'
+        )
+        $sqlScript = $jobLines -join "`n"
+        
+        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
+        Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
 
-        -- 1. CLEANUP: Drop the job if it exists so we don't get 'already exists' errors
-        IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N'ETL_Timesheet_Job')
-        BEGIN
-            EXEC dbo.sp_delete_job @job_name = N'ETL_Timesheet_Job', @delete_unused_schedule = 1;
-        END;
+  # STAGE 2: Corrected deployment using your friend's working configuration mechanics
+  deploy-partner:
+    name: Partner Server Deployment
+    needs: deploy-local  
+    runs-on: ["self-hosted", "sc-grads-sc_LwazisileMhlambi_2026.LAPTOP-Lwazi"]  
+    steps:
+    - name: Checkout Repository Code
+      uses: actions/checkout@v4
 
-        -- 2. CREATE THE JOB
-        DECLARE @JobID BINARY(16);
-        EXEC dbo.sp_add_job 
-            @job_name = N'ETL_Timesheet_Job', 
-            @enabled = 1, 
-            @description = N'Automated 1-minute runner for Timesheet and Leave SSIS pipeline.',
-            @job_id = @JobID OUTPUT;
+    - name: Deploy SSIS Project via T-SQL Stream (Partner)
+      shell: powershell
+      run: |
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+        
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Host "Primary path not found. Testing workspace folder structural correction path..."
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+            $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
+        }
 
-        -- 3. ADD THE STEP (Points to your SSIS catalog package)
-        EXEC dbo.sp_add_jobstep 
-            @job_id = @JobID, 
-            @step_name = N'Execute SSIS Package', 
-            @subsystem = N'SSIS', 
-            @command = N'/ISSERVER "\"\SSISDB\TimesheetProject\TimesheetDeployment\Package.dtsx\"" /SERVER "\"LAPTOP-66HI94H2\Rushil Jivan\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1', 
-            @retry_attempts = 0, 
-            @retry_interval = 0;
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Error "CRITICAL: Could not locate TimesheetNew.ispac on the partner runner file system."
+            exit 1
+        }
+        
+        Write-Host "Verified active target file: $ispacPath"
 
-        -- 4. CREATE THE 1-MINUTE SCHEDULE
-        EXEC dbo.sp_add_jobschedule 
-            @job_id = @JobID, 
-            @name = N'EveryMinuteSchedule', 
-            @enabled = 1, 
-            @freq_type = 4, 
-            @freq_interval = 1, 
-            @freq_subday_type = 4, 
-            @freq_subday_interval = 1, 
-            @active_start_date = 20260101,
-            @active_end_date = 99991231,
-            @active_start_time = 0,
-            @active_end_time = 235959;
+        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        -- 5. ATTACH TO LOCAL SERVER
-        EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N'(local)';
+        $connStr = "Data Source=.;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True;Encrypt=False;"
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        $connection.Open()
 
-        "@Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
+        $sqlQuery = @(
+            "SET NOCOUNT ON;",
+            "USE [SSISDB];",
+            "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')",
+            "BEGIN",
+            "    EXEC [catalog].[create_folder] @folder_name = N'TimesheetDeployments';",
+            "END",
+            "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+            "EXEC [catalog].[deploy_project] @folder_name = N'TimesheetDeployments', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+        ) -join "`n"
+
+        $command = $connection.CreateCommand()
+        $command.CommandText = $sqlQuery
+        $command.ExecuteNonQuery() | Out-Null
+        Write-Host "SSIS Project successfully deployed directly to Partner SSISDB Catalog."
+        $connection.Close()
+
+    - name: Deploy and Configure SQL Server Agent Job (Partner)
+      shell: powershell
+      run: |
+        $connStr = "Data Source=.;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True;Encrypt=False;"
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        $connection.Open()
+
+        $jobQuery = @(
+            'USE [msdb];',
+            'IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N''ETL_Timesheet_Job'')',
+            'BEGIN',
+            '    EXEC dbo.sp_delete_job @job_name = N''ETL_Timesheet_Job'', @delete_unused_schedule = 1;',
+            'END',
+            'DECLARE @JobID BINARY(16);',
+            'EXEC dbo.sp_add_job @job_name = N''ETL_Timesheet_Job'', @enabled = 1, @description = N''Automated 1-minute runner for Partner Timesheet and Leave pipeline.'', @job_id = @JobID OUTPUT;',
+            'EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N''Execute SSIS Package'', @subsystem = N''SSIS'', @command = N''/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\".\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1'', @retry_attempts = 0, @retry_interval = 0;',
+            'EXEC dbo.sp_add_jobschedule @job_id = @JobID, @name = N''EveryMinuteSchedule'', @enabled = 1, @freq_type = 4, @freq_interval = 1, @freq_subday_type = 4, @freq_subday_interval = 1, @active_start_date = 20260101, @active_end_date = 99991231, @active_start_time = 80000, @active_end_time = 170000;',
+            'EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N''(local)'';'
+        ) -join "`n"
+        
+        $command = $connection.CreateCommand()
+        $command.CommandText = $jobQuery
+        $command.ExecuteNonQuery() | Out-Null
+        Write-Host "Partner SQL Server Agent Job successfully configured."
+        $connection.Close()
