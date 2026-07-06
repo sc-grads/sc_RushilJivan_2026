@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  # STAGE 1: Deploys directly to your laptop via your local runner
+  # STAGE 1: Deploys directly to your laptop via your local runner (UNTOUCHED)
   deploy-local:
     name: Local Laptop Deployment
-    runs-on: ["self-hosted", "rushil-laptop"]  
+    runs-on: rushil-laptop  
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
@@ -69,11 +69,11 @@ jobs:
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
         Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
 
-  # STAGE 2: Deploys onto your partner's server after stage 1 completes cleanly
+  # STAGE 2: Corrected deployment using your friend's working configuration mechanics
   deploy-partner:
     name: Partner Server Deployment
-    needs: deploy-local  # Enforces sequential order
-    runs-on: ["self-hosted", "lwazi-laptop"]  # <--- Triggers the partner runner application
+    needs: deploy-local  
+    runs-on: ["self-hosted", "sc-grads-sc_LwazisileMhlambi_2026.LAPTOP-Lwazi"]  
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
@@ -99,7 +99,12 @@ jobs:
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
-        $sqlLines = @(
+        $connStr = "Data Source=.;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True;Encrypt=False;"
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        $connection.Open()
+
+        $sqlQuery = @(
+            "SET NOCOUNT ON;",
             "USE [SSISDB];",
             "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = 'TimesheetDeployments')",
             "BEGIN",
@@ -107,17 +112,22 @@ jobs:
             "END",
             "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
             "EXEC [catalog].[deploy_project] @folder_name = N'TimesheetDeployments', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
-        )
-        $deploySql = $sqlLines -join "`n"
+        ) -join "`n"
 
-        # Still connects via 127.0.0.1 since the execution drops right inside their host server
-        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $deploySql -QueryTimeout 120
+        $command = $connection.CreateCommand()
+        $command.CommandText = $sqlQuery
+        $command.ExecuteNonQuery() | Out-Null
         Write-Host "SSIS Project successfully deployed directly to Partner SSISDB Catalog."
+        $connection.Close()
 
     - name: Deploy and Configure SQL Server Agent Job (Partner)
       shell: powershell
       run: |
-        $jobLines = @(
+        $connStr = "Data Source=.;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True;Encrypt=False;"
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        $connection.Open()
+
+        $jobQuery = @(
             'USE [msdb];',
             'IF EXISTS (SELECT job_id FROM dbo.sysjobs WHERE name = N''ETL_Timesheet_Job'')',
             'BEGIN',
@@ -125,12 +135,13 @@ jobs:
             'END',
             'DECLARE @JobID BINARY(16);',
             'EXEC dbo.sp_add_job @job_name = N''ETL_Timesheet_Job'', @enabled = 1, @description = N''Automated 1-minute runner for Partner Timesheet and Leave pipeline.'', @job_id = @JobID OUTPUT;',
-            # Note: Remember to switch out "PARTNER-SERVER-NAME" here with their actual server identity
-            'EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N''Execute SSIS Package'', @subsystem = N''SSIS'', @command = N''/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\"PARTNER-SERVER-NAME\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1'', @retry_attempts = 0, @retry_interval = 0;',
+            'EXEC dbo.sp_add_jobstep @job_id = @JobID, @step_name = N''Execute SSIS Package'', @subsystem = N''SSIS'', @command = N''/ISSERVER "\"\SSISDB\TimesheetDeployments\TimesheetNew\Package1.dtsx\"" /SERVER "\".\"" /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1'', @retry_attempts = 0, @retry_interval = 0;',
             'EXEC dbo.sp_add_jobschedule @job_id = @JobID, @name = N''EveryMinuteSchedule'', @enabled = 1, @freq_type = 4, @freq_interval = 1, @freq_subday_type = 4, @freq_subday_interval = 1, @active_start_date = 20260101, @active_end_date = 99991231, @active_start_time = 80000, @active_end_time = 170000;',
             'EXEC dbo.sp_add_jobserver @job_id = @JobID, @server_name = N''(local)'';'
-        )
-        $sqlScript = $jobLines -join "`n"
+        ) -join "`n"
         
-        Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
+        $command = $connection.CreateCommand()
+        $command.CommandText = $jobQuery
+        $command.ExecuteNonQuery() | Out-Null
         Write-Host "Partner SQL Server Agent Job successfully configured."
+        $connection.Close()
