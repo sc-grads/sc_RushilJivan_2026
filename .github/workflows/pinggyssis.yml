@@ -1,7 +1,7 @@
 name: Deploy SSIS via Pinggy Tunnel
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   deploy-via-tunnel:
