@@ -33,7 +33,7 @@ jobs:
         $tunnelAddress = "${{ secrets.SQL_SERVER }}"
         $dbUser        = "${{ secrets.SQL_USER }}"
         $initialDb     = "${{ secrets.SQL_DATABASE }}"
-        $dbPassword    = "${{ secrets.LOCAL_SQL_PASSWORD }}"
+        $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
         $targetFolder  = "LocalDeployments"
 
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
