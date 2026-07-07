@@ -1,0 +1,69 @@
+name: Deploy SSIS via Pinggy Tunnel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-via-tunnel:
+    name: Tunnel Deployment to Local Laptop
+    runs-on: windows-latest  
+    environment: production  # Automatically loads all your production secrets
+    
+    steps:
+    - name: Checkout Repository Code
+      uses: actions/checkout@v4
+
+    - name: Extract and Stream ISPAC Binary via Tunnel
+      shell: powershell
+      run: |
+        # Resolve target binary pathway
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+        
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Host "Primary path not found. Testing workspace folder structural correction path..."
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
+            $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
+        }
+
+        if (-not (Test-Path -Path $ispacPath)) {
+            Write-Error "CRITICAL ERROR: Could not locate TimesheetNew.ispac file."
+            exit 1
+        }
+
+        # Convert compiled .ispac into hex stream payload
+        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
+
+        # Connection strings and settings mapped directly to Secrets
+        $tunnelAddress = "${{ secrets.SQL_SERVER }}"
+        $dbUser        = "${{ secrets.SQL_USER }}"
+        $initialDb     = "${{ secrets.SQL_DATABASE }}"
+        $dbPassword    = "${{ secrets.LOCAL_SQL_PASSWORD }}"
+        
+        # Hardcoded static local folder target to eliminate folder secrets management
+        $targetFolder  = "LocalDeployments"
+
+        Write-Host "Establishing tunnel connection to local database instance..."
+        $connStr = "Data Source=$tunnelAddress;Initial Catalog=$initialDb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
+        
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        $connection.Open()
+        
+        # SQL Routine: catalog catalog validation + streaming execution
+        $sqlQuery = @(
+            "SET NOCOUNT ON;",
+            "USE [SSISDB];",
+            "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
+            "BEGIN",
+            "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
+            "END",
+            "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+            "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+        ) -join "`n"
+
+        $command = $connection.CreateCommand()
+        $command.CommandText = $sqlQuery
+        $command.ExecuteNonQuery() | Out-Null
+        
+        Write-Host "SUCCESS: SSIS Project successfully streamed into SSISDB under '$targetFolder' folder!"
+        $connection.Close()

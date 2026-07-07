@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # STAGE 1: Deploys directly to your laptop via your local runner (UNTOUCHED)
+  
   deploy-local:
     name: Local Laptop Deployment
     runs-on: rushil-laptop  
@@ -69,7 +69,9 @@ jobs:
         Invoke-Sqlcmd -ServerInstance "127.0.0.1,1433" -Query $sqlScript
         Write-Host "SQL Server Agent Job successfully deployed and scheduled for 1-minute cycles."
 
-  # STAGE 2: Corrected deployment using your friend's working configuration mechanics
+  
+
+        
   deploy-partner:
     name: Partner Server Deployment
     needs: deploy-local  
