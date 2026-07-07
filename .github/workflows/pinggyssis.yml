@@ -7,7 +7,7 @@ jobs:
   deploy-via-tunnel:
     name: Tunnel Deployment to Local Laptop
     runs-on: windows-latest  
-    environment: production  # Pulls your environment-specific secrets
+    environment: production  
     
     steps:
     - name: Checkout Repository Code
@@ -16,7 +16,6 @@ jobs:
     - name: Extract and Stream ISPAC Binary via Tunnel
       shell: powershell
       run: |
-        # 1. Locate the compiled deployment package file
         $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
         
         if (-not (Test-Path -Path $ispacPath)) {
@@ -25,50 +24,57 @@ jobs:
             $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
         }
 
-        if (-not (Test-Path -Path $ispacPath)) {
-            Write-Error "CRITICAL ERROR: Could not locate TimesheetNew.ispac file."
-            exit 1
-        }
-
-        # 2. Convert compiled .ispac into hex stream payload
-        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
-        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
-
-        # 3. Gather connection targets out of secrets
+        # Pull secrets
         $tunnelAddress = "${{ secrets.SQL_SERVER }}"
         $dbUser        = "${{ secrets.SQL_USER }}"
         $initialDb     = "${{ secrets.SQL_DATABASE }}"
-        $dbPassword    = "${{ secrets.LOCAL_SQL_PASSWORD }}"
+        $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
         $targetFolder  = "LocalDeployments"
+
+        # --- DIAGNOSTICS (Safe to print, won't show the raw password) ---
+        Write-Host "--- GitHub Environment Secret Diagnostics ---"
+        Write-Host "Target Server Link: $tunnelAddress"
+        Write-Host "SQL User Value: '$dbUser' (Length: $($dbUser.Length))"
+        Write-Host "Initial Database Value: '$initialDb' (Length: $($initialDb.Length))"
+        Write-Host "Is password secret empty?: $(-not $dbPassword)"
+        Write-Host "Password character length: $($dbPassword.Length)"
+        Write-Host "----------------------------------------------"
+
+        if (-not $dbUser -or -not $dbPassword) {
+            Write-Error "CRITICAL: GitHub is passing empty credentials to the runner. Check your Environment configuration."
+            exit 1
+        }
+
+        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
+        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
 
         Write-Host "Establishing tunnel connection to local database instance..."
         $connStr = "Data Source=$tunnelAddress;Initial Catalog=$initialDb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
         
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
-        $connection.Open()
-        
-        # 4. Execute using an explicit elevated system context envelope to bypass the SQL Auth block
-        $sqlQuery = @(
-            "SET NOCOUNT ON;",
-            "USE [SSISDB];",
-            "EXECUTE AS USER = 'dbo';", # Escalates context internally to bypass the SQL Auth deployment rule
-            "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-            "BEGIN",
-            "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
-            "END",
-            "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-            "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'TimesheetNew', @project_stream = @project_stream;",
-            "REVERT;"
-        ) -join "`n"
-
-        $command = $connection.CreateCommand()
-        $command.CommandText = $sqlQuery
         
         try {
+            $connection.Open()
+            
+            $sqlQuery = @(
+                "SET NOCOUNT ON;",
+                "USE [SSISDB];",
+                "EXECUTE AS USER = 'dbo';", 
+                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
+                "BEGIN",
+                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
+                "END",
+                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'TimesheetNew', @project_stream = @project_stream;",
+                "REVERT;"
+            ) -join "`n"
+
+            $command = $connection.CreateCommand()
+            $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: SSIS Project successfully streamed over Pinggy tunnel into SSISDB under '$targetFolder'!"
+            Write-Host "SUCCESS: SSIS Project successfully streamed over Pinggy tunnel!"
         } catch {
-            Write-Error "SQL Execution Failed: $_"
+            Write-Error "Connection or Execution Failed: $_"
             exit 1
         } finally {
             $connection.Close()
