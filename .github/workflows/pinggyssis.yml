@@ -92,7 +92,7 @@ jobs:
                 "EXEC dbo.sp_add_jobserver @job_name = N'$executionJobName', @server_name = N'(local)';",
                 "EXEC dbo.sp_add_jobschedule ",
                 "    @job_name = N'$executionJobName', ",
-                "    @name = N'Every_1_Minute_8AM_to_5PM', ",
+                "    @name = N'1MinuteExecution', ",
                 "    @enabled = 1, ",
                 "    @freq_type = 4, ",
                 "    @freq_interval = 1, ",
