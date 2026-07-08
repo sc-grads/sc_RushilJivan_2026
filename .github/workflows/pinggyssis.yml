@@ -1,4 +1,4 @@
-name: Sequential SSIS Deployment (Local then Partner)
+name: Pinggy SSIS Deployment
 
 on:
   push:
