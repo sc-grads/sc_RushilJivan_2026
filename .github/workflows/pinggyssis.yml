@@ -6,9 +6,9 @@ on:
 jobs:
   deploy-via-tunnel:
     name: Tunnel Deployment to Local Laptop
-    runs-on: windows-latest  
-    environment: production  
-    
+    runs-on: windows-latest
+    environment: production
+
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
@@ -17,78 +17,54 @@ jobs:
       shell: powershell
       run: |
         $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
-        
         if (-not (Test-Path -Path $ispacPath)) {
             Write-Host "Primary path not found. Testing workspace folder structural correction path..."
             $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetNew.ispac"
             $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
         }
-
         if (-not (Test-Path -Path $ispacPath)) {
             Write-Error "CRITICAL ERROR: Could not locate TimesheetNew.ispac file."
             exit 1
         }
-
-        # Pull secrets
         $tunnelAddress = "${{ secrets.SQL_SERVER }}"
         $dbUser        = "${{ secrets.SQL_USER }}"
         $initialDb     = "${{ secrets.SQL_DATABASE }}"
         $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
         $targetFolder  = "LocalDeployments"
-        $executionJobName = "Run_TimesheetNew_Package" # The permanent job name that remains visible in SSMS
-
+        $executionJobName = "Run_TimesheetNew_Package"
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
-
         Write-Host "Establishing tunnel connection via automation_user..."
         $connStr = "Data Source=$tunnelAddress;Initial Catalog=$initialDb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
-        
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
-        
         try {
             $connection.Open()
-            
-            # T-SQL Script that handles both the installation AND the creation of your permanent execution job
-            $sqlQuery = @(
+            $sqlLines = @(
                 "SET NOCOUNT ON;",
                 "USE [msdb];",
-                
-                # --- PHASE 1: BYPASS & DEPLOYMENT VIA TEMP JOB ---
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'GitHub_SSIS_Deploy_Job')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job', @delete_unused_schedule=1;",
                 "END",
                 "EXEC dbo.sp_add_job @job_name = N'GitHub_SSIS_Deploy_Job', @enabled = 1, @start_step_id = 1;",
                 "DECLARE @deploy_script NVARCHAR(MAX);",
-                "SET @deploy_script = N'",
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N''$targetFolder'';",
-                "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''TimesheetNew'', @project_stream = @project_stream;'",
+                "SET @deploy_script = N'USE [SSISDB]; IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; END DECLARE @project_stream VARBINARY(MAX) = $hexString; EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''TimesheetNew'', @project_stream = @project_stream;';",
                 "EXEC dbo.sp_add_jobstep @job_name = N'GitHub_SSIS_Deploy_Job', @step_name = N'Run Deploy', @subsystem = N'TSQL', @command = @deploy_script, @retry_attempts = 0;",
                 "EXEC dbo.sp_add_jobserver @job_name = N'GitHub_SSIS_Deploy_Job', @server_name = N'(local)';",
                 "EXEC dbo.sp_start_job @job_name = N'GitHub_SSIS_Deploy_Job';",
-                "WAITFOR DELAY '00:00:05';",
+                "WAITFOR DELAY '00:00:07';",
                 "EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job';",
-                
-                # --- PHASE 2: CREATE THE PERMANENT PACKAGE EXECUTION JOB ---
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$executionJobName')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
                 "END",
-                "EXEC dbo.sp_add_job @job_name = N'$executionJobName', @enabled = 1, @description = N'Automated execution step tracking for TimesheetNew package.', @start_step_id = 1;",
-                
-                # Build the execution string argument required by the SSIS Subsystem type
+                "EXEC dbo.sp_add_job @job_name = N'$executionJobName', @enabled = 1, @description = N'Automated execution tracking for TimesheetNew.', @start_step_id = 1;",
                 "DECLARE @run_command NVARCHAR(MAX);",
-                "SET @run_command = N'/ISSERVER \"\"\\SSISDB\\$targetFolder\\TimesheetNew\\Package.dtsx\"\" /SERVER \"\"' + @@SERVERNAME + N'\"\" /Par \"\"$ServerOption::LOGGING_LEVEL(Int16)\"\";1 /CALLERINFO SQLAGENT /REPORTING E';",
-                
+                "SET @run_command = N'/ISSERVER \"\"\SSISDB\$targetFolder\TimesheetNew\Package.dtsx\"\" /SERVER \"\"' + @@SERVERNAME + N'\"\" /Par \"\"$ServerOption::LOGGING_LEVEL(Int16)\"\";1 /CALLERINFO SQLAGENT /REPORTING E';",
                 "EXEC dbo.sp_add_jobstep @job_name = N'$executionJobName', @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = @run_command, @retry_attempts = 0;",
                 "EXEC dbo.sp_add_jobserver @job_name = N'$executionJobName', @server_name = N'(local)';"
-            ) -join "`n"
-
+            )
+            $sqlQuery = $sqlLines -join "`n"
             $command = $connection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
