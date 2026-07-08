@@ -60,15 +60,27 @@ jobs:
                 "END",
                 "EXEC dbo.sp_add_job @job_name = N'$executionJobName', @enabled = 1, @description = N'Automated execution tracking for TimesheetNew.', @start_step_id = 1;",
                 "DECLARE @run_command NVARCHAR(MAX);",
-                "SET @run_command = N'/ISSERVER ' + CHAR(34) + N'\SSISDB\$targetFolder\TimesheetNew\Package.dtsx' + CHAR(34) + N' /SERVER ' + CHAR(34) + @@SERVERNAME + CHAR(34) + N' /Par ' + CHAR(34) + N'$ServerOption::LOGGING_LEVEL(Int16)' + CHAR(34) + N';1 /CALLERINFO SQLAGENT /REPORTING E';",
+                "SET @run_command = N'/ISSERVER ' + CHAR(34) + N'\SSISDB\$targetFolder\TimesheetNew\Package1.dtsx' + CHAR(34) + N' /SERVER ' + CHAR(34) + @@SERVERNAME + CHAR(34) + N' /Par ' + CHAR(34) + N'$ServerOption::LOGGING_LEVEL(Int16)' + CHAR(34) + N';1 /CALLERINFO SQLAGENT /REPORTING E';",
                 "EXEC dbo.sp_add_jobstep @job_name = N'$executionJobName', @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = @run_command, @retry_attempts = 0;",
-                "EXEC dbo.sp_add_jobserver @job_name = N'$executionJobName', @server_name = N'(local)';"
+                "EXEC dbo.sp_add_jobserver @job_name = N'$executionJobName', @server_name = N'(local)';",
+                
+                # --- PHASE 3: ADD THE 1-MINUTE WORK HOURS SCHEDULE ---
+                "EXEC dbo.sp_add_jobschedule ",
+                "    @job_name = N'$executionJobName', ",
+                "    @name = N'Every_1_Minute_8AM_to_5PM', ",
+                "    @enabled = 1, ",
+                "    @freq_type = 4, ",          # 4 = Daily execution
+                "    @freq_interval = 1, ",      # Repeat every 1 day
+                "    @freq_subday_type = 4, ",   # 4 = Minutes interval unit
+                "    @freq_subday_interval = 1, ", # Every 1 minute
+                "    @active_start_time = 080000, ", # 08:00:00 AM
+                "    @active_end_time = 170000;"     # 05:00:00 PM
             )
             $sqlQuery = $sqlLines -join "`n"
             $command = $connection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: SSIS Package deployed and permanent visible Agent Job '$executionJobName' created successfully!"
+            Write-Host "SUCCESS: SSIS Package deployed, job '$executionJobName' created, and 1-minute schedule attached!"
         } catch {
             Write-Error "Connection or Execution Failed: $_"
             exit 1
