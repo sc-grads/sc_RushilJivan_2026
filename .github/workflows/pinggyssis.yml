@@ -2,8 +2,6 @@ name: Sequential SSIS Deployment (Local then Partner)
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
   # =========================================================================
