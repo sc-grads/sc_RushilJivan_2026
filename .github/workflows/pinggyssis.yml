@@ -34,26 +34,26 @@ jobs:
         $executionJobName = "Run_TimesheetNew_Package"
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
-        Write-Host "Establishing tunnel connection via automation_user..."
+        
+        Write-Host "Establishing direct tunnel connection to deploy..."
         $connStr = "Data Source=$tunnelAddress;Initial Catalog=$initialDb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
         try {
             $connection.Open()
             $sqlLines = @(
                 "SET NOCOUNT ON;",
+                
+                # 1. Direct Deployment to SSISDB (No temp job needed!)
+                "USE [SSISDB];",
+                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder') ",
+                "BEGIN ",
+                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder'; ",
+                "END;",
+                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'TimesheetNew', @project_stream = @project_stream;",
+                
+                # 2. Setup the Permanent Execution Job
                 "USE [msdb];",
-                "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'GitHub_SSIS_Deploy_Job')",
-                "BEGIN",
-                "    EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job', @delete_unused_schedule=1;",
-                "END",
-                "EXEC dbo.sp_add_job @job_name = N'GitHub_SSIS_Deploy_Job', @enabled = 1, @start_step_id = 1;",
-                "DECLARE @deploy_script NVARCHAR(MAX);",
-                "SET @deploy_script = N'USE [SSISDB]; IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; END DECLARE @project_stream VARBINARY(MAX) = $hexString; EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''TimesheetNew'', @project_stream = @project_stream;';",
-                "EXEC dbo.sp_add_jobstep @job_name = N'GitHub_SSIS_Deploy_Job', @step_name = N'Run Deploy', @subsystem = N'TSQL', @command = @deploy_script, @retry_attempts = 0;",
-                "EXEC dbo.sp_add_jobserver @job_name = N'GitHub_SSIS_Deploy_Job', @server_name = N'(local)';",
-                "EXEC dbo.sp_start_job @job_name = N'GitHub_SSIS_Deploy_Job';",
-                "WAITFOR DELAY '00:00:07';",
-                "EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job';",
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$executionJobName')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
@@ -63,6 +63,8 @@ jobs:
                 "SET @run_command = N'/ISSERVER ' + CHAR(34) + N'\SSISDB\$targetFolder\TimesheetNew\Package1.dtsx' + CHAR(34) + N' /SERVER ' + CHAR(34) + @@SERVERNAME + CHAR(34) + N' /Par ' + CHAR(34) + N'`$ServerOption::LOGGING_LEVEL(Int16)' + CHAR(34) + N';1 /CALLERINFO SQLAGENT /REPORTING E';",
                 "EXEC dbo.sp_add_jobstep @job_name = N'$executionJobName', @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = @run_command, @retry_attempts = 0;",
                 "EXEC dbo.sp_add_jobserver @job_name = N'$executionJobName', @server_name = N'(local)';",
+                
+                # 3. Apply Schedule
                 "EXEC dbo.sp_add_jobschedule ",
                 "    @job_name = N'$executionJobName', ",
                 "    @name = N'Every_1_Minute_8AM_to_5PM', ",
@@ -78,9 +80,9 @@ jobs:
             $command = $connection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: SSIS Package deployed, job '$executionJobName' created, and 1-minute schedule attached!"
+            Write-Host "SUCCESS: SSIS Package deployed directly and scheduled Agent Job '$executionJobName' updated!"
         } catch {
-            Write-Error "Connection or Execution Failed: $_"
+            Write-Error "Connection or Direct Execution Failed: $_"
             exit 1
         } finally {
             $connection.Close()
