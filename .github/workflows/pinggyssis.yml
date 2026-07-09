@@ -7,8 +7,8 @@ jobs:
 
   # JOB 1 LOCAL DEPLOYMENT
 
-  deploy-local:
-    name: 1. Deploy to Local Laptop
+  DevTest:
+    name: DevTest/Deploy
     runs-on: windows-latest
     environment: production
 
@@ -44,8 +44,8 @@ jobs:
         $dbUser        = "${{ secrets.SQL_USER }}"
         $initialDb     = "${{ secrets.SQL_DATABASE }}"
         $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
-        $targetFolder  = "LocalDeployments"
-        $executionJobName = "Run_TimesheetNew_Package"
+        $targetFolder  = "TimesheetDevTestMigration"
+        $executionJobName = "RunTimesheetDevTestMigrationPK"
 
 
 
@@ -118,10 +118,10 @@ jobs:
 
 
   # JOB 2 PARTNER SERVER DEPLOYMENT
-  deploy-partner:
-    name: 2. Deploy to Partner Server
+  Production:
+    name: Production/Deploy
     runs-on: windows-latest
-    needs: deploy-local 
+    needs: DevTest
     
 
     environment: partner-production
@@ -154,8 +154,8 @@ jobs:
         $dbUser        = "${{ secrets.SQL_USER }}"
         $initialDb     = "${{ secrets.SQL_DATABASE }}"
         $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
-        $targetFolder  = "LocalDeployments"
-        $executionJobName = "Run_TimesheetNew_Package"
+        $targetFolder  = "TimesheetProductionMigration"
+        $executionJobName = "RunTimesheetProductionMigrationPK"
 
 
 
