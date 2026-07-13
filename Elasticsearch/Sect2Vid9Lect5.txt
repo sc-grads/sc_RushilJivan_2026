@@ -1,0 +1,78 @@
+GET /business
+
+PUT /business/_doc/110
+{
+    "address": "57 New Dover Ln",
+    "floors": 10,
+    "offices": 21,
+    "loc": {
+        "lat": 40.707519,
+        "lon": -74.008560
+    }
+}
+
+
+GET /business
+
+
+PUT /business/_doc/217
+{
+    "address": "11 Pen Ave",
+    "floors": 5,
+    "offices": 7,
+    "price": 450000,
+    "loc": {
+        "lat": 40.693519,
+        "lon": -74.988560
+    }
+}
+
+
+GET /business
+
+
+PUT /employees/_doc/330
+{
+    "name": "Richard Bell",
+    "title": "Senior Accountant",
+    "salary_usd": 115000.00,
+    "hiredate": "Jan 19, 2013"
+}
+
+
+PUT /employees/_doc/331
+{
+    "name": "Steve Honor",
+    "title": "Attorney",
+    "salary_usd": 140000.00,
+    "hiredate": "Oct 10, 2010"
+}
+
+
+
+PUT /contracts/_doc/9987
+{
+    "name": "property renovation",
+    "date-signed": "July 26, 2010",
+    "employees_involved": [331, 330, 398]
+}
+
+
+
+GET /business/_search
+{
+    "query": {
+        "term": {
+            "address": "pen"
+        }
+    }
+}
+
+
+GET business/_search
+{
+    "query": {
+        "match_all": {}
+    }
+}
+
