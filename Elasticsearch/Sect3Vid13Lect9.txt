@@ -1,0 +1,32 @@
+PUT customers/_doc/124
+{
+    "name": "Mary Cranford",
+    "address": "310 Clark Ave",
+    "gender": "female",
+    "age": 34,
+    "total_spent": 550.75,
+    "is_new": false
+}
+
+GET customers
+
+
+POST _analyze
+{
+  "analyzer": "whitespace",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+
+
+POST _analyze
+{
+  "analyzer": "standard",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+
+
+POST _analyze
+{
+  "analyzer": "simple",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}

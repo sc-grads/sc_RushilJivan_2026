@@ -1,0 +1,145 @@
+GET /courses/_search
+{
+    "query": {
+        "bool": {
+            "must": [
+                {"match": {"name": "accounting"}},
+                {"match": {"room": "e3"}}
+                
+            ],
+
+            "must_not": [
+                {"match": {"professor.name": "bill"}}
+            ],
+
+            "should": [
+              {"match": {"name": "computer"}}
+            ],
+             "minimum_should_match": 1
+        }
+       
+    }
+}
+
+
+
+
+
+
+GET /courses/_search
+{
+    "query": {
+        "bool": {
+            "must": [
+                {"match": {"name": "accounting"}}  
+            ],
+
+            "must_not": [
+                {"match": {"professor.name": "bill"}}
+            ],
+
+            "should": [
+              {"match": {"room": "e7"}}
+            ],
+             "minimum_should_match": 1
+        }
+       
+    }
+}
+
+
+
+
+
+
+
+GET courses/_search
+{
+    "query": {
+        "multi_match": {
+          "fields": ["name", "professor.department"],
+          "query": "accounting"
+        }
+    }
+}
+
+
+
+GET courses/_search
+{
+    "query": {
+        "match_phrase": {
+            "course_description": "from the business school taken by final year"
+        }
+    }
+}
+
+
+
+
+GET courses/_search
+{
+    "query": {
+        "match_phrase_prefix": {
+            "course_description": "from the business school taken by fin"
+        }
+    }
+}
+
+
+
+
+
+GET courses/_search
+{
+    "query": {
+        "range": {
+          "students_enrolled": {
+            "gte": 10, //greater than equal to OR gt greater than
+            "lte": 20 //less than equal to OR lt less than
+          }
+        }
+    }
+}
+
+
+GET courses/_search
+{
+    "query": {
+        "range": {
+          "course_publish_date": {
+            "gte": "2013-08-27"
+          }
+        }
+    }
+}
+
+
+
+
+
+
+
+GET courses/_search
+{
+    "query": {
+        "bool": {
+            "must": [
+              {"match": {"name": "accounting"}}
+            ],
+            "must_not": [
+              {"match": {"room": "e7"}}
+            ],
+            "should": [
+                {"range":{
+                    "students_enrolled":{
+                        "gte": 10,
+                        "lte": 20
+                    }
+                }
+            } 
+            ],
+            "minimum_should_match": 1
+        }
+    }
+}

@@ -1,0 +1,21 @@
+POST /vehicles/_update/123
+{
+    "doc": {
+        "driver": "Tom"
+
+    }
+    
+  }
+
+
+  GET /vehicles/_doc/123
+
+  DELETE /vehicles/_doc/123
+
+
+DELETE /vehicles/_doc
+
+GET /vehicles
+
+
+DELETE /vehicles
