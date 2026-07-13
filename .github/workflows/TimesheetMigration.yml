@@ -97,8 +97,7 @@ jobs:
             $connection.Close()
         }
 
-
-  # JOB 2 PARTNER SERVER DEPLOYMENT
+  # JOB 2 PARTNER SERVER DEPLOYMENT (FIXED INDENTATION HIERARCHY)
   Production:
     name: Production/Deploy
     runs-on: windows-latest
@@ -157,8 +156,7 @@ jobs:
         # 2. Open up the project manifest file and replace internal definitions
         $manifestPath = "$extractedPath\@Project.manifest"
         (Get-Content $manifestPath) | ForEach-Object {
-            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" `
-               -replace 'SSIS:Name="TimesheetDevTestMigration"', 'SSIS:Name="TimesheetProductionMigration"'
+            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" -replace 'SSIS:Name="TimesheetDevTestMigration"', 'SSIS:Name="TimesheetProductionMigration"'
         } | Set-Content $manifestPath
         
         # 3. Compress the archive files back up into a clean .ispac file delivery stream
