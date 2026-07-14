@@ -1,4 +1,4 @@
-\name: Timesheet Automation
+name: Timesheet Automation
 
 on:
   workflow_dispatch:
