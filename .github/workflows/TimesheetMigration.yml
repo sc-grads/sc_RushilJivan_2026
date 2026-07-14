@@ -50,29 +50,21 @@ jobs:
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
         try {
             $connection.Open()
-            
-            # Deploy project directly to expose errors instantly
-            Write-Host "Deploying ISPAC project to SSISDB..."
-            $deployLines = @(
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
-                "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'$projectName', @project_stream = @project_stream;"
-            )
-            $deployQuery = $deployLines -join "`n"
-            $deployCmd = $connection.CreateCommand()
-            $deployCmd.CommandText = $deployQuery
-            $deployCmd.CommandTimeout = 0  # Infinite timeout for heavy binary transfers
-            $deployCmd.ExecuteNonQuery() | Out-Null
-            Write-Host "Project deployed successfully."
-
-            # Configure the Execution Job in msdb
-            Write-Host "Configuring SQL Server Agent Execution Job..."
-            $jobLines = @(
+            $sqlLines = @(
+                "SET NOCOUNT ON;",
                 "USE [msdb];",
+                "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'GitHub_SSIS_Deploy_Job')",
+                "BEGIN",
+                "    EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job', @delete_unused_schedule=1;",
+                "END",
+                "EXEC dbo.sp_add_job @job_name = N'GitHub_SSIS_Deploy_Job', @enabled = 1, @start_step_id = 1;",
+                "DECLARE @deploy_script NVARCHAR(MAX);",
+                "SET @deploy_script = N'USE [SSISDB]; IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; END DECLARE @project_stream VARBINARY(MAX) = $hexString; EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''$projectName'', @project_stream = @project_stream;';",
+                "EXEC dbo.sp_add_jobstep @job_name = N'GitHub_SSIS_Deploy_Job', @step_name = N'Run Deploy', @subsystem = N'TSQL', @command = @deploy_script, @retry_attempts = 0;",
+                "EXEC dbo.sp_add_jobserver @job_name = N'GitHub_SSIS_Deploy_Job', @server_name = N'(local)';",
+                "EXEC dbo.sp_start_job @job_name = N'GitHub_SSIS_Deploy_Job';",
+                "WAITFOR DELAY '00:00:07';",
+                "EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job';",
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$executionJobName')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
@@ -93,12 +85,11 @@ jobs:
                 "    @active_start_time = 080000, ",
                 "    @active_end_time = 170000;"
             )
-            $jobQuery = $jobLines -join "`n"
-            $jobCmd = $connection.CreateCommand()
-            $jobCmd.CommandText = $jobQuery
-            $jobCmd.ExecuteNonQuery() | Out-Null
-            
-            Write-Host "SUCCESS: Local deployment and job configuration completed."
+            $sqlQuery = $sqlLines -join "`n"
+            $command = $connection.CreateCommand()
+            $command.CommandText = $sqlQuery
+            $command.ExecuteNonQuery() | Out-Null
+            Write-Host "SUCCESS: Local deployment completed."
         } catch {
             Write-Error "Local Execution Failed: $_"
             exit 1
@@ -145,6 +136,7 @@ jobs:
         # Source name in repo vs target name for your partner
         $sourcePackageName = "TimesheetDevTestMigrationPK"
         $targetPackageName = "TimesheetProductionMigrationPK"
+        $sourceProjectName = "TimesheetDevTestMigration"
 
         # STEP 3 DYNAMICALLY UNPACK, RENAME, AND REPACK THE ISPAC
         Write-Host "Unpacking ispac to inject Production partner package name..."
@@ -163,19 +155,18 @@ jobs:
             exit 1
         }
         
-        # 2. Open up the project manifest file and replace internal definitions safely
+        # 2. Open up the project manifest file and replace ALL instances of old project and package names safely
         $manifestPath = "$extractedPath\@Project.manifest"
         (Get-Content $manifestPath) | ForEach-Object {
             $_ -replace $sourcePackageName, $targetPackageName `
-               -replace 'SSIS:Name="TimesheetDevTestMigration"', 'SSIS:Name="TimesheetProductionMigration"'
+               -replace $sourceProjectName, $targetProjectName
         } | Set-Content $manifestPath
         
-        # 3. Use standard .NET ZipFile to guarantee the exact compression encoding SSISDB expects
+        # 3. Compress the archive files back up using the original working method
         Remove-Item "$($workingDir.FullName)\temp.zip" -ErrorAction SilentlyContinue
+        Compress-Archive -Path "$extractedPath\*" -DestinationPath "$($workingDir.FullName)\modified.zip"
         $modifiedIspacPath = "$($workingDir.FullName)\TimesheetDevTestMigrationModified.ispac"
-        
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($extractedPath, $modifiedIspacPath)
+        Move-Item -Path "$($workingDir.FullName)\modified.zip" -Destination $modifiedIspacPath -Force
 
         # Convert archive into the deployment hex string payload
         $fileBytes = [System.IO.File]::ReadAllBytes($modifiedIspacPath)
@@ -190,29 +181,21 @@ jobs:
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
         try {
             $connection.Open()
-            
-            # Deploy project directly to capture errors immediately
-            Write-Host "Deploying modified ISPAC project to Partner SSISDB..."
-            $deployLines = @(
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
-                "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'$targetProjectName', @project_stream = @project_stream;"
-            )
-            $deployQuery = $deployLines -join "`n"
-            $deployCmd = $connection.CreateCommand()
-            $deployCmd.CommandText = $deployQuery
-            $deployCmd.CommandTimeout = 0  # Infinite timeout for heavy binary transfers
-            $deployCmd.ExecuteNonQuery() | Out-Null
-            Write-Host "Partner project deployed successfully."
-
-            # Configure the Execution Job in msdb
-            Write-Host "Configuring Partner SQL Server Agent Execution Job..."
-            $jobLines = @(
+            $sqlLines = @(
+                "SET NOCOUNT ON;",
                 "USE [msdb];",
+                "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'GitHub_SSIS_Deploy_Job')",
+                "BEGIN",
+                "    EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job', @delete_unused_schedule=1;",
+                "END",
+                "EXEC dbo.sp_add_job @job_name = N'GitHub_SSIS_Deploy_Job', @enabled = 1, @start_step_id = 1;",
+                "DECLARE @deploy_script NVARCHAR(MAX);",
+                "SET @deploy_script = N'USE [SSISDB]; IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; END DECLARE @project_stream VARBINARY(MAX) = $hexString; EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''$targetProjectName'', @project_stream = @project_stream;';",
+                "EXEC dbo.sp_add_jobstep @job_name = N'GitHub_SSIS_Deploy_Job', @step_name = N'Run Deploy', @subsystem = N'TSQL', @command = @deploy_script, @retry_attempts = 0;",
+                "EXEC dbo.sp_add_jobserver @job_name = N'GitHub_SSIS_Deploy_Job', @server_name = N'(local)';",
+                "EXEC dbo.sp_start_job @job_name = N'GitHub_SSIS_Deploy_Job';",
+                "WAITFOR DELAY '00:00:07';",
+                "EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job';",
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$executionJobName')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
@@ -233,12 +216,11 @@ jobs:
                 "    @active_start_time = 080000, ",
                 "    @active_end_time = 170000;"
             )
-            $jobQuery = $jobLines -join "`n"
-            $jobCmd = $connection.CreateCommand()
-            $jobCmd.CommandText = $jobQuery
-            $jobCmd.ExecuteNonQuery() | Out-Null
-            
-            Write-Host "SUCCESS: Partner deployment and job configuration completed."
+            $sqlQuery = $sqlLines -join "`n"
+            $command = $connection.CreateCommand()
+            $command.CommandText = $sqlQuery
+            $command.ExecuteNonQuery() | Out-Null
+            Write-Host "SUCCESS: Partner deployment completed."
         } catch {
             Write-Error "Partner Execution Failed: $_"
             exit 1
