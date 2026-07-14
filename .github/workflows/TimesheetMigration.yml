@@ -1,11 +1,13 @@
 name: Timesheet Automation
  
 on:
-  push:
+  workflow_dispatch:
  
 jobs:
  
-  # JOB 1 LOCAL DEPLOYMENT
+  # ==========================================
+  # JOB 1: LOCAL DEPLOYMENT
+  # ==========================================
   DevTest:
     name: DevTest/Deploy
     runs-on: windows-latest
@@ -40,7 +42,6 @@ jobs:
         $packageName   = "TimesheetDevTestMigrationPK"
  
         # STEP 3 CONVERT ISPAC FILE INTO BINARY DATA STREAM
-        # No renaming needed here since it's already named correctly in your local project build
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
  
@@ -50,21 +51,29 @@ jobs:
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
         try {
             $connection.Open()
+
+            # --- DEPLOY DIRECTLY OVER THE OPEN ADO.NET CONNECTION ---
+            Write-Host "Deploying ISPAC project binary stream directly to SSISDB Catalog..."
+            $deployLines = @(
+                "USE [SSISDB];",
+                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder') BEGIN",
+                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
+                "END",
+                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+            )
+            $deployQuery = $deployLines -join "`n"
+            $deployCommand = $connection.CreateCommand()
+            $deployCommand.CommandText = $deployQuery
+            $deployCommand.CommandTimeout = 0 # Prevent timeout during network payload transfer
+            $deployCommand.ExecuteNonQuery() | Out-Null
+            Write-Host "SUCCESS: Package deployed into Catalog."
+            
+            # --- CREATE AND CONFIGURATION PERMANENT EXECUTION TRACKING JOB ---
+            Write-Host "Configuring execution tracking job and 1-minute schedule..."
             $sqlLines = @(
                 "SET NOCOUNT ON;",
                 "USE [msdb];",
-                "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'GitHub_SSIS_Deploy_Job')",
-                "BEGIN",
-                "    EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job', @delete_unused_schedule=1;",
-                "END",
-                "EXEC dbo.sp_add_job @job_name = N'GitHub_SSIS_Deploy_Job', @enabled = 1, @start_step_id = 1;",
-                "DECLARE @deploy_script NVARCHAR(MAX);",
-                "SET @deploy_script = N'USE [SSISDB]; IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; END DECLARE @project_stream VARBINARY(MAX) = $hexString; EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''TimesheetNew'', @project_stream = @project_stream;';",
-                "EXEC dbo.sp_add_jobstep @job_name = N'GitHub_SSIS_Deploy_Job', @step_name = N'Run Deploy', @subsystem = N'TSQL', @command = @deploy_script, @retry_attempts = 0;",
-                "EXEC dbo.sp_add_jobserver @job_name = N'GitHub_SSIS_Deploy_Job', @server_name = N'(local)';",
-                "EXEC dbo.sp_start_job @job_name = N'GitHub_SSIS_Deploy_Job';",
-                "WAITFOR DELAY '00:00:07';",
-                "EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job';",
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$executionJobName')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
@@ -89,7 +98,7 @@ jobs:
             $command = $connection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: Local deployment completed."
+            Write-Host "SUCCESS: Local deployment and schedule completed."
         } catch {
             Write-Error "Local Execution Failed: $_"
             exit 1
@@ -98,7 +107,9 @@ jobs:
         }
  
  
-  # JOB 2 PARTNER SERVER DEPLOYMENT
+  # ==========================================
+  # JOB 2: PARTNER SERVER DEPLOYMENT
+  # ==========================================
   Production:
     name: Production/Deploy
     runs-on: windows-latest
@@ -131,7 +142,7 @@ jobs:
         $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
         $targetFolder  = "TimesheetProductionMigration"
         $executionJobName = "RunTimesheetProductionMigrationPK"
-       
+        
         # Source name in repo vs target name for your partner
         $sourcePackageName = "TimesheetDevTestMigrationPK"
         $targetPackageName = "TimesheetProductionMigrationPK"
@@ -139,13 +150,13 @@ jobs:
         # STEP 3 DYNAMICALLY UNPACK, RENAME, AND REPACK THE ISPAC
         Write-Host "Unpacking ispac to inject Production partner package name..."
         $workingDir = New-Item -Path ".\ispac_working_prod" -ItemType Directory -Force
-       
+        
         # Convert to a standard .zip to allow native PowerShell extraction
         Copy-Item $ispacPath "$($workingDir.FullName)\temp.zip"
         Expand-Archive -Path "$($workingDir.FullName)\temp.zip" -DestinationPath "$($workingDir.FullName)\extracted"
-       
+        
         $extractedPath = "$($workingDir.FullName)\extracted"
-       
+        
         # 1. Rename the physical package file inside the archive
         if (Test-Path "$extractedPath\$sourcePackageName.dtsx") {
             Rename-Item -Path "$extractedPath\$sourcePackageName.dtsx" -NewName "$targetPackageName.dtsx"
@@ -153,13 +164,13 @@ jobs:
             Write-Error "CRITICAL ERROR: Could not find $sourcePackageName.dtsx inside the extracted ISPAC file."
             exit 1
         }
-       
+        
         # 2. Open up the project manifest file and replace the internal XML definition string
         $manifestPath = "$extractedPath\@Project.manifest"
         (Get-Content $manifestPath) | ForEach-Object {
             $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx"
         } | Set-Content $manifestPath
-       
+        
         # 3. Compress the archive files back up into a clean .ispac file delivery stream
         Remove-Item "$($workingDir.FullName)\temp.zip" -ErrorAction SilentlyContinue
         Compress-Archive -Path "$extractedPath\*" -DestinationPath "$($workingDir.FullName)\modified.zip"
@@ -169,7 +180,7 @@ jobs:
         # Convert our newly tailored archive into the clean deployment hex string payload
         $fileBytes = [System.IO.File]::ReadAllBytes($modifiedIspacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
-       
+        
         # Housekeeping: Clean up runner directories
         Remove-Item $workingDir -Recurse -Force
  
@@ -179,21 +190,29 @@ jobs:
         $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
         try {
             $connection.Open()
+
+            # --- DEPLOY DIRECTLY OVER THE OPEN ADO.NET CONNECTION ---
+            Write-Host "Deploying modified ISPAC project binary stream directly to Partner SSISDB Catalog..."
+            $deployLines = @(
+                "USE [SSISDB];",
+                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder') BEGIN",
+                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
+                "END",
+                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
+                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'TimesheetNew', @project_stream = @project_stream;"
+            )
+            $deployQuery = $deployLines -join "`n"
+            $deployCommand = $connection.CreateCommand()
+            $deployCommand.CommandText = $deployQuery
+            $deployCommand.CommandTimeout = 0 # Secure against tunnel connection drops during upload
+            $deployCommand.ExecuteNonQuery() | Out-Null
+            Write-Host "SUCCESS: Partner Package deployed into Catalog."
+            
+            # --- CREATE AND CONFIGURATION PERMANENT EXECUTION TRACKING JOB ---
+            Write-Host "Configuring partner tracking job and 1-minute schedule..."
             $sqlLines = @(
                 "SET NOCOUNT ON;",
                 "USE [msdb];",
-                "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'GitHub_SSIS_Deploy_Job')",
-                "BEGIN",
-                "    EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job', @delete_unused_schedule=1;",
-                "END",
-                "EXEC dbo.sp_add_job @job_name = N'GitHub_SSIS_Deploy_Job', @enabled = 1, @start_step_id = 1;",
-                "DECLARE @deploy_script NVARCHAR(MAX);",
-                "SET @deploy_script = N'USE [SSISDB]; IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; END DECLARE @project_stream VARBINARY(MAX) = $hexString; EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''TimesheetNew'', @project_stream = @project_stream;';",
-                "EXEC dbo.sp_add_jobstep @job_name = N'GitHub_SSIS_Deploy_Job', @step_name = N'Run Deploy', @subsystem = N'TSQL', @command = @deploy_script, @retry_attempts = 0;",
-                "EXEC dbo.sp_add_jobserver @job_name = N'GitHub_SSIS_Deploy_Job', @server_name = N'(local)';",
-                "EXEC dbo.sp_start_job @job_name = N'GitHub_SSIS_Deploy_Job';",
-                "WAITFOR DELAY '00:00:07';",
-                "EXEC dbo.sp_delete_job @job_name = N'GitHub_SSIS_Deploy_Job';",
                 "IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$executionJobName')",
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
@@ -218,7 +237,7 @@ jobs:
             $command = $connection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: Partner deployment completed."
+            Write-Host "SUCCESS: Partner deployment and scheduling completed fully."
         } catch {
             Write-Error "Partner Execution Failed: $_"
             exit 1
