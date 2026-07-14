@@ -21,10 +21,10 @@ jobs:
       shell: powershell
       run: |
         # STEP 1 LOCATE THE SSIS DEPLOYMENT FILE
-        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetDevTestMigration.ispac"
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetDevTestMigration\TimesheetDevTestMigration\bin\Development\TimesheetDevTestMigration.ispac"
         if (-not (Test-Path -Path $ispacPath)) {
             Write-Host "Primary path not found. Testing workspace folder structural correction path..."
-            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetDevTestMigration.ispac"
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetDevTestMigration\TimesheetDevTestMigration\bin\Development\TimesheetDevTestMigration.ispac"
             $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
         }
         if (-not (Test-Path -Path $ispacPath)) {
@@ -125,10 +125,10 @@ jobs:
       shell: powershell
       run: |
         # STEP 1 LOCATE THE SSIS DEPLOYMENT FILE
-        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetDevTestMigration.ispac"
+        $ispacPath = "${{ github.workspace }}\Timesheet Project\SSIS\TimesheetDevTestMigration\TimesheetDevTestMigration\bin\Development\TimesheetDevTestMigration.ispac"
         if (-not (Test-Path -Path $ispacPath)) {
             Write-Host "Primary path not found. Testing workspace folder structural correction path..."
-            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetNew\TimesheetNew\bin\Development\TimesheetDevTestMigration.ispac"
+            $ispacPath = "${{ github.workspace }}\..\Timesheet Project\SSIS\TimesheetDevTestMigration\TimesheetDevTestMigration\bin\Development\TimesheetDevTestMigration.ispac"
             $ispacPath = [System.IO.Path]::GetFullPath($ispacPath)
         }
         if (-not (Test-Path -Path $ispacPath)) {
@@ -143,7 +143,7 @@ jobs:
         $dbPassword    = "${{ secrets.SQL_PASSWORD }}"
         $targetFolder  = "TimesheetProductionMigration"
         $executionJobName = "RunTimesheetProductionMigrationPK"
-        $targetProjectName = "TimesheetNew" # Deploys as project name inside the partner folder
+        $targetProjectName = "TimesheetDevTestMigration" # Deploys as project name inside the partner folder
         
         # Source name in repo vs target name for your partner
         $sourcePackageName = "TimesheetDevTestMigrationPK" 
@@ -218,7 +218,7 @@ jobs:
                 "BEGIN",
                 "    EXEC dbo.sp_delete_job @job_name = N'$executionJobName', @delete_unused_schedule=1;",
                 "END",
-                "EXEC dbo.sp_add_job @job_name = N'$executionJobName', @enabled = 1, @description = N'Automated execution tracking for TimesheetNew.', @start_step_id = 1;",
+                "EXEC dbo.sp_add_job @job_name = N'$executionJobName', @enabled = 1, @description = N'Automated execution tracking for TimesheetDevTestMigration.', @start_step_id = 1;",
                 "DECLARE @run_command NVARCHAR(MAX);",
                 "SET @run_command = N'/ISSERVER ' + CHAR(34) + N'\SSISDB\$targetFolder\$targetProjectName\$targetPackageName.dtsx' + CHAR(34) + N' /SERVER ' + CHAR(34) + @@SERVERNAME + CHAR(34) + N' /Par ' + CHAR(34) + N'`$ServerOption::LOGGING_LEVEL(Int16)' + CHAR(34) + N';1 /CALLERINFO SQLAGENT /REPORTING E';",
                 "EXEC dbo.sp_add_jobstep @job_name = N'$executionJobName', @step_name = N'Execute SSIS Package', @subsystem = N'SSIS', @command = @run_command, @retry_attempts = 0;",
