@@ -1,7 +1,7 @@
-name: Timesheet Migration
+name: Timesheet Automation
 
 on:
-  push:
+  workflow_dispatch:
 
 jobs:
 
@@ -185,19 +185,16 @@ jobs:
         $sourcePackageName = "TimesheetDevTestMigrationPK"
         $targetPackageName = "TimesheetProductionMigrationPK"
 
-        # STEP 3 DYNAMICALLY UNPACK, RENAME, AND REPACK THE ISPAC
+        # STEP 3 DYNAMICALLY UNPACK, RENAME, AND REPACK THE ISPAC VIA XML NATIVE
         Write-Host "Unpacking ispac to inject Production partner package name..."
         $workingDir = New-Item -Path ".\ispac_working_prod" -ItemType Directory -Force
-        
-        # Load required .NET assembly for bulletproof zip handling
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         
         Copy-Item $ispacPath "$($workingDir.FullName)\temp.zip"
         [System.IO.Compression.ZipFile]::ExtractToDirectory("$($workingDir.FullName)\temp.zip", "$($workingDir.FullName)\extracted")
-        
         $extractedPath = "$($workingDir.FullName)\extracted"
         
-        # 1. Rename the physical package file inside the archive
+        # 1. Physical file rename inside deployment container
         if (Test-Path "$extractedPath\$sourcePackageName.dtsx") {
             Rename-Item -Path "$extractedPath\$sourcePackageName.dtsx" -NewName "$targetPackageName.dtsx"
         } else {
@@ -205,22 +202,33 @@ jobs:
             exit 1
         }
         
-        # 2. Open up the project manifest file and replace definitions using clean regex patterns
-        $manifestPath = "$extractedPath\@Project.manifest"
-        (Get-Content $manifestPath) | ForEach-Object {
-            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" -replace 'SSIS:Name="[^"]+"', "SSIS:Name=`"$targetProjectName`""
-        } | Set-Content $manifestPath
+        # 2. Modify internal definitions using precise XML DOM tree targeting
+        $manifestPath = "$extractedPath\Project.manifest"
+        if (-not (Test-Path $manifestPath)) {
+            $manifestPath = "$extractedPath\@Project.manifest"
+        }
         
-        # 3. Compress using reliable .NET ZipFile framework to avoid catalog parsing corruption
+        [xml]$xml = Get-Content $manifestPath
+        
+        # Target and alter the Project Name Attribute safely
+        $xml.Project.Name = $targetProjectName
+        
+        # Target and alter individual child package reference elements
+        $xml.Project.Packages.Package | ForEach-Object {
+            if ($_.Name -eq "$sourcePackageName.dtsx") {
+                $_.Name = "$targetPackageName.dtsx"
+            }
+        }
+        $xml.Save($manifestPath)
+        
+        # 3. Compress container payload via reliable Zip Extraction Assembly
         Remove-Item "$($workingDir.FullName)\temp.zip" -ErrorAction SilentlyContinue
         $modifiedIspacPath = "$($workingDir.FullName)\TimesheetDevTestMigrationModified.ispac"
         [System.IO.Compression.ZipFile]::CreateFromDirectory($extractedPath, $modifiedIspacPath)
 
-        # Convert archive into the deployment hex string payload
+        # Convert archive into deployment hex payload string stream
         $fileBytes = [System.IO.File]::ReadAllBytes($modifiedIspacPath)
         $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
-        
-        # Housekeeping: Clean up runner directories
         Remove-Item $workingDir -Recurse -Force
 
         # STEP 4 INITIALIZE SQL SERVER DATABASE CONNECTION OVER NETWORK TUNNEL
@@ -264,7 +272,7 @@ jobs:
                 $checkCmd.CommandText = $checkQuery
                 $stopDate = $checkCmd.ExecuteScalar()
                 
-                if ($null -ne $stopDate -and $stopDate -ne [System.DBNull]::Value) { 
+                if ($null -ne $stopDate -and $stopDate -ne [System.IO.Path] -and $stopDate -ne [System.DBNull]::Value) { 
                     $jobComplete = $true 
                 }
             }
@@ -277,14 +285,12 @@ jobs:
             
             if ($runStatus -ne 1) {
                 Write-Host "==================== DETAILED ERROR DIAGNOSTIC LOG ===================="
-                # 1. Fetch text error message from SQL Agent history
                 $errQuery1 = "SELECT TOP 1 message FROM msdb.dbo.sysjobhistory h JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id WHERE j.name = N'$tempDeployJob' AND h.step_id = 1 ORDER BY h.run_date DESC, h.run_time DESC;"
                 $errCmd1 = $connection.CreateCommand()
                 $errCmd1.CommandText = $errQuery1
                 $agentMsg = $errCmd1.ExecuteScalar()
                 Write-Host "SQL Agent Failure Message: $agentMsg"
                 
-                # 2. Fetch descriptive internal errors from SSISDB Catalog validation logs if present
                 $errQuery2 = "SELECT TOP 1 message FROM [SSISDB].[catalog].[operation_messages] WHERE operation_id = (SELECT MAX(operation_id) FROM [SSISDB].[catalog].[operations] WHERE message_source_type = 10) ORDER BY message_time DESC;"
                 $errCmd2 = $connection.CreateCommand()
                 $errCmd2.CommandText = $errQuery2
@@ -292,7 +298,6 @@ jobs:
                 Write-Host "SSISDB Catalog Internal Log Reason: $ssisMsg"
                 Write-Host "======================================================================="
 
-                # Clean up the job before exit
                 $cleanupCmd = $connection.CreateCommand()
                 $cleanupCmd.CommandText = "EXEC msdb.dbo.sp_delete_job @job_name = N'$tempDeployJob';"
                 $cleanupCmd.ExecuteNonQuery() | Out-Null
