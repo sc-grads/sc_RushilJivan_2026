@@ -272,7 +272,8 @@ jobs:
                 $checkCmd.CommandText = $checkQuery
                 $stopDate = $checkCmd.ExecuteScalar()
                 
-                if ($null -ne $stopDate -and $stopDate -ne [System.IO.Path] -and $stopDate -ne [System.DBNull]::Value) { 
+                # Corrected tracking condition: Removed the misplaced [System.IO.Path] reference
+                if ($null -ne $stopDate -and $stopDate -ne [System.DBNull]::Value) { 
                     $jobComplete = $true 
                 }
             }
