@@ -202,26 +202,25 @@ jobs:
             exit 1
         }
         
-        # 2. Modify internal definitions using precise XML DOM tree targeting
-        $manifestPath = "$extractedPath\Project.manifest"
-        if (-not (Test-Path $manifestPath)) {
-            $manifestPath = "$extractedPath\@Project.manifest"
-        }
-        
-        [xml]$xml = Get-Content $manifestPath
-        
-        # FIX: Force explicit XML Attribute mutations to bypass .NET object type lockouts
-        $xml.Project.SetAttribute("Name", $targetProjectName)
-        
-        # Target and alter individual child package reference elements via Attribute accessors
-        $xml.Project.Packages.Package | ForEach-Object {
-            if ($_.GetAttribute("Name") -eq "$sourcePackageName.dtsx") {
-                $_.SetAttribute("Name", "$targetPackageName.dtsx")
+        # FIX: Find and alter BOTH manifest files to keep schemas unified
+        $manifests = Get-ChildItem -Path $extractedPath -Filter "*Project.manifest"
+        foreach ($file in $manifests) {
+            Write-Host "Modifying manifest container rules within: $($file.Name)"
+            [xml]$xml = Get-Content $file.FullName
+            
+            # Apply root element naming mutations
+            $xml.Project.SetAttribute("Name", $targetProjectName)
+            
+            # Apply array package indexing mutations
+            $xml.Project.Packages.Package | ForEach-Object {
+                if ($_.GetAttribute("Name") -eq "$sourcePackageName.dtsx") {
+                    $_.SetAttribute("Name", "$targetPackageName.dtsx")
+                }
             }
+            $xml.Save($file.FullName)
         }
-        $xml.Save($manifestPath)
         
-        # 3. Compress container payload via reliable Zip Extraction Assembly
+        # 3. Compress container payload cleanly back to its binary format
         Remove-Item "$($workingDir.FullName)\temp.zip" -ErrorAction SilentlyContinue
         $modifiedIspacPath = "$($workingDir.FullName)\TimesheetDevTestMigrationModified.ispac"
         [System.IO.Compression.ZipFile]::CreateFromDirectory($extractedPath, $modifiedIspacPath)
