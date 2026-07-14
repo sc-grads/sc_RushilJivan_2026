@@ -85,7 +85,8 @@ jobs:
                 $checkCmd = $connection.CreateCommand()
                 $checkCmd.CommandText = $checkQuery
                 $stopDate = $checkCmd.ExecuteScalar()
-                if ($null -ne $stopDate -and $stopDate -gettype -notmatch "DBNull") { 
+                
+                if ($null -ne $stopDate -and $stopDate -ne [System.DBNull]::Value) { 
                     $jobComplete = $true 
                 }
             }
@@ -262,7 +263,8 @@ jobs:
                 $checkCmd = $connection.CreateCommand()
                 $checkCmd.CommandText = $checkQuery
                 $stopDate = $checkCmd.ExecuteScalar()
-                if ($null -ne $stopDate -and $stopDate -gettype -notmatch "DBNull") { 
+                
+                if ($null -ne $stopDate -and $stopDate -ne [System.DBNull]::Value) { 
                     $jobComplete = $true 
                 }
             }
