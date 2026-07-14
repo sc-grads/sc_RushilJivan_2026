@@ -154,11 +154,11 @@ jobs:
             exit 1
         }
         
-        # 2. Open up the project manifest file and replace internal definitions
+        # 2. Open up the project manifest file and replace internal definitions safely
         $manifestPath = "$extractedPath\@Project.manifest"
         (Get-Content $manifestPath) | ForEach-Object {
-            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" `
-               -replace "SSIS:Name=\"TimesheetDevTestMigration\"", "SSIS:Name=\"TimesheetProductionMigration\""
+            $_ -replace $sourcePackageName, $targetPackageName `
+               -replace 'SSIS:Name="TimesheetDevTestMigration"', 'SSIS:Name="TimesheetProductionMigration"'
         } | Set-Content $manifestPath
         
         # 3. Compress the archive files back up into a clean .ispac file delivery stream
