@@ -210,13 +210,13 @@ jobs:
         
         [xml]$xml = Get-Content $manifestPath
         
-        # Target and alter the Project Name Attribute safely
-        $xml.Project.Name = $targetProjectName
+        # FIX: Force explicit XML Attribute mutations to bypass .NET object type lockouts
+        $xml.Project.SetAttribute("Name", $targetProjectName)
         
-        # Target and alter individual child package reference elements
+        # Target and alter individual child package reference elements via Attribute accessors
         $xml.Project.Packages.Package | ForEach-Object {
-            if ($_.Name -eq "$sourcePackageName.dtsx") {
-                $_.Name = "$targetPackageName.dtsx"
+            if ($_.GetAttribute("Name") -eq "$sourcePackageName.dtsx") {
+                $_.SetAttribute("Name", "$targetPackageName.dtsx")
             }
         }
         $xml.Save($manifestPath)
@@ -272,7 +272,6 @@ jobs:
                 $checkCmd.CommandText = $checkQuery
                 $stopDate = $checkCmd.ExecuteScalar()
                 
-                # Corrected tracking condition: Removed the misplaced [System.IO.Path] reference
                 if ($null -ne $stopDate -and $stopDate -ne [System.DBNull]::Value) { 
                     $jobComplete = $true 
                 }
