@@ -39,6 +39,7 @@ jobs:
         $projectName   = "TimesheetDevTestMigration"
         $executionJobName = "RunTimesheetDevTestMigrationPK"
         $packageName   = "TimesheetDevTestMigrationPK"
+        $tempDeployJob = "Temp_SSIS_Deploy_Local"
 
         # STEP 3 CONVERT ISPAC FILE INTO BINARY HEX STREAM
         $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
@@ -51,28 +52,58 @@ jobs:
         try {
             $connection.Open()
             
-            # Step 4a: Create Catalog Folder & Deploy Project using internal CLR Bypass
-            Write-Host "Deploying ISPAC project binary stream via internal deployment engine..."
+            # Step 4a: Create Catalog Folder & Deploy Project using the Temp Job Bypass Method
+            Write-Host "Deploying ISPAC project binary stream via automated Local Agent Job..."
             $deployLines = @(
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
+                "USE [msdb];",
+                "IF EXISTS (SELECT job_id FROM sysjobs WHERE name = N'$tempDeployJob') BEGIN",
+                "    EXEC dbo.sp_delete_job @job_name = N'$tempDeployJob', @delete_unused_schedule=1;",
                 "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "DECLARE @operation_id BIGINT;",
-                "EXEC [internal].[deploy_project_internal] ",
-                "    @folder_name = N'$targetFolder', ",
-                "    @project_name = N'$projectName', ",
-                "    @project_stream = @project_stream, ",
-                "    @operation_id = @operation_id OUTPUT;"
+                "EXEC dbo.sp_add_job @job_name = N'$tempDeployJob', @enabled = 1, @start_step_id = 1;",
+                "DECLARE @command NVARCHAR(MAX);",
+                "SET @command = N'USE [SSISDB]; ",
+                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN ",
+                "    EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; ",
+                "END ",
+                "DECLARE @project_stream VARBINARY(MAX) = $hexString; ",
+                "EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''$projectName'', @project_stream = @project_stream;';",
+                "EXEC dbo.sp_add_jobstep @job_name = N'$tempDeployJob', @step_name = N'Run SSIS Deploy', @subsystem = N'TSQL', @command = @command;",
+                "EXEC dbo.sp_add_jobserver @job_name = N'$tempDeployJob', @server_name = N'(local)';",
+                "EXEC dbo.sp_start_job @job_name = N'$tempDeployJob';"
             )
             $deployQuery = $deployLines -join "`n"
             $deployCommand = $connection.CreateCommand()
             $deployCommand.CommandText = $deployQuery
-            $deployCommand.CommandTimeout = 120
             $deployCommand.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: SSIS Catalog Deployment Verified via SQL Authentication."
+            
+            # Wait for the async Agent Job to complete monitoring status
+            Write-Host "Waiting for temporary local deployment job to complete execution..."
+            $jobComplete = $false
+            while (-not $jobComplete) {
+                Start-Sleep -Seconds 3
+                $checkQuery = "SELECT current_execution_status FROM msdb.dbo.sysjobactivity WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND stop_execution_date IS NULL;"
+                $checkCmd = $connection.CreateCommand()
+                $checkCmd.CommandText = $checkQuery
+                $status = $checkCmd.ExecuteScalar()
+                if ($null -eq $status) { $jobComplete = $true }
+            }
+            
+            # Final validation check
+            $verifyQuery = "SELECT run_status FROM msdb.dbo.sysjobhistory WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND step_id = 1 ORDER BY run_date DESC, run_time DESC;"
+            $verifyCmd = $connection.CreateCommand()
+            $verifyCmd.CommandText = $verifyQuery
+            $runStatus = $verifyCmd.ExecuteScalar()
+            
+            # Clean up the temp job immediately
+            $cleanupCmd = $connection.CreateCommand()
+            $cleanupCmd.CommandText = "EXEC msdb.dbo.sp_delete_job @job_name = N'$tempDeployJob';"
+            $cleanupCmd.ExecuteNonQuery() | Out-Null
+            
+            if ($runStatus -ne 1) {
+                Write-Error "CRITICAL: The temporary deployment job failed on the server. Look at msdb history for details."
+                exit 1
+            }
+            Write-Host "SUCCESS: SSIS Catalog Deployment Verified via Automated Agent Service Principal."
 
             # Step 4b: Configure SQL Server Agent Job and Schedule tracking configurations
             Write-Host "Configuring SQL Agent Execution tracking job..."
@@ -145,6 +176,7 @@ jobs:
         $targetFolder  = "TimesheetProductionMigration"
         $targetProjectName = "TimesheetProductionMigration"
         $executionJobName = "RunTimesheetProductionMigrationPK"
+        $tempDeployJob = "Temp_SSIS_Deploy_Prod"
         
         # Source name in repo vs target name for your partner
         $sourcePackageName = "TimesheetDevTestMigrationPK"
@@ -195,27 +227,57 @@ jobs:
         try {
             $connection.Open()
             
-            # Step 4a: Create Catalog Folder & Deploy Project using internal CLR Bypass
+            # Step 4a: Create Catalog Folder & Deploy Project using the Temp Job Bypass Method
             Write-Host "Deploying ISPAC project binary stream directly to partner SSISDB Catalog..."
             $deployLines = @(
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
+                "USE [msdb];",
+                "IF EXISTS (SELECT job_id FROM sysjobs WHERE name = N'$tempDeployJob') BEGIN",
+                "    EXEC dbo.sp_delete_job @job_name = N'$tempDeployJob', @delete_unused_schedule=1;",
                 "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "DECLARE @operation_id BIGINT;",
-                "EXEC [internal].[deploy_project_internal] ",
-                "    @folder_name = N'$targetFolder', ",
-                "    @project_name = N'$targetProjectName', ",
-                "    @project_stream = @project_stream, ",
-                "    @operation_id = @operation_id OUTPUT;"
+                "EXEC dbo.sp_add_job @job_name = N'$tempDeployJob', @enabled = 1, @start_step_id = 1;",
+                "DECLARE @command NVARCHAR(MAX);",
+                "SET @command = N'USE [SSISDB]; ",
+                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = ''$targetFolder'') BEGIN ",
+                "    EXEC [catalog].[create_folder] @folder_name = N''$targetFolder''; ",
+                "END ",
+                "DECLARE @project_stream VARBINARY(MAX) = $hexString; ",
+                "EXEC [catalog].[deploy_project] @folder_name = N''$targetFolder'', @project_name = N''$targetProjectName'', @project_stream = @project_stream;';",
+                "EXEC dbo.sp_add_jobstep @job_name = N'$tempDeployJob', @step_name = N'Run SSIS Deploy', @subsystem = N'TSQL', @command = @command;",
+                "EXEC dbo.sp_add_jobserver @job_name = N'$tempDeployJob', @server_name = N'(local)';",
+                "EXEC dbo.sp_start_job @job_name = N'$tempDeployJob';"
             )
             $deployQuery = $deployLines -join "`n"
             $deployCommand = $connection.CreateCommand()
             $deployCommand.CommandText = $deployQuery
-            $deployCommand.CommandTimeout = 120
             $deployCommand.ExecuteNonQuery() | Out-Null
+            
+            # Wait for the async Agent Job to complete monitoring status
+            Write-Host "Waiting for temporary partner deployment job to complete execution..."
+            $jobComplete = $false
+            while (-not $jobComplete) {
+                Start-Sleep -Seconds 3
+                $checkQuery = "SELECT current_execution_status FROM msdb.dbo.sysjobactivity WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND stop_execution_date IS NULL;"
+                $checkCmd = $connection.CreateCommand()
+                $checkCmd.CommandText = $checkQuery
+                $status = $checkCmd.ExecuteScalar()
+                if ($null -eq $status) { $jobComplete = $true }
+            }
+            
+            # Final validation check
+            $verifyQuery = "SELECT run_status FROM msdb.dbo.sysjobhistory WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND step_id = 1 ORDER BY run_date DESC, run_time DESC;"
+            $verifyCmd = $connection.CreateCommand()
+            $verifyCmd.CommandText = $verifyQuery
+            $runStatus = $verifyCmd.ExecuteScalar()
+            
+            # Clean up the temp job immediately
+            $cleanupCmd = $connection.CreateCommand()
+            $cleanupCmd.CommandText = "EXEC msdb.dbo.sp_delete_job @job_name = N'$tempDeployJob';"
+            $cleanupCmd.ExecuteNonQuery() | Out-Null
+            
+            if ($runStatus -ne 1) {
+                Write-Error "CRITICAL: The temporary partner deployment job failed on the server. Look at msdb history for details."
+                exit 1
+            }
             Write-Host "SUCCESS: SSIS Project successfully written to partner catalog."
 
             # STEP 5 CONFIGURING TARGET EXECUTION SCHEDULER JOB
