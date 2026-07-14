@@ -202,28 +202,46 @@ jobs:
             exit 1
         }
         
-        # FIX: Find and alter BOTH manifest files to keep schemas unified
-        $manifests = Get-ChildItem -Path $extractedPath -Filter "*Project.manifest"
-        foreach ($file in $manifests) {
-            Write-Host "Modifying manifest container rules within: $($file.Name)"
-            [xml]$xml = Get-Content $file.FullName
+        # FIX: Ensure BOTH 'Project.manifest' and '@Project.manifest' are cleanly established and updated
+        $manifestTargets = @("Project.manifest", "@Project.manifest")
+        foreach ($targetName in $manifestTargets) {
+            $manifestFileRoute = "$extractedPath\$targetName"
             
-            # Apply root element naming mutations
-            $xml.Project.SetAttribute("Name", $targetProjectName)
-            
-            # Apply array package indexing mutations
-            $xml.Project.Packages.Package | ForEach-Object {
-                if ($_.GetAttribute("Name") -eq "$sourcePackageName.dtsx") {
-                    $_.SetAttribute("Name", "$targetPackageName.dtsx")
+            # If one doesn't exist, bootstrap it dynamically from the working metadata source
+            if (-not (Test-Path $manifestFileRoute)) {
+                $alternateName = if ($targetName -eq "Project.manifest") { "@Project.manifest" } else { "Project.manifest" }
+                if (Test-Path "$extractedPath\$alternateName") {
+                    Copy-Item "$extractedPath\$alternateName" $manifestFileRoute
                 }
             }
-            $xml.Save($file.FullName)
+            
+            if (Test-Path $manifestFileRoute) {
+                Write-Host "Synchronizing manifest metadata context rules inside: $targetName"
+                [xml]$xml = Get-Content $manifestFileRoute
+                
+                # Apply root project attribute updates
+                $xml.Project.SetAttribute("Name", $targetProjectName)
+                
+                # Update array index packages references matches
+                $xml.Project.Packages.Package | ForEach-Object {
+                    if ($_.GetAttribute("Name") -eq "$sourcePackageName.dtsx") {
+                        $_.SetAttribute("Name", "$targetPackageName.dtsx")
+                    }
+                }
+                $xml.Save($manifestFileRoute)
+            }
         }
         
-        # 3. Compress container payload cleanly back to its binary format
+        # 3. Clean root archive compression via strict .NET entry stream to strip directory metadata
         Remove-Item "$($workingDir.FullName)\temp.zip" -ErrorAction SilentlyContinue
         $modifiedIspacPath = "$($workingDir.FullName)\TimesheetDevTestMigrationModified.ispac"
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($extractedPath, $modifiedIspacPath)
+        
+        Write-Host "Packing clean root compression payload stream..."
+        $zipArchive = [System.IO.Compression.ZipFile]::Open($modifiedIspacPath, [System.IO.Compression.ZipArchiveMode]::Create)
+        Get-ChildItem -Path $extractedPath -File | ForEach-Object {
+            $archiveEntry = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipArchive, $_.FullName, $_.Name)
+        }
+        $zipArchive.Dispose()
 
         # Convert archive into deployment hex payload string stream
         $fileBytes = [System.IO.File]::ReadAllBytes($modifiedIspacPath)
