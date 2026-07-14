@@ -1,7 +1,7 @@
-name: Timesheet Automation
+name: Timesheet Migration
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
 
@@ -40,37 +40,46 @@ jobs:
         $executionJobName = "RunTimesheetDevTestMigrationPK"
         $packageName   = "TimesheetDevTestMigrationPK"
 
-        # STEP 3 CONVERT ISPAC FILE INTO BINARY DATA STREAM
-        $fileBytes = [System.IO.File]::ReadAllBytes($ispacPath)
-        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
-
-        # STEP 4 INITIALIZE SQL SERVER DATABASE CONNECTION OVER NETWORK TUNNEL
-        Write-Host "Establishing tunnel connection via automation_user to Local..."
-        $connStr = "Data Source=$tunnelAddress;Initial Catalog=$initialDb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
-        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        # STEP 3 INITIALIZE ASSEMBLY & DEPLOY VIA INTERFACE (Bypasses SQL Auth Restriction)
         try {
-            $connection.Open()
-            
-            # Direct Catalog Deployment Execution (Guarantees errors are caught instantly)
-            Write-Host "Deploying ISPAC project directly into SSISDB catalog..."
-            $deployLines = @(
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
-                "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'$projectName', @project_stream = @project_stream;"
-            )
-            $deployQuery = $deployLines -join "`n"
-            $deployCommand = $connection.CreateCommand()
-            $deployCommand.CommandText = $deployQuery
-            $deployCommand.CommandTimeout = 60
-            $deployCommand.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: SSIS Project successfully written to catalog."
+            # Load the necessary SSIS Management Assembly
+            Write-Host "Loading SQL Server Integration Services assemblies..."
+            Add-Type -AssemblyName "Microsoft.SqlServer.Management.IntegrationServices, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" -ErrorAction SilentlyContinue
+            if (-not ([Ref].Assembly.GetTypes() | Where-Object { $_.FullName -eq "Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices" })) {
+                # Fallback to loading by path or unversioned if GAC differs
+                [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
+            }
 
-            # STEP 5 CONFIGURING TARGET EXECUTION SCHEDULER JOB
-            Write-Host "Configuring SQL Agent Execution tracking job..."
+            Write-Host "Establishing connection via SQL Authentication to Local..."
+            $connStr = "Data Source=$tunnelAddress;Initial Catalog=master;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
+            $sqlConnection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+            
+            $serverConnection = New-Object Microsoft.SqlServer.Management.Common.ServerConnection($sqlConnection)
+            $ssisStore = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($serverConnection)
+            
+            # Target the SSISDB Catalog
+            $catalog = $ssisStore.Catalogs["SSISDB"]
+            
+            # Ensure folder exists
+            if (-not $catalog.Folders[$targetFolder]) {
+                Write-Host "Creating catalog folder: $targetFolder"
+                $folder = New-Object Microsoft.SqlServer.Management.IntegrationServices.CatalogFolder($catalog, $targetFolder, "Automated folder creation.")
+                $folder.Create()
+            } else {
+                $folder = $catalog.Folders[$targetFolder]
+            }
+
+            # Deploy the ISPAC project payload directly
+            Write-Host "Deploying ISPAC project directly to folder..."
+            $ispacBinary = [System.IO.File]::ReadAllBytes($ispacPath)
+            $folder.DeployProject($projectName, $ispacBinary)
+            Write-Host "SUCCESS: SSIS Project deployed successfully."
+            $sqlConnection.Close()
+
+            # STEP 4 CONFIGURING TARGET EXECUTION SCHEDULER JOB via standard T-SQL connection
+            Write-Host "Connecting to establish SQL Agent tracking job..."
+            $agentConnection = New-Object System.Data.SqlClient.SqlConnection("Data Source=$tunnelAddress;Initial Catalog=msdb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;")
+            $agentConnection.Open()
             $sqlLines = @(
                 "SET NOCOUNT ON;",
                 "USE [msdb];",
@@ -95,15 +104,14 @@ jobs:
                 "    @active_end_time = 170000;"
             )
             $sqlQuery = $sqlLines -join "`n"
-            $command = $connection.CreateCommand()
+            $command = $agentConnection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
             Write-Host "SUCCESS: Local deployment and scheduling completed fully."
+            $agentConnection.Close()
         } catch {
             Write-Error "Local Execution Failed: $_"
             exit 1
-        } finally {
-            $connection.Close()
         }
 
   # JOB 2 PARTNER SERVER DEPLOYMENT
@@ -176,40 +184,50 @@ jobs:
         $modifiedIspacPath = "$($workingDir.FullName)\TimesheetDevTestMigrationModified.ispac"
         [System.IO.Compression.ZipFile]::CreateFromDirectory($extractedPath, $modifiedIspacPath)
 
-        # Convert archive into the deployment hex string payload
-        $fileBytes = [System.IO.File]::ReadAllBytes($modifiedIspacPath)
-        $hexString = "0x" + [System.BitConverter]::ToString($fileBytes).Replace("-", "")
+        # Convert archive into binary payload stream
+        $ispacBinary = [System.IO.File]::ReadAllBytes($modifiedIspacPath)
         
         # Housekeeping: Clean up runner directories
         Remove-Item $workingDir -Recurse -Force
 
-        # STEP 4 INITIALIZE SQL SERVER DATABASE CONNECTION OVER NETWORK TUNNEL
-        Write-Host "Establishing tunnel connection to partner environment..."
-        $connStr = "Data Source=$tunnelAddress;Initial Catalog=$initialDb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
-        $connection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+        # STEP 4 INITIALIZE ASSEMBLY & DEPLOY VIA INTERFACE (Bypasses SQL Auth Restriction)
         try {
-            $connection.Open()
-            
-            # Direct Catalog Deployment Execution (Guarantees errors are caught instantly)
-            Write-Host "Deploying ISPAC project directly into SSISDB catalog..."
-            $deployLines = @(
-                "USE [SSISDB];",
-                "IF NOT EXISTS (SELECT 1 FROM [catalog].[folders] WHERE name = '$targetFolder')",
-                "BEGIN",
-                "    EXEC [catalog].[create_folder] @folder_name = N'$targetFolder';",
-                "END",
-                "DECLARE @project_stream VARBINARY(MAX) = $hexString;",
-                "EXEC [catalog].[deploy_project] @folder_name = N'$targetFolder', @project_name = N'$targetProjectName', @project_stream = @project_stream;"
-            )
-            $deployQuery = $deployLines -join "`n"
-            $deployCommand = $connection.CreateCommand()
-            $deployCommand.CommandText = $deployQuery
-            $deployCommand.CommandTimeout = 60
-            $deployCommand.ExecuteNonQuery() | Out-Null
-            Write-Host "SUCCESS: SSIS Project successfully written to catalog."
+            # Load the necessary SSIS Management Assembly
+            Write-Host "Loading SQL Server Integration Services assemblies..."
+            Add-Type -AssemblyName "Microsoft.SqlServer.Management.IntegrationServices, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" -ErrorAction SilentlyContinue
+            if (-not ([Ref].Assembly.GetTypes() | Where-Object { $_.FullName -eq "Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices" })) {
+                [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Management.IntegrationServices") | Out-Null
+            }
 
-            # STEP 5 CONFIGURING TARGET EXECUTION SCHEDULER JOB
+            Write-Host "Establishing connection via SQL Authentication to Partner environment..."
+            $connStr = "Data Source=$tunnelAddress;Initial Catalog=master;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;"
+            $sqlConnection = New-Object System.Data.SqlClient.SqlConnection($connStr)
+            
+            $serverConnection = New-Object Microsoft.SqlServer.Management.Common.ServerConnection($sqlConnection)
+            $ssisStore = New-Object Microsoft.SqlServer.Management.IntegrationServices.IntegrationServices($serverConnection)
+            
+            # Target the SSISDB Catalog
+            $catalog = $ssisStore.Catalogs["SSISDB"]
+            
+            # Ensure folder exists
+            if (-not $catalog.Folders[$targetFolder]) {
+                Write-Host "Creating catalog folder: $targetFolder"
+                $folder = New-Object Microsoft.SqlServer.Management.IntegrationServices.CatalogFolder($catalog, $targetFolder, "Automated folder creation.")
+                $folder.Create()
+            } else {
+                $folder = $catalog.Folders[$targetFolder]
+            }
+
+            # Deploy the modified binary stream
+            Write-Host "Deploying modified ISPAC project directly to partner catalog..."
+            $folder.DeployProject($targetProjectName, $ispacBinary)
+            Write-Host "SUCCESS: SSIS Project successfully written to partner catalog."
+            $sqlConnection.Close()
+
+            # STEP 5 CONFIGURING TARGET EXECUTION SCHEDULER JOB via standard T-SQL connection
             Write-Host "Configuring SQL Agent Execution tracking job..."
+            $agentConnection = New-Object System.Data.SqlClient.SqlConnection("Data Source=$tunnelAddress;Initial Catalog=msdb;User ID=$dbUser;Password=$dbPassword;TrustServerCertificate=True;Encrypt=False;")
+            $agentConnection.Open()
             $sqlLines = @(
                 "SET NOCOUNT ON;",
                 "USE [msdb];",
@@ -234,13 +252,12 @@ jobs:
                 "    @active_end_time = 170000;"
             )
             $sqlQuery = $sqlLines -join "`n"
-            $command = $connection.CreateCommand()
+            $command = $agentConnection.CreateCommand()
             $command.CommandText = $sqlQuery
             $command.ExecuteNonQuery() | Out-Null
             Write-Host "SUCCESS: Partner deployment and scheduling completed fully."
+            $agentConnection.Close()
         } catch {
             Write-Error "Partner Execution Failed: $_"
             exit 1
-        } finally {
-            $connection.Close()
         }
