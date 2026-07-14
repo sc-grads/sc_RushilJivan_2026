@@ -76,20 +76,22 @@ jobs:
             $deployCommand.CommandText = $deployQuery
             $deployCommand.ExecuteNonQuery() | Out-Null
             
-            # Wait for the async Agent Job to complete monitoring status
+            # Wait for the async Agent Job to complete by tracking stop_execution_date
             Write-Host "Waiting for temporary local deployment job to complete execution..."
             $jobComplete = $false
             while (-not $jobComplete) {
                 Start-Sleep -Seconds 3
-                $checkQuery = "SELECT current_execution_status FROM msdb.dbo.sysjobactivity WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND stop_execution_date IS NULL;"
+                $checkQuery = "SELECT TOP 1 ja.stop_execution_date FROM msdb.dbo.sysjobactivity ja JOIN msdb.dbo.sysjobs j ON ja.job_id = j.job_id WHERE j.name = N'$tempDeployJob' ORDER BY ja.start_execution_date DESC;"
                 $checkCmd = $connection.CreateCommand()
                 $checkCmd.CommandText = $checkQuery
-                $status = $checkCmd.ExecuteScalar()
-                if ($null -eq $status) { $jobComplete = $true }
+                $stopDate = $checkCmd.ExecuteScalar()
+                if ($null -ne $stopDate -and $stopDate -gettype -notmatch "DBNull") { 
+                    $jobComplete = $true 
+                }
             }
             
             # Final validation check
-            $verifyQuery = "SELECT run_status FROM msdb.dbo.sysjobhistory WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND step_id = 1 ORDER BY run_date DESC, run_time DESC;"
+            $verifyQuery = "SELECT TOP 1 run_status FROM msdb.dbo.sysjobhistory h JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id WHERE j.name = N'$tempDeployJob' AND h.step_id = 1 ORDER BY h.run_date DESC, h.run_time DESC;"
             $verifyCmd = $connection.CreateCommand()
             $verifyCmd.CommandText = $verifyQuery
             $runStatus = $verifyCmd.ExecuteScalar()
@@ -251,20 +253,22 @@ jobs:
             $deployCommand.CommandText = $deployQuery
             $deployCommand.ExecuteNonQuery() | Out-Null
             
-            # Wait for the async Agent Job to complete monitoring status
+            # Wait for the async Agent Job to complete by tracking stop_execution_date
             Write-Host "Waiting for temporary partner deployment job to complete execution..."
             $jobComplete = $false
             while (-not $jobComplete) {
                 Start-Sleep -Seconds 3
-                $checkQuery = "SELECT current_execution_status FROM msdb.dbo.sysjobactivity WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND stop_execution_date IS NULL;"
+                $checkQuery = "SELECT TOP 1 ja.stop_execution_date FROM msdb.dbo.sysjobactivity ja JOIN msdb.dbo.sysjobs j ON ja.job_id = j.job_id WHERE j.name = N'$tempDeployJob' ORDER BY ja.start_execution_date DESC;"
                 $checkCmd = $connection.CreateCommand()
                 $checkCmd.CommandText = $checkQuery
-                $status = $checkCmd.ExecuteScalar()
-                if ($null -eq $status) { $jobComplete = $true }
+                $stopDate = $checkCmd.ExecuteScalar()
+                if ($null -ne $stopDate -and $stopDate -gettype -notmatch "DBNull") { 
+                    $jobComplete = $true 
+                }
             }
             
             # Final validation check
-            $verifyQuery = "SELECT run_status FROM msdb.dbo.sysjobhistory WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'$tempDeployJob') AND step_id = 1 ORDER BY run_date DESC, run_time DESC;"
+            $verifyQuery = "SELECT TOP 1 run_status FROM msdb.dbo.sysjobhistory h JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id WHERE j.name = N'$tempDeployJob' AND h.step_id = 1 ORDER BY h.run_date DESC, h.run_time DESC;"
             $verifyCmd = $connection.CreateCommand()
             $verifyCmd.CommandText = $verifyQuery
             $runStatus = $verifyCmd.ExecuteScalar()
