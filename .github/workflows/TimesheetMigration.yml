@@ -1,7 +1,7 @@
-name: Timesheet Automation
+name: Timesheet Migration
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
 
@@ -205,10 +205,10 @@ jobs:
             exit 1
         }
         
-        # 2. Open up the project manifest file and replace internal definitions
+        # 2. Open up the project manifest file and replace definitions using clean regex patterns
         $manifestPath = "$extractedPath\@Project.manifest"
         (Get-Content $manifestPath) | ForEach-Object {
-            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" -replace 'SSIS:Name="TimesheetDevTestMigration"', 'SSIS:Name="TimesheetProductionMigration"'
+            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" -replace 'SSIS:Name="[^"]+"', "SSIS:Name=`"$targetProjectName`""
         } | Set-Content $manifestPath
         
         # 3. Compress using reliable .NET ZipFile framework to avoid catalog parsing corruption
@@ -275,15 +275,36 @@ jobs:
             $verifyCmd.CommandText = $verifyQuery
             $runStatus = $verifyCmd.ExecuteScalar()
             
-            # Clean up the temp job immediately
+            if ($runStatus -ne 1) {
+                Write-Host "==================== DETAILED ERROR DIAGNOSTIC LOG ===================="
+                # 1. Fetch text error message from SQL Agent history
+                $errQuery1 = "SELECT TOP 1 message FROM msdb.dbo.sysjobhistory h JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id WHERE j.name = N'$tempDeployJob' AND h.step_id = 1 ORDER BY h.run_date DESC, h.run_time DESC;"
+                $errCmd1 = $connection.CreateCommand()
+                $errCmd1.CommandText = $errQuery1
+                $agentMsg = $errCmd1.ExecuteScalar()
+                Write-Host "SQL Agent Failure Message: $agentMsg"
+                
+                # 2. Fetch descriptive internal errors from SSISDB Catalog validation logs if present
+                $errQuery2 = "SELECT TOP 1 message FROM [SSISDB].[catalog].[operation_messages] WHERE operation_id = (SELECT MAX(operation_id) FROM [SSISDB].[catalog].[operations] WHERE message_source_type = 10) ORDER BY message_time DESC;"
+                $errCmd2 = $connection.CreateCommand()
+                $errCmd2.CommandText = $errQuery2
+                $ssisMsg = $errCmd2.ExecuteScalar()
+                Write-Host "SSISDB Catalog Internal Log Reason: $ssisMsg"
+                Write-Host "======================================================================="
+
+                # Clean up the job before exit
+                $cleanupCmd = $connection.CreateCommand()
+                $cleanupCmd.CommandText = "EXEC msdb.dbo.sp_delete_job @job_name = N'$tempDeployJob';"
+                $cleanupCmd.ExecuteNonQuery() | Out-Null
+
+                Write-Error "CRITICAL: The temporary partner deployment job failed on the server. Review the Diagnostic log printed above."
+                exit 1
+            }
+            
+            # Clean up the temp job on successful run
             $cleanupCmd = $connection.CreateCommand()
             $cleanupCmd.CommandText = "EXEC msdb.dbo.sp_delete_job @job_name = N'$tempDeployJob';"
             $cleanupCmd.ExecuteNonQuery() | Out-Null
-            
-            if ($runStatus -ne 1) {
-                Write-Error "CRITICAL: The temporary partner deployment job failed on the server. Look at msdb history for details."
-                exit 1
-            }
             Write-Host "SUCCESS: SSIS Project successfully written to partner catalog."
 
             # STEP 5 CONFIGURING TARGET EXECUTION SCHEDULER JOB
