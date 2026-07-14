@@ -97,7 +97,8 @@ jobs:
             $connection.Close()
         }
 
-  # JOB 2 PARTNER SERVER DEPLOYMENT (FIXED INDENTATION HIERARCHY)
+
+  # JOB 2 PARTNER SERVER DEPLOYMENT
   Production:
     name: Production/Deploy
     runs-on: windows-latest
@@ -135,6 +136,7 @@ jobs:
         # Source name in repo vs target name for your partner
         $sourcePackageName = "TimesheetDevTestMigrationPK"
         $targetPackageName = "TimesheetProductionMigrationPK"
+        $sourceProjectName = "TimesheetDevTestMigration"
 
         # STEP 3 DYNAMICALLY UNPACK, RENAME, AND REPACK THE ISPAC
         Write-Host "Unpacking ispac to inject Production partner package name..."
@@ -153,13 +155,14 @@ jobs:
             exit 1
         }
         
-        # 2. Open up the project manifest file and replace internal definitions
+        # 2. Open up the project manifest file and replace ALL instances of old project and package names safely
         $manifestPath = "$extractedPath\@Project.manifest"
         (Get-Content $manifestPath) | ForEach-Object {
-            $_ -replace "$sourcePackageName.dtsx", "$targetPackageName.dtsx" -replace 'SSIS:Name="TimesheetDevTestMigration"', 'SSIS:Name="TimesheetProductionMigration"'
+            $_ -replace $sourcePackageName, $targetPackageName `
+               -replace $sourceProjectName, $targetProjectName
         } | Set-Content $manifestPath
         
-        # 3. Compress the archive files back up into a clean .ispac file delivery stream
+        # 3. Compress the archive files back up using the original working method
         Remove-Item "$($workingDir.FullName)\temp.zip" -ErrorAction SilentlyContinue
         Compress-Archive -Path "$extractedPath\*" -DestinationPath "$($workingDir.FullName)\modified.zip"
         $modifiedIspacPath = "$($workingDir.FullName)\TimesheetDevTestMigrationModified.ispac"
