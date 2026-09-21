@@ -1,0 +1,125 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f172a;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.base .base-content .form {
+    background-color: rgba(30, 41, 59, 0.9);
+    border: 1px solid #475569;
+    border-radius: 12px;
+    width: 360px;
+    padding: 30px 25px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.base .base-content .form h3 {
+    color: #0EA5E9;
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.base .base-content .form hr {
+    border: 0;
+    height: 2px;
+    background-color: #f7f8fa;
+    margin-bottom: 20px;
+}
+
+.base .base-content .email,
+.base .base-content .password,
+.base .base-content .name,
+.base .base-content .first-name,
+.base .base-content .last-name {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.base .base-content .form h4 {
+    color: #fcfdff;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+/* Text Inputs */
+.base .base-content .form input[type="text"],
+.base .base-content .form input[type="email"],
+.base .base-content .form input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid #555;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.base .base-content .form input[type="text"]:focus,
+.base .base-content .form input[type="email"]:focus,
+.base .base-content .form input[type="password"]:focus {
+    border-color: #0EA5E9;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.base .base-content .form hr.field-hr {
+    display: none;
+}
+
+.base .base-content .form .buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    align-items: center;
+}
+
+.base .base-content .form .buttons input[type="submit"],
+.base .base-content .form .buttons a {
+    flex: 1;
+    display: inline-block;
+    text-align: center;
+    padding: 10px 15px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.base .base-content .form .buttons input[type="submit"] {
+    background-color: #0EA5E9;
+    color: #fff;
+    border: 2px solid #0EA5E9;
+}
+
+.base .base-content .form .buttons input[type="submit"]:hover {
+    background-color: #0284C7;
+    border-color: #0284C7;
+}
+
+.base .base-content .form .buttons a {
+    background-color: transparent;
+    color: #cbd5e1;
+    border: 2px solid #64748b;
+}
+
+.base .base-content .form .buttons a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #94a3b8;
+}

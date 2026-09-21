@@ -1,0 +1,40 @@
+login/reg - done	
+products - done
+orders - done
+cart - done
+checkout (payment) - done
+
+
+customer will have contact no., address - done
+employee will have department, emp no., role - ???
+
+
+frontend and backend
+
+add background image to sign up and login (color)
+add audit logging
+
+---DONE---
+
+when edit, photo shouldn't disappear, in fact the info shouldn't disappear, it should be what it is stay there and edit whats necessary
+register must be name, surname, email, password
+login with email
+all users will have email, first name, last name 
+shop items and add shop items to be visible on site 
+add role to user: customer, admin, right now admin is set to id = 1 only
+when delete an item, picture and everything should be deleted (as hard delete)
+checkout and cart on same page, account name holder, account number, address (dummy data, all goes to db)
+address is necessary but they ask when you checking out
+profile match theme
+change password page
+sign up and login theme
+forgot password
+pricing on home page, 2 decimal places
+categories page
+flagship bike change
+
+
+
+
+
+
