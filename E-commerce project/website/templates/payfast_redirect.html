@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting to PayFast...</title>
+</head>
+
+<body onload="document.forms['payfast_form'].submit();">
+    <div style="text-align: center; margin-top: 100px; font-family: sans-serif;">
+        <h2>Connecting to Secure Payment Gateway...</h2>
+        <p>Please wait while we redirect you to PayFast.</p>
+
+        <form name="payfast_form" action="{{ payfast_url }}" method="POST">
+            {% for key, value in payfast_data.items() %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+            <noscript>
+                <button type="submit">Click here if you are not redirected automatically</button>
+            </noscript>
+        </form>
+    </div>
+</body>
+
+</html>
