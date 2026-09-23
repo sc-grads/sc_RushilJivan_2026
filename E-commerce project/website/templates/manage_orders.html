@@ -4,16 +4,30 @@
 
 {% block body %}
 <div class="container my-5">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-1">
                 <i class="fa-solid fa-clipboard-list me-2" style="color: #0EA5E9;"></i>Manage Customer Orders
             </h2>
-            <p class="text-muted small mb-0">Review customer orders and update statuses.</p>
+            <p class="text-muted small mb-0">Review grouped customer transactions with product details and update
+                statuses.</p>
         </div>
-        <span class="badge bg-white text-dark border shadow-sm px-3 py-2 fs-6">
-            Total Orders: {{ orders|length }}
-        </span>
+
+        <!-- Filter and Count Controls -->
+        <div class="d-flex align-items-center gap-3">
+            <form method="GET" action="{{ url_for('admin.manage_orders') }}" class="d-flex align-items-center">
+                <select name="time_filter" class="form-select form-select-sm shadow-none bg-white border"
+                    onchange="this.form.submit()">
+                    <option value="all" {% if time_filter=='all' %}selected{% endif %}>All Time</option>
+                    <option value="3m" {% if time_filter=='3m' %}selected{% endif %}>Last 3 Months</option>
+                    <option value="6m" {% if time_filter=='6m' %}selected{% endif %}>Last 6 Months</option>
+                    <option value="1y" {% if time_filter=='1y' %}selected{% endif %}>Last Year</option>
+                </select>
+            </form>
+            <span class="badge bg-white text-dark border shadow-sm px-3 py-2 fs-6">
+                Total Transactions: {{ pagination.total }}
+            </span>
+        </div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -29,54 +43,80 @@
     {% endwith %}
 
     {% if orders %}
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead style="background-color: #1E293B; color: white;">
                     <tr>
-                        <th class="py-3 ps-4">Order ID</th>
-                        <th class="py-3">Date</th>
+                        <th class="py-3 ps-4">Payment ID / Date</th>
                         <th class="py-3">Customer ID</th>
-                        <th class="py-3">Product ID</th>
-                        <th class="py-3">Qty & Price</th>
+                        <th class="py-3">Items Purchased</th>
                         <th class="py-3">Shipping Address</th>
                         <th class="py-3">Status</th>
                         <th class="py-3 pe-4 text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for order in orders %}
+                    {% for order_group in orders %}
+                    {% set first_order = order_group[0] %}
                     <tr>
-                        <td class="ps-4 fw-bold text-dark">#{{ order.id }}</td>
-                        <td class="small text-muted">
-                            {{ order.date_ordered.strftime('%Y-%m-%d %H:%M') if order.date_ordered else 'N/A' }}
+                        <td class="ps-4">
+                            <span class="fw-bold text-dark d-block">#{{ first_order.payment_id }}</span>
+                            <span class="small text-muted">
+                                {{ first_order.date_ordered.strftime('%Y-%m-%d %H:%M') if first_order.date_ordered else
+                                'N/A' }}
+                            </span>
                         </td>
-                        <td>{{ order.customer_link }}</td>
-                        <td>{{ order.product_link }}</td>
                         <td>
-                            <span class="fw-semibold">{{ order.quantity }}x</span>
-                            <span class="text-success small fw-bold">R {{ "{:,.2f}".format(order.price) }}</span>
+                            <span class="badge bg-light text-dark border px-2 py-1">User #{{ first_order.customer_link
+                                }}</span>
+                        </td>
+                        <td style="min-width: 280px;">
+                            <div class="d-flex flex-column gap-2 py-2">
+                                {% for item in order_group %}
+                                <div class="d-flex align-items-center gap-3">
+                                    <!-- Product Picture Thumbnail (44px) -->
+                                    <img src="{{ url_for('admin.get_image', filename=item.product.product_picture.replace('media/', '')) if item.product and item.product.product_picture else url_for('admin.get_image', filename='default.jpg') }}"
+                                        alt="Product" class="rounded border shadow-sm"
+                                        style="width: 44px; height: 44px; object-fit: cover; flex-shrink: 0;">
+
+                                    <!-- Product Info -->
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-semibold text-dark fs-6">
+                                            {{ item.product.product_name if item.product else 'Product #' ~
+                                            item.product_link }}
+                                        </h6>
+                                        <span class="text-muted small">Qty: <strong>{{ item.quantity }}</strong></span>
+                                        &bull;
+                                        <span class="text-success small fw-bold">R {{ "{:,.2f}".format(item.price)
+                                            }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </td>
                         <td class="small text-secondary" style="max-width: 200px;">
-                            {{ order.address }}, {{ order.city }} ({{ order.postal_code }})
+                            <div class="fw-semibold text-dark">{{ first_order.address }}</div>
+                            <div>{{ first_order.city }}, {{ first_order.postal_code }}</div>
                         </td>
                         <td>
                             <form action="{{ url_for('admin.manage_orders') }}" method="POST"
                                 class="d-flex align-items-center gap-2 m-0">
-                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <input type="hidden" name="order_id" value="{{ first_order.id }}">
                                 <select name="status" class="form-select form-select-sm shadow-none"
-                                    style="width: 160px;">
-                                    <option value="Pending" {% if order.status=='Pending' %}selected{% endif %}>Pending
+                                    style="width: 150px;">
+                                    <option value="Pending" {% if first_order.status=='Pending' %}selected{% endif %}>
+                                        Pending</option>
+                                    <option value="Paid" {% if first_order.status=='Paid' %}selected{% endif %}>Paid
                                     </option>
-                                    <option value="Paid" {% if order.status=='Paid' %}selected{% endif %}>Paid</option>
-                                    <option value="Processing" {% if order.status=='Processing' %}selected{% endif %}>
-                                        Processing</option>
-                                    <option value="Out for Delivery" {% if order.status=='Out for Delivery' %}selected{%
-                                        endif %}>Out for Delivery</option>
-                                    <option value="Delivered" {% if order.status=='Delivered' %}selected{% endif %}>
-                                        Delivered</option>
-                                    <option value="Cancelled" {% if order.status=='Cancelled' %}selected{% endif %}>
-                                        Cancelled</option>
+                                    <option value="Processing" {% if first_order.status=='Processing' %}selected{% endif
+                                        %}>Processing</option>
+                                    <option value="Out for Delivery" {% if first_order.status=='Out for Delivery'
+                                        %}selected{% endif %}>Out for Delivery</option>
+                                    <option value="Delivered" {% if first_order.status=='Delivered' %}selected{% endif
+                                        %}>Delivered</option>
+                                    <option value="Cancelled" {% if first_order.status=='Cancelled' %}selected{% endif
+                                        %}>Cancelled</option>
                                 </select>
                         </td>
                         <td class="pe-4 text-end">
@@ -92,6 +132,32 @@
             </table>
         </div>
     </div>
+
+    <!-- Pagination Controls (Preserves time_filter state) -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Order pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('admin.manage_orders', page=pagination.prev_num, time_filter=time_filter) }}">Previous</a>
+            </li>
+
+            {% for page_num in range(1, pagination.pages + 1) %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('admin.manage_orders', page=page_num, time_filter=time_filter) }}">{{ page_num
+                    }}</a>
+            </li>
+            {% endfor %}
+
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('admin.manage_orders', page=pagination.next_num, time_filter=time_filter) }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
     {% else %}
     <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-white">
         <div class="py-4">

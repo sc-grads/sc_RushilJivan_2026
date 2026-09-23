@@ -44,6 +44,12 @@
                         <a class="nav-link text-light opacity-75" href="{{ url_for('views.about') }}"
                             style="font-size: 17px;">About Us</a>
                     </li>
+                    {% if current_user.is_authenticated and current_user.customer_profile %}
+                    <li class="nav-item">
+                        <a class="nav-link text-light opacity-75" href="{{ url_for('views.sell_bike') }}"
+                            style="font-size: 17px;">Sell Your Bike</a>
+                    </li>
+                    {% endif %}
                 </ul>
 
                 <form class="d-flex mx-auto my-2 my-lg-0" role="search" action="/search" method="POST"
@@ -100,6 +106,8 @@
                                         class="fa-solid fa-tags"></i></a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders') }}">Manage Orders <i
                                         class="fa-solid fa-clipboard-list"></i></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_preowned') }}">Pre-Owned
+                                    Approvals <i class="fa-solid fa-circle-check"></i></a></li>
                             {% endif %}
 
                             <li>

@@ -1,11 +1,14 @@
-import uuid
-import os
+from collections import defaultdict
+from datetime import datetime, timedelta
 import logging
-from flask import (Blueprint, render_template, flash, redirect, request, jsonify, url_for, current_app, abort)
-from flask_login import login_required, current_user
-from .models import Product, Cart, Order, User, Category
-from .forms import CheckoutForm
+import os
+import uuid
+from flask import (Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, url_for)
+from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
 from . import db
+from .forms import CheckoutForm, SellBikeForm
+from .models import Cart, Category, Order, Product, User
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +22,14 @@ PAYFAST_URL = "https://sandbox.payfast.co.za/eng/process"
 @views.route("/")
 def home():
     items = (
-        Product.query.filter_by(is_active=True, is_flagship=False)
+        Product.query.filter_by(is_active=True, is_flagship=False, is_approved=True)
         .order_by(Product.date_added.desc())
         .all()
     )
 
-    flagship = Product.query.filter_by(is_flagship=True, is_active=True).first()
+    flagship = Product.query.filter_by(
+        is_flagship=True, is_active=True, is_approved=True
+    ).first()
     categories = Category.query.all()
 
     if current_user.is_authenticated and current_user.customer_profile:
@@ -43,6 +48,66 @@ def home():
     )
 
 
+@views.route("/sell-bike", methods=["GET", "POST"])
+@login_required
+def sell_bike():
+    if not current_user.customer_profile:
+        flash("Only customer accounts can submit pre-owned bikes.", category="error")
+        return redirect("/")
+
+    form = SellBikeForm()
+    form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+
+    if form.validate_on_submit():
+        picture_file = form.product_picture.data
+        if picture_file and picture_file.filename:
+            filename = secure_filename(picture_file.filename)
+            unique_filename = f"{uuid.uuid4().hex}_{filename}"
+
+            upload_folder = os.path.join(current_app.root_path, "customer_media")
+            os.makedirs(upload_folder, exist_ok=True)
+            picture_path = os.path.join(upload_folder, unique_filename)
+            picture_file.save(picture_path)
+            db_picture = f"customer_media/{unique_filename}"
+        else:
+            db_picture = "customer_media/default.jpg"
+
+        new_bike = Product(
+            product_name=form.product_name.data, current_price=form.current_price.data, description=form.description.data, in_stock=1, category_id=form.category.data,
+            product_picture=db_picture, is_preowned=True, is_approved=False, seller_id=current_user.customer_profile.id, is_active=True)
+
+        try:
+            db.session.add(new_bike)
+            db.session.commit()
+            logger.info(
+                "Pre-owned bike submitted for approval",
+                extra={
+                    "customer_id": current_user.customer_profile.id,
+                    "product_name": form.product_name.data,
+                },
+            )
+            flash(
+                "Your pre-owned bike has been submitted for admin approval!",
+                category="success",
+            )
+            return redirect(url_for("views.home"))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(
+                "Failed to submit pre-owned bike",
+                extra={
+                    "customer_id": current_user.customer_profile.id,
+                    "error": str(e),
+                },
+            )
+            flash(
+                "Failed to submit your bike listing. Please try again.",
+                category="error",
+            )
+
+    return render_template("sell_bike.html", form=form)
+
+
 @views.route("/add-to-cart/<int:item_id>")
 @login_required
 def add_to_cart(item_id):
@@ -57,7 +122,7 @@ def add_to_cart(item_id):
     customer_id = current_user.customer_profile.id
     item_to_add = Product.query.get_or_404(item_id)
 
-    if not item_to_add.is_active:
+    if not item_to_add.is_active or not item_to_add.is_approved:
         flash("This item is no longer available.", category="error")
         return redirect(request.referrer or "/")
 
@@ -390,17 +455,62 @@ def order():
         return redirect("/")
 
     customer_id = current_user.customer_profile.id
+    time_filter = request.args.get("filter", "all")
+
+    query = Order.query.filter_by(customer_link=customer_id)
+
+    now = datetime.now()
+    if time_filter == "3months":
+        threshold = now - timedelta(days=90)
+        query = query.filter(Order.date_ordered >= threshold)
+    elif time_filter == "6months":
+        threshold = now - timedelta(days=180)
+        query = query.filter(Order.date_ordered >= threshold)
+    elif time_filter == "year":
+        threshold = now - timedelta(days=365)
+        query = query.filter(Order.date_ordered >= threshold)
+    elif time_filter == "older":
+        threshold = now - timedelta(days=365)
+        query = query.filter(Order.date_ordered < threshold)
+
+    raw_orders = (
+        query.options(db.joinedload(Order.product))
+        .order_by(Order.date_ordered.desc())
+        .all()
+    )
+
+    grouped_dict = defaultdict(list)
+    for o in raw_orders:
+        grouped_dict[o.payment_id].append(o)
+
+    orders_list = list(grouped_dict.values())
+
     page = request.args.get("page", 1, type=int)
     per_page = 5
+    start = (page - 1) * per_page
+    end = start + per_page
 
-    pagination = (
-        Order.query.filter_by(customer_link=customer_id)
-        .order_by(Order.id.desc())
-        .paginate(page=page, per_page=per_page, error_out=False)
+    paginated_orders = orders_list[start:end]
+
+    class SimplePagination:
+        def __init__(self, page, per_page, total):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1
+            self.next_num = page + 1
+
+    pagination = SimplePagination(page, per_page, len(orders_list))
+
+    return render_template(
+        "orders.html",
+        orders=paginated_orders,
+        pagination=pagination,
+        current_filter=time_filter,
     )
-    orders = pagination.items
-
-    return render_template("orders.html", orders=orders, pagination=pagination)
 
 
 @views.route("/search", methods=["GET", "POST"])
@@ -415,7 +525,9 @@ def search():
         search_query = request.form.get("search")
         logger.info("Product search executed", extra={"query": search_query})
         items = Product.query.filter(
-            Product.is_active == True, Product.product_name.ilike(f"%{search_query}%")
+            Product.is_active == True,
+            Product.is_approved == True,
+            Product.product_name.ilike(f"%{search_query}%"),
         ).all()
         return render_template("search.html", items=items, cart=cart)
 
@@ -430,7 +542,9 @@ def about():
 @views.route("/shop/<int:category_id>")
 def category_view(category_id):
     category = Category.query.get_or_404(category_id)
-    products = Product.query.filter_by(category_id=category.id, is_active=True).all()
+    products = Product.query.filter_by(
+        category_id=category.id, is_active=True, is_approved=True
+    ).all()
 
     return render_template(
         "category_products.html",
@@ -444,11 +558,13 @@ def category_view(category_id):
 @views.route("/api/home", methods=["GET"])
 def api_home():
     items = (
-        Product.query.filter_by(is_active=True, is_flagship=False)
+        Product.query.filter_by(is_active=True, is_flagship=False, is_approved=True)
         .order_by(Product.date_added.desc())
         .all()
     )
-    flagship = Product.query.filter_by(is_flagship=True, is_active=True).first()
+    flagship = Product.query.filter_by(
+        is_flagship=True, is_active=True, is_approved=True
+    ).first()
     categories = Category.query.all()
 
     items_list = [
@@ -490,6 +606,69 @@ def api_home():
     )
 
 
+@views.route("/api/sell-bike", methods=["POST"])
+@login_required
+def api_sell_bike():
+    if not current_user.customer_profile:
+        return (
+            jsonify({"error": "Only customer accounts can submit pre-owned bikes."}),
+            403,
+        )
+
+    product_name = request.form.get("product_name")
+    current_price = request.form.get("current_price")
+    category_id = request.form.get("category")
+    description = request.form.get("description")
+    picture_file = request.files.get("product_picture")
+
+    if not product_name or not current_price or not category_id or not picture_file:
+        return jsonify({"error": "Missing required fields."}), 400
+
+    try:
+        current_price = float(current_price)
+        category_id = int(category_id)
+    except ValueError:
+        return jsonify({"error": "Invalid price or category format."}), 400
+
+    filename = secure_filename(picture_file.filename)
+    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+
+    upload_folder = os.path.join(current_app.root_path, "customer_media")
+    os.makedirs(upload_folder, exist_ok=True)
+    picture_path = os.path.join(upload_folder, unique_filename)
+    picture_file.save(picture_path)
+    db_picture = f"customer_media/{unique_filename}"
+
+    new_bike = Product(
+        product_name=product_name,
+        current_price=current_price,
+        description=description,
+        in_stock=1,
+        category_id=category_id,
+        product_picture=db_picture,
+        is_preowned=True,
+        is_approved=False,
+        seller_id=current_user.customer_profile.id,
+        is_active=True,
+    )
+
+    try:
+        db.session.add(new_bike)
+        db.session.commit()
+        return (
+            jsonify(
+                {
+                    "message": "Pre-owned bike submitted for admin approval successfully!",
+                    "product_id": new_bike.id,
+                }
+            ),
+            201,
+        )
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
 @views.route("/api/add-to-cart/<int:item_id>", methods=["POST"])
 @login_required
 def api_add_to_cart(item_id):
@@ -502,7 +681,7 @@ def api_add_to_cart(item_id):
     customer_id = current_user.customer_profile.id
     item_to_add = Product.query.get_or_404(item_id)
 
-    if not item_to_add.is_active:
+    if not item_to_add.is_active or not item_to_add.is_approved:
         return jsonify({"error": "This item is no longer available."}), 400
 
     item_exists = Cart.query.filter_by(
@@ -727,25 +906,45 @@ def api_orders():
         return jsonify({"error": "Only customer accounts have order records."}), 403
 
     customer_id = current_user.customer_profile.id
-    orders = (
-        Order.query.filter_by(customer_link=customer_id).order_by(Order.id.desc()).all()
+    raw_orders = (
+        Order.query.filter_by(customer_link=customer_id)
+        .options(db.joinedload(Order.product))
+        .order_by(Order.date_ordered.desc())
+        .all()
     )
+
+    grouped_dict = defaultdict(list)
+    for o in raw_orders:
+        grouped_dict[o.payment_id].append(o)
 
     orders_list = [
         {
-            "order_id": o.id,
-            "product_name": o.product.product_name if o.product else "Unknown",
-            "quantity": o.quantity,
-            "price": o.price,
-            "status": o.status,
-            "payment_id": o.payment_id,
-            "address": o.address,
-            "city": o.city,
-            "postal_code": o.postal_code,
+            "payment_id": payment_id,
+            "date_ordered": (
+                items[0].date_ordered.strftime("%Y-%m-%d %H:%M:%S")
+                if items[0].date_ordered
+                else None
+            ),
+            "status": items[0].status,
+            "address": items[0].address,
+            "city": items[0].city,
+            "postal_code": items[0].postal_code,
+            "items": [
+                {
+                    "order_id": item.id,
+                    "product_id": item.product_link,
+                    "product_name": (
+                        item.product.product_name if item.product else "Unknown"
+                    ),
+                    "quantity": item.quantity,
+                    "price": item.price,
+                    "subtotal": item.price * item.quantity,
+                }
+                for item in items
+            ],
         }
-        for o in orders
+        for payment_id, items in grouped_dict.items()
     ]
-
     return jsonify({"orders": orders_list}), 200
 
 
@@ -755,7 +954,9 @@ def api_search():
     search_query = data.get("search", "")
 
     items = Product.query.filter(
-        Product.is_active == True, Product.product_name.ilike(f"%{search_query}%")
+        Product.is_active == True,
+        Product.is_approved == True,
+        Product.product_name.ilike(f"%{search_query}%"),
     ).all()
 
     items_list = [
@@ -769,14 +970,15 @@ def api_search():
         }
         for p in items
     ]
-
     return jsonify({"query": search_query, "items": items_list}), 200
 
 
 @views.route("/api/shop/<int:category_id>", methods=["GET"])
 def api_category_view(category_id):
     category = Category.query.get_or_404(category_id)
-    products = Product.query.filter_by(category_id=category.id, is_active=True).all()
+    products = Product.query.filter_by(
+        category_id=category.id, is_active=True, is_approved=True
+    ).all()
 
     products_list = [
         {

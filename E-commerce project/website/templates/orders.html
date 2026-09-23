@@ -21,126 +21,153 @@
     <h1 class="text-center mb-4 fw-bold text-dark">Your Orders</h1>
 
     <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Filter Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <p class="text-muted mb-0 small">Manage and track your recent purchases.</p>
+                <form method="GET" action="{{ url_for('views.order') }}" class="d-flex align-items-center gap-2">
+                    <label for="filter" class="form-label small fw-bold text-dark mb-0 text-nowrap">Filter by:</label>
+                    <select name="filter" id="filter"
+                        class="form-select form-select-sm rounded-pill px-3 border-0 shadow-sm"
+                        onchange="this.form.submit()" style="background-color: #f8f9fa;">
+                        <option value="all" {% if current_filter=='all' %}selected{% endif %}>All Time</option>
+                        <option value="3months" {% if current_filter=='3months' %}selected{% endif %}>Past 3 Months
+                        </option>
+                        <option value="6months" {% if current_filter=='6months' %}selected{% endif %}>Past 6 Months
+                        </option>
+                        <option value="year" {% if current_filter=='year' %}selected{% endif %}>Past Year</option>
+                        <option value="older" {% if current_filter=='older' %}selected{% endif %}>Older than a Year
+                        </option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
         {% if orders %}
         <div class="col-lg-10">
-            <div class="card shadow-sm border-0 rounded-4">
+            {% for order_group in orders %}
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div
+                    class="card-header bg-light border-0 px-4 py-3 rounded-top-4 d-flex flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold text-dark small">Payment ID:</span>
+                        <span class="text-muted small me-3">{{ order_group[0].payment_id }}</span>
+                        <span class="fw-bold text-dark small">Date:</span>
+                        <span class="text-muted small">{{ order_group[0].date_ordered.strftime('%Y-%m-%d %H:%M') if
+                            order_group[0].date_ordered else '' }}</span>
+                    </div>
+                    <div>
+                        <span class="badge rounded-pill px-3 py-2 fw-bold text-uppercase
+                            {% if order_group[0].status == 'Pending' %} bg-light text-dark border
+                            {% elif order_group[0].status == 'Accepted' %} bg-info text-dark
+                            {% elif order_group[0].status == 'Out for delivery' %} bg-warning text-dark
+                            {% elif order_group[0].status == 'Delivered' %} bg-success text-white
+                            {% elif order_group[0].status == 'Canceled' %} bg-danger text-white
+                            {% else %} bg-secondary text-white
+                            {% endif %}" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                            {{ order_group[0].status }}
+                        </span>
+                    </div>
+                </div>
+
                 <div class="card-body p-4">
-                    {% for item in orders %}
+                    {% for item in order_group %}
 
                     <div class="row align-items-center mb-3">
                         <div class="col-md-3 text-center mb-3 mb-md-0">
-                            <img src="{{ item.product.product_picture }}" alt="{{ item.product.product_name }}"
+                            <img src="{{ item.product.product_picture if item.product else '' }}"
+                                alt="{{ item.product.product_name if item.product else 'Product' }}"
                                 class="img-fluid rounded-3 border-0 bg-light p-2"
-                                style="max-height: 110px; object-fit: contain;">
+                                style="max-height: 100px; object-fit: contain;">
                         </div>
 
                         <div class="col-md-5">
-                            <h5 class="fw-bold text-dark mb-1">{{ item.product.product_name }}</h5>
+                            <h5 class="fw-bold text-dark mb-1">{{ item.product.product_name if item.product else
+                                'Unknown Product' }}</h5>
                             <p class="mb-2 text-muted small">
                                 <span class="fw-semibold">Qty:</span> {{ item.quantity }} |
                                 <span class="fw-semibold" style="color: #0EA5E9;">Price: R {{
                                     "{:,.2f}".format(item.price) }}</span>
                             </p>
 
+                            {% if loop.first %}
                             <div class="text-secondary small mt-2 bg-light p-2 rounded-3 border-0">
                                 <span class="fw-bold text-dark"><i class="fas fa-location-dot me-1"
                                         style="color: #0EA5E9;"></i>Shipping Address:</span><br>
                                 {{ item.address }}, {{ item.city }} {{ item.postal_code }}
                             </div>
-                        </div>
-
-                        <div class="col-md-4 mt-4 mt-md-0">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="small fw-bold text-dark">Status:</span>
-                                <span class="badge rounded-pill px-3 py-2 fw-bold text-uppercase
-                                    {% if item.status == 'Pending' %} bg-light text-dark border
-                                    {% elif item.status == 'Accepted' %} bg-info text-dark
-                                    {% elif item.status == 'Out for delivery' %} bg-warning text-dark
-                                    {% elif item.status == 'Delivered' %} bg-success text-white
-                                    {% elif item.status == 'Canceled' %} bg-danger text-white
-                                    {% else %} bg-secondary text-white
-                                    {% endif %}" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                                    {{ item.status }}
-                                </span>
-                            </div>
-
-                            {% if item.status == 'Pending' %}
-                            <div class="progress rounded-pill bg-light" style="height: 8px;">
-                                <div class="progress-bar rounded-pill" role="progressbar"
-                                    style="width: 20%; background-color: #0EA5E9;" aria-valuenow="20" aria-valuemin="0"
-                                    aria-valuemax="100"></div>
-                            </div>
-
-                            {% elif item.status == 'Accepted' %}
-                            <div class="progress rounded-pill bg-light" style="height: 8px;">
-                                <div class="progress-bar rounded-pill bg-info" role="progressbar" style="width: 40%;"
-                                    aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-
-                            {% elif item.status == 'Out for delivery' %}
-                            <div class="progress rounded-pill bg-light" style="height: 8px;">
-                                <div class="progress-bar rounded-pill bg-warning" role="progressbar" style="width: 70%;"
-                                    aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-
-                            {% elif item.status == 'Delivered' %}
-                            <div class="progress rounded-pill bg-light" style="height: 8px;">
-                                <div class="progress-bar rounded-pill bg-success" role="progressbar"
-                                    style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                                </div>
-                            </div>
-
-                            {% elif item.status == 'Canceled' %}
-                            <div class="progress rounded-pill bg-light" style="height: 8px;">
-                                <div class="progress-bar rounded-pill bg-danger" role="progressbar" style="width: 100%;"
-                                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
                             {% endif %}
                         </div>
 
+                        <div class="col-md-4 mt-3 mt-md-0 text-md-end">
+                            <span class="text-muted small">Subtotal:</span>
+                            <h6 class="fw-bold text-dark mb-0">R {{ "{:,.2f}".format(item.price * item.quantity) }}</h6>
+                        </div>
                     </div>
 
                     {% if not loop.last %}
-                    <hr class="text-muted my-4">
+                    <hr class="text-muted my-3">
                     {% endif %}
 
                     {% endfor %}
 
-                    {% if pagination and pagination.pages > 1 %}
-                    <nav aria-label="Order history pages" class="mt-4">
-                        <ul class="pagination justify-content-center mb-0">
-                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                                <a class="page-link rounded-pill px-3 me-1"
-                                    href="{% if pagination.has_prev %}{{ url_for('views.order', page=pagination.prev_num) }}{% else %}#{% endif %}"
-                                    style="color: #0EA5E9;">Previous</a>
-                            </li>
+                    <!-- Progress Bar based on status -->
+                    <div class="mt-4 pt-2 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-bold text-dark">Order Fulfillment Progress</span>
+                            <span class="small text-muted">{{ order_group[0].status }}</span>
+                        </div>
 
-                            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2,
-                            right_current=2) %}
-                            {% if page_num %}
-                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                                <a class="page-link {% if page_num == pagination.page %}text-white{% else %}text-dark{% endif %} rounded-circle mx-1 d-flex align-items-center justify-content-center text-decoration-none custom-page-num {% if page_num == pagination.page %}active-page{% endif %}"
-                                    href="{{ url_for('views.order', page=page_num) }}">
-                                    {{ page_num }}
-                                </a>
-                            </li>
-                            {% else %}
-                            <li class="page-item disabled px-1"><span class="page-link border-0 bg-transparent">…</span>
-                            </li>
-                            {% endif %}
-                            {% endfor %}
-
-                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                                <a class="page-link rounded-pill px-3 ms-1"
-                                    href="{% if pagination.has_next %}{{ url_for('views.order', page=pagination.next_num) }}{% else %}#{% endif %}"
-                                    style="color: #0EA5E9;">Next</a>
-                            </li>
-                        </ul>
-                    </nav>
-                    {% endif %}
+                        {% set status = order_group[0].status %}
+                        <div class="progress rounded-pill bg-light" style="height: 8px;">
+                            <div class="progress-bar rounded-pill 
+                                {% if status == 'Accepted' %} bg-info w-50
+                                {% elif status == 'Out for delivery' %} bg-warning w-75
+                                {% elif status == 'Delivered' %} bg-success w-100
+                                {% elif status == 'Canceled' %} bg-danger w-100
+                                {% else %} bg-primary w-25 {% endif %}" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
+            {% endfor %}
+
+            {% if pagination and pagination.pages > 1 %}
+            <nav aria-label="Order history pages" class="mt-4">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link rounded-pill px-3 me-1"
+                            href="{% if pagination.has_prev %}{{ url_for('views.order', page=pagination.prev_num, filter=current_filter) }}{% else %}#{% endif %}"
+                            style="color: #0EA5E9;">Previous</a>
+                    </li>
+
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
+                    %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link {% if page_num == pagination.page %}text-white{% else %}text-dark{% endif %} rounded-circle mx-1 d-flex align-items-center justify-content-center text-decoration-none custom-page-num {% if page_num == pagination.page %}active-page{% endif %}"
+                            href="{{ url_for('views.order', page=page_num, filter=current_filter) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled px-1"><span class="page-link border-0 bg-transparent">…</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link rounded-pill px-3 ms-1"
+                            href="{% if pagination.has_next %}{{ url_for('views.order', page=pagination.next_num, filter=current_filter) }}{% else %}#{% endif %}"
+                            style="color: #0EA5E9;">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+
         </div>
 
         {% else %}
