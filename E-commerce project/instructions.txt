@@ -14,15 +14,9 @@ frontend and backend
 add audit logging
 details page for each item
 
-order management (pending, paid, delivery, delivered) on admin side
-page navigation on admin all items so it isn't a long list to scroll down
-Add category page on admin side
-Add reviews to products
-Update customer details
-unarchive a product
 orders page to filter out last 3 month, 6 month, etc.
-card validation
-everything in form must be validated (name cant be number, email must be validated, etc. )
+Order and Orderitem table for 1 order to have many items
+
 
 ---DONE---
 
@@ -43,6 +37,19 @@ pricing on home page, 2 decimal places
 categories page
 flagship bike change
 flagship bike removed from all items page if its flagship
+
+
+22/09
+order management (pending, paid, delivery, delivered) on admin side
+Add category page on admin side
+unarchive a product
+page navigation on admin all items so it isn't a long list to scroll down
+Update customer details
+card validation
+everything in form must be validated (name cant be number, email must be validated, etc. )
+
+
+
 
 
 

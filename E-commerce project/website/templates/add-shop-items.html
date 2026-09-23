@@ -43,6 +43,9 @@
                     <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
                     {% endif %}
+                    <div class="form-text mt-1">Need a different category? <a
+                            href="{{ url_for('admin.manage_categories') }}" target="_blank">Manage categories here</a>.
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -92,10 +95,19 @@
                 </div>
 
                 {% if form.flash_sale %}
-                <div class="form-check mb-4">
+                <div class="form-check mb-3">
                     {{ form.flash_sale(class="form-check-input") }}
                     <label class="form-check-label fw-semibold" for="{{ form.flash_sale.id }}">
                         Mark as Flash Sale
+                    </label>
+                </div>
+                {% endif %}
+
+                {% if form.is_flagship %}
+                <div class="form-check mb-4">
+                    {{ form.is_flagship(class="form-check-input") }}
+                    <label class="form-check-label fw-semibold" for="{{ form.is_flagship.id }}">
+                        Mark as Flagship Product
                     </label>
                 </div>
                 {% endif %}

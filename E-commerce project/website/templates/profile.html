@@ -19,12 +19,12 @@
             </h3>
         </div>
 
-        <!-- Sidebar Navigation -->
         <div class="col-md-3 mb-3">
             <div class="list-group">
                 <a href="{{ url_for('auth.profile', user_id=user.id) }}"
                     class="list-group-item list-group-item-action active">Profile</a>
-                <a href="/change-password/{{ user.id }}" class="list-group-item list-group-item-action">Change
+                <a href="{{ url_for('auth.change_password', user_id=user.id) }}"
+                    class="list-group-item list-group-item-action">Change
                     Password</a>
             </div>
         </div>
@@ -34,19 +34,89 @@
                 <div class="card-body p-4">
 
                     {% if user.customer_profile %}
-                    <h4 class="mb-3">{{ user.customer_profile.first_name }} {{ user.customer_profile.last_name }}</h4>
+                    <h4 class="mb-3">Edit Profile Details</h4>
                     <hr>
-                    <p class="mb-2"><strong>Email Address:</strong> {{ user.email }}</p>
-                    <p class="mb-2"><strong>Street Address:</strong> {{ user.customer_profile.address if
-                        user.customer_profile.address else 'Not provided yet' }}</p>
-                    <p class="mb-0"><strong>Account Type:</strong> <span class="badge bg-secondary">Customer</span></p>
+
+                    <form method="POST" action="{{ url_for('auth.profile', user_id=user.id) }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label"><strong>First Name</strong></label>
+                                <input type="text" class="form-control" id="first_name" name="first_name"
+                                    value="{{ user.customer_profile.first_name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label"><strong>Last Name</strong></label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"
+                                    value="{{ user.customer_profile.last_name }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label"><strong>Email Address</strong></label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}"
+                                required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="phone_number" class="form-label"><strong>Phone Number</strong></label>
+                                <input type="text" class="form-control" id="phone_number" name="phone_number"
+                                    value="{{ user.customer_profile.phone_number or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_number" class="form-label"><strong>ID Number</strong></label>
+                                <input type="text" class="form-control" id="id_number" name="id_number"
+                                    value="{{ user.customer_profile.id_number or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label"><strong>Street Address</strong></label>
+                            <input type="text" class="form-control" id="address" name="address"
+                                value="{{ user.customer_profile.address or '' }}">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="city" class="form-label"><strong>City</strong></label>
+                                <input type="text" class="form-control" id="city" name="city"
+                                    value="{{ user.customer_profile.city or '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="postal_code" class="form-label"><strong>Postal Code</strong></label>
+                                <input type="text" class="form-control" id="postal_code" name="postal_code"
+                                    value="{{ user.customer_profile.postal_code or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Account Type:</strong></label>
+                            <div>
+                                <span class="badge bg-secondary">Customer</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
 
                     {% else %}
 
                     <h4 class="mb-3">Administrator Account</h4>
                     <hr>
-                    <p class="mb-2"><strong>Email Address:</strong> {{ user.email }}</p>
-                    <p class="mb-0"><strong>Role:</strong> <span class="badge bg-danger">ADMIN</span></p>
+                    <form method="POST" action="{{ url_for('auth.profile', user_id=user.id) }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label"><strong>Email Address</strong></label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Role:</strong></label>
+                            <div>
+                                <span class="badge bg-danger">ADMIN</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
 
                     {% endif %}
 

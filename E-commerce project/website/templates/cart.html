@@ -5,12 +5,12 @@
 {% block body %}
 
 <div class="container my-5">
-    <div class="row">
+    <div class="row" id="cart-container-row">
         {% if cart %}
 
-        <h1 class="text-center mb-5 fw-bold text-white">Shopping Cart</h1>
+        <h1 class="text-center mb-5 fw-bold text-black" id="cart-heading">Shopping Cart</h1>
 
-        <div class="col-lg-7 mb-4">
+        <div class="col-lg-7 mb-4" id="cart-items-column">
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-4">
                     <h4 class="card-title mb-4 fw-bold text-dark">Your Selected Items</h4>
@@ -29,7 +29,6 @@
                                 <div class="my-2 d-flex align-items-center">
                                     <label class="me-2 small text-muted fw-semibold">Quantity:</label>
 
-                                    <!-- Minus Button -->
                                     <a class="minus-cart p-0 text-decoration-none shadow-none" pid="{{ item.id }}"
                                         style="cursor: pointer; outline: none !important; box-shadow: none !important;">
                                         <i class="fas fa-minus-square fa-lg" style="color: #1E293B;"
@@ -72,14 +71,15 @@
             </div>
         </div>
 
-        <div class="col-lg-5">
+        <div class="col-lg-5" id="cart-summary-column">
             <form action="{{ url_for('views.show_cart') }}" method="POST">
+                {{ form.hidden_tag() }}
 
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body p-4">
                         <h4 class="fw-bold text-dark mb-3">Cart Summary</h4>
                         <hr class="text-muted">
-                        <ul class="list-group list-group-flush mb-3">
+                        <ul class="list-group list-group-flush mb-3" id="summary-list-group">
                             {% for item in cart %}
                             <li id="summary-item-{{ item.id }}"
                                 class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-2 bg-transparent text-secondary small">
@@ -100,7 +100,7 @@
 
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-3 bg-transparent text-dark">
-                                Shipping <span class="fw-semibold">R 200.00</span>
+                                Shipping <span class="fw-semibold">R <span id="shipping-fee">200.00</span></span>
                             </li>
 
                             <li
@@ -152,38 +152,48 @@
                         <hr class="text-muted my-4">
 
                         <h6 class="fw-bold mb-3 text-secondary"><i class="fas fa-credit-card me-2"
-                                style="color: #0EA5E9;"></i>Payment Details (Dummy)</h6>
+                                style="color: #0EA5E9;"></i>Payment Details</h6>
+
                         <div class="mb-3">
                             <label for="card_holder" class="form-label small fw-semibold text-muted">Cardholder
                                 Name</label>
                             <input type="text" class="form-control rounded-3 shadow-none" id="card_holder"
                                 name="card_holder" placeholder="John Doe" required>
                         </div>
+
                         <div class="mb-3">
-                            <label for="card_number" class="form-label small fw-semibold text-muted">Card Number</label>
-                            <input type="text" class="form-control rounded-3 shadow-none" id="card_number"
-                                name="card_number" maxlength="19" placeholder="4000 0000 0000 0000" required>
+                            {{ form.card_number.label(class="form-label small fw-semibold text-muted") }}
+                            {{ form.card_number(class="form-control rounded-3 shadow-none", placeholder="0000 0000 0000
+                            0000", maxlength="19") }}
+                            {% for error in form.card_number.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
                         </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="expiry" class="form-label small fw-semibold text-muted">Expiry Date</label>
-                                <input type="text" class="form-control rounded-3 shadow-none" id="expiry" name="expiry"
-                                    placeholder="MM/YY" required>
+                                {{ form.expiry_date.label(class="form-label small fw-semibold text-muted") }}
+                                {{ form.expiry_date(class="form-control rounded-3 shadow-none", placeholder="MM/YY",
+                                maxlength="5") }}
+                                {% for error in form.expiry_date.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
                             </div>
+
                             <div class="col-md-6 mb-3">
-                                <label for="cvv" class="form-label small fw-semibold text-muted">CVV</label>
-                                <input type="password" class="form-control rounded-3 shadow-none" id="cvv" name="cvv"
-                                    maxlength="4" placeholder="123" required>
+                                {{ form.cvv.label(class="form-label small fw-semibold text-muted") }}
+                                {{ form.cvv(class="form-control rounded-3 shadow-none", placeholder="123",
+                                maxlength="4", type="password") }}
+                                {% for error in form.cvv.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
                             </div>
                         </div>
 
                         <div class="d-grid mt-4">
-                            <button type="submit"
-                                class="btn btn-lg fw-bold text-white rounded-pill py-3 shadow-none border-0"
-                                style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
-                                onmouseout="this.style.backgroundColor='#0EA5E9'">
-                                Place Order & Pay
-                            </button>
+                            {{ form.submit(class="btn btn-lg fw-bold text-white rounded-pill py-3 shadow-none border-0",
+                            style="background-color: #0EA5E9;", onmouseover="this.style.backgroundColor='#0284C7'",
+                            onmouseout="this.style.backgroundColor='#0EA5E9'") }}
                         </div>
                     </div>
                 </div>
@@ -193,7 +203,7 @@
 
         {% else %}
 
-        <div class="col-12 text-center py-5">
+        <div class="col-12 text-center py-5" id="empty-cart-container">
             <div class="card border-0 shadow-sm rounded-4 p-5 mx-auto bg-white" style="max-width: 500px;">
                 <i class="fa-solid fa-cart-shopping fa-3x mb-3" style="color: #0EA5E9;"></i>
                 <h2 class="mb-2 fw-bold text-dark">Your Cart is Empty</h2>
@@ -207,5 +217,151 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cardNumberInput = document.querySelector("#card_number");
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener("input", function (e) {
+                let value = e.target.value.replace(/\D/g, ""); 
+                let formattedValue = "";
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += " ";
+                    }
+                    formattedValue += value[i];
+                }
+                e.target.value = formattedValue.substring(0, 19);
+            });
+        }
+
+        const expiryDateInput = document.querySelector("#expiry_date");
+        if (expiryDateInput) {
+            expiryDateInput.addEventListener("input", function (e) {
+                let value = e.target.value.replace(/\D/g, "");
+                let formattedValue = "";
+                if (value.length > 0) {
+                    let month = value.substring(0, 2);
+                    if (month.length === 2) {
+                        let monthNum = parseInt(month, 10);
+                        if (monthNum > 12) month = "12";
+                        if (monthNum === 0) month = "01";
+                    }
+                    formattedValue = month;
+
+                    if (value.length > 2) {
+                        formattedValue += "/" + value.substring(2, 4);
+                    }
+                }
+                e.target.value = formattedValue.substring(0, 5);
+            });
+        }
+
+        function checkEmptyCart() {
+            const remainingRows = document.querySelectorAll('[id^="cart-row-"]');
+            if (remainingRows.length === 0) {
+                const containerRow = document.querySelector("#cart-container-row");
+                if (containerRow) {
+                    containerRow.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="card border-0 shadow-sm rounded-4 p-5 mx-auto bg-white" style="max-width: 500px;">
+                                <i class="fa-solid fa-cart-shopping fa-3x mb-3" style="color: #0EA5E9;"></i>
+                                <h2 class="mb-2 fw-bold text-dark">Your Cart is Empty</h2>
+                                <p class="text-muted mb-4 small">Looks like you haven't added any gear or bikes to your cart yet.</p>
+                                <a href="/" class="btn fw-bold text-white rounded-pill py-2 shadow-none border-0"
+                                    style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
+                                    onmouseout="this.style.backgroundColor='#0EA5E9'">Browse Products</a>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        document.querySelectorAll(".plus-cart").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                let pid = this.getAttribute("pid");
+                fetch(`/api/pluscart?cart_id=${pid}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+                        document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
+                        let summaryQty = document.querySelector(`#summary-qty-${pid}`);
+                        if (summaryQty) summaryQty.innerText = data.quantity;
+
+                        document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }).catch(err => console.error("Error:", err));
+            });
+        });
+
+        document.querySelectorAll(".minus-cart").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                let pid = this.getAttribute("pid");
+                fetch(`/api/minuscart?cart_id=${pid}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+                        if (data.quantity === 0) {
+                            let row = document.querySelector(`#cart-row-${pid}`);
+                            let hr = document.querySelector(`#hr-${pid}`);
+                            let summaryItem = document.querySelector(`#summary-item-${pid}`);
+                            if (row) row.remove();
+                            if (hr) hr.remove();
+                            if (summaryItem) summaryItem.remove();
+                            checkEmptyCart();
+                        } else {
+                            document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
+                            let summaryQty = document.querySelector(`#summary-qty-${pid}`);
+                            if (summaryQty) summaryQty.innerText = data.quantity;
+                        }
+
+                        document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }).catch(err => console.error("Error:", err));
+            });
+        });
+
+        document.querySelectorAll(".remove-cart").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                let pid = this.getAttribute("pid");
+                fetch(`/api/removecart?cart_id=${pid}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+                        let row = document.querySelector(`#cart-row-${pid}`);
+                        let hr = document.querySelector(`#hr-${pid}`);
+                        let summaryItem = document.querySelector(`#summary-item-${pid}`);
+                        if (row) row.remove();
+                        if (hr) hr.remove();
+                        if (summaryItem) summaryItem.remove();
+
+                        document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                        checkEmptyCart();
+                    }).catch(err => console.error("Error:", err));
+            });
+        });
+    });
+</script>
 
 {% endblock %}

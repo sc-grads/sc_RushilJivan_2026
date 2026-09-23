@@ -3,31 +3,38 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
-CATEGORY_CHOICES = [
-    ('mountain-bikes', 'Mountain Bikes'),
-    ('road-bikes', 'Road Bikes'),
-    ('electric-bikes', 'Electric Bikes'),
-    ('helmets', 'Helmets'),
-    ('components', 'Bike Components'),
-    ('tires-and-tubes', 'Tires and Tubes'),
-    ('tools-and-lubricants', 'Tools and Lubricants')
-]
+
+class Category(db.Model):
+    __tablename__ = "categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+    products = db.relationship("Product", backref="category_rel", lazy=True)
+
+    def __str__(self):
+        return f"<Category {self.name}>"
+
 
 class User(db.Model, UserMixin):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='customer')
+    role = db.Column(db.String(20), nullable=False, default="customer")
     date_joined = db.Column(db.DateTime, default=datetime.now)
 
-    customer_profile = db.relationship('Customer', backref='user', uselist=False, cascade='all, delete-orphan')
-    admin_profile = db.relationship('Admin', backref='user', uselist=False, cascade='all, delete-orphan')
+    customer_profile = db.relationship(
+        "Customer", backref="user", uselist=False, cascade="all, delete-orphan"
+    )
+    admin_profile = db.relationship(
+        "Admin", backref="user", uselist=False, cascade="all, delete-orphan"
+    )
 
-    @property 
+    @property
     def password(self):
-        raise AttributeError('password is not a readable attribute')
+        raise AttributeError("password is not a readable attribute")
 
     @password.setter
     def password(self, password):
@@ -38,18 +45,20 @@ class User(db.Model, UserMixin):
 
     @property
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == "admin"
 
     def __str__(self):
-        return f'<User {self.email} - {self.role}>'
+        return f"<User {self.email} - {self.role}>"
 
 
 class Customer(db.Model):
-    __tablename__ = 'customers'
+    __tablename__ = "customers"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
-    
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False
+    )
+
     first_name = db.Column(db.String(150), nullable=False)
     last_name = db.Column(db.String(150), nullable=False)
     phone_number = db.Column(db.String(15), nullable=True)
@@ -59,26 +68,29 @@ class Customer(db.Model):
     city = db.Column(db.String(100), nullable=True)
     postal_code = db.Column(db.String(20), nullable=True)
 
-    cart_items = db.relationship('Cart', backref=db.backref('customer', lazy=True), cascade='all, delete-orphan')
-    orders = db.relationship('Order', backref=db.backref('customer', lazy=True))
+    cart_items = db.relationship(
+        "Cart", backref=db.backref("customer", lazy=True), cascade="all, delete-orphan"
+    )
+    orders = db.relationship("Order", backref=db.backref("customer", lazy=True))
 
     def __str__(self):
-        return f'<Customer {self.first_name} {self.last_name}>'
+        return f"<Customer {self.first_name} {self.last_name}>"
 
 
 class Admin(db.Model):
-    __tablename__ = 'admins'
+    __tablename__ = "admins"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
-    
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False
+    )
 
     def __str__(self):
-        return f'<Admin {self.user_id}>'
+        return f"<Admin {self.user_id}>"
 
 
 class Product(db.Model):
-    __tablename__ = 'products'
+    __tablename__ = "products"
 
     id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(100), nullable=False)
@@ -88,36 +100,41 @@ class Product(db.Model):
     product_picture = db.Column(db.String(1000), nullable=False)
     flash_sale = db.Column(db.Boolean, default=False)
     date_added = db.Column(db.DateTime, default=datetime.now)
-    category = db.Column(db.String(50), nullable=False, default='mountain-bikes')
+
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     is_flagship = db.Column(db.Boolean, default=False, nullable=False)
-    carts = db.relationship('Cart', backref=db.backref('product', lazy=True), cascade='all, delete-orphan')
-    orders = db.relationship('Order', backref=db.backref('product', lazy=True))
+
+    carts = db.relationship(
+        "Cart", backref=db.backref("product", lazy=True), cascade="all, delete-orphan"
+    )
+    orders = db.relationship("Order", backref=db.backref("product", lazy=True))
 
     def __str__(self):
-        return f'<Product {self.product_name}>'
+        return f"<Product {self.product_name}>"
 
 
 class Cart(db.Model):
-    __tablename__ = 'carts'
+    __tablename__ = "carts"
 
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
 
-    customer_link = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
-    product_link = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    customer_link = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=False)
+    product_link = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
 
     def __str__(self):
-        return f'<Cart {self.id}>'
+        return f"<Cart {self.id}>"
 
 
 class Order(db.Model):
-    __tablename__ = 'orders'
+    __tablename__ = "orders"
 
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(100), nullable=False, default='Pending Payment')
+    status = db.Column(db.String(100), nullable=False, default="Pending Payment")
     payment_id = db.Column(db.String(1000), nullable=False)
     date_ordered = db.Column(db.DateTime, default=datetime.now)
 
@@ -128,8 +145,8 @@ class Order(db.Model):
     card_holder = db.Column(db.String(150), nullable=True)
     card_last_four = db.Column(db.String(4), nullable=True)
 
-    customer_link = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
-    product_link = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    customer_link = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=False)
+    product_link = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
 
     def __str__(self):
-        return f'<Order {self.id}>'
+        return f"<Order {self.id}>"

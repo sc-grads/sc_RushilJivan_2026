@@ -1,64 +1,189 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, FloatField, PasswordField, EmailField, BooleanField, SubmitField, SelectField
-from wtforms.validators import DataRequired, EqualTo, Length, NumberRange, Optional, Email, Regexp
+from wtforms import (StringField, IntegerField, FloatField, PasswordField, EmailField, BooleanField, SubmitField, SelectField)
+from wtforms.validators import (DataRequired, EqualTo, Length, NumberRange, Optional, Email, Regexp)
 from flask_wtf.file import FileAllowed, FileField
-from .models import CATEGORY_CHOICES
+from .models import Category
 
 
 class SignUpForm(FlaskForm):
-    email = EmailField('Email', validators=[DataRequired()])
-    first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=150)])
-    last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=150)])
-    password1 = PasswordField('Enter Your Password', validators=[DataRequired(), Length(min=6)])
+    email = EmailField(
+        "Email",
+        validators=[
+            DataRequired(message="Email address is required."),
+            Email(
+                message="Please enter a valid email address (e.g., name@domain.com)."
+            ),
+        ],
+    )
+    first_name = StringField(
+        "First Name",
+        validators=[
+            DataRequired(message="First name is required."),
+            Length(min=2, max=150),
+            Regexp(
+                r"^[A-Za-z\s\-]+$",
+                message="First name cannot contain numbers or special characters.",
+            ),
+        ],
+    )
+    last_name = StringField(
+        "Last Name",
+        validators=[
+            DataRequired(message="Last name is required."),
+            Length(min=2, max=150),
+            Regexp(
+                r"^[A-Za-z\s\-]+$",
+                message="Last name cannot contain numbers or special characters.",
+            ),
+        ],
+    )
+    password1 = PasswordField(
+        "Enter Your Password",
+        validators=[
+            DataRequired(),
+            Length(min=6, message="Password must be at least 6 characters long."),
+        ],
+    )
     password2 = PasswordField(
-        'Confirm Your Password',
-        validators=[DataRequired(), EqualTo('password1', message='Passwords must match.')])
-    phone_number = StringField('Phone Number', validators=[Optional()]) 
-    id_number = StringField('ID Number', validators=[Optional(), Length(min=13, max=13)]) 
-    submit = SubmitField('Sign Up')
+        "Confirm Your Password",
+        validators=[
+            DataRequired(),
+            EqualTo("password1", message="Passwords must match."),
+        ],
+    )
+    phone_number = StringField(
+        "Phone Number",
+        validators=[
+            DataRequired(message="Phone number is required."),
+            Regexp(
+                r"^\d{3}\s\d{3}\s\d{4}$",
+                message="Phone number must be in the exact format: 000 000 0000",
+            ),
+        ],
+    )
+    id_number = StringField(
+        "ID Number",
+        validators=[
+            DataRequired(message="ID number is required."),
+            Length(min=13, max=13, message="ID number must be exactly 13 digits."),
+            Regexp(r"^\d{13}$", message="ID number must contain only numbers."),
+        ],
+    )
+    submit = SubmitField("Sign Up")
 
 
 class LoginForm(FlaskForm):
-    email = EmailField('Email', validators=[DataRequired()])
-    password = PasswordField('Enter Your Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
+    email = EmailField("Email", validators=[DataRequired(), Email()])
+    password = PasswordField("Enter Your Password", validators=[DataRequired()])
+    submit = SubmitField("Login")
 
 
 class PasswordChangeForm(FlaskForm):
-    current_password = PasswordField('Current Password', validators=[DataRequired(), Length(min=6)])
-    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
-    confirm_new_password = PasswordField(
-        'Confirm New Password',
-        validators=[DataRequired(), EqualTo('new_password', message='Passwords must match.')]
+    current_password = PasswordField(
+        "Current Password", validators=[DataRequired(), Length(min=6)]
     )
-    change_password = SubmitField('Change Password')
+    new_password = PasswordField(
+        "New Password", validators=[DataRequired(), Length(min=6)]
+    )
+    confirm_new_password = PasswordField(
+        "Confirm New Password",
+        validators=[
+            DataRequired(),
+            EqualTo("new_password", message="Passwords must match."),
+        ],
+    )
+    change_password = SubmitField("Change Password")
 
 
 class ShopItemsForm(FlaskForm):
-    product_name = StringField('Name of Product', validators=[DataRequired()])
-    current_price = FloatField('Current Price', validators=[DataRequired()])
- 
+    product_name = StringField("Name of Product", validators=[DataRequired()])
+    current_price = FloatField("Current Price", validators=[DataRequired()])
+
     previous_price = FloatField(
-        'Previous Price',
+        "Previous Price",
         validators=[Optional()],
-        filters=[lambda x: x if x is not None else None]
+        filters=[lambda x: x if x is not None else None],
     )
-    in_stock = IntegerField('In Stock', validators=[DataRequired(), NumberRange(min=0)])
-    
-    category = SelectField('Category', choices=CATEGORY_CHOICES, validators=[DataRequired()])
-    
-    product_picture = FileField('Product Picture', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
-    flash_sale = BooleanField('Flash Sale')
-    is_flagship = BooleanField('Flagship')  
-    add_product = SubmitField('Add Product')
-    update_product = SubmitField('Update')
+    in_stock = IntegerField("In Stock", validators=[DataRequired(), NumberRange(min=0)])
+
+    category = SelectField("Category", coerce=int, validators=[DataRequired()])
+
+    product_picture = FileField(
+        "Product Picture",
+        validators=[FileAllowed(["jpg", "jpeg", "png"], "Images only!")],
+    )
+    flash_sale = BooleanField("Flash Sale")
+    is_flagship = BooleanField("Flagship")
+    add_product = SubmitField("Add Product")
+    update_product = SubmitField("Update")
+
+    def __init__(self, *args, **kwargs):
+        super(ShopItemsForm, self).__init__(*args, **kwargs)
+        self.category.choices = [(cat.id, cat.name) for cat in Category.query.all()]
 
 
 class ResetPasswordForm(FlaskForm):
-    email = StringField('Email Address', validators=[DataRequired(), Email()])
-    phone_number = StringField('Phone Number', validators=[DataRequired()])
-    id_number = StringField('ID Number', validators=[DataRequired(), Length(min=13, max=13, message='ID number must be exactly 13 digits.'), Regexp('^[0-9]*$', message='ID number must contain only numbers.')])
-    password1 = PasswordField('New Password', validators=[DataRequired()])
-    password2 = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password1', message='Passwords must match')])
-    
-    submit = SubmitField('Update Password')
+    email = StringField("Email Address", validators=[DataRequired(), Email()])
+    phone_number = StringField(
+        "Phone Number",
+        validators=[
+            DataRequired(),
+            Regexp(
+                r"^\d{3}\s\d{3}\s\d{4}$",
+                message="Phone number must be in format: 000 000 0000",
+            ),
+        ],
+    )
+    id_number = StringField(
+        "ID Number",
+        validators=[
+            DataRequired(),
+            Length(min=13, max=13, message="ID number must be exactly 13 digits."),
+            Regexp(r"^\d{13}$", message="ID number must contain only numbers."),
+        ],
+    )
+    password1 = PasswordField(
+        "New Password", validators=[DataRequired(), Length(min=6)]
+    )
+    password2 = PasswordField(
+        "Confirm New Password",
+        validators=[
+            DataRequired(),
+            EqualTo("password1", message="Passwords must match"),
+        ],
+    )
+
+    submit = SubmitField("Update Password")
+
+
+class CheckoutForm(FlaskForm):
+    """Form used during the checkout and payment process to validate card details."""
+
+    card_number = StringField(
+        "Card Number",
+        validators=[
+            DataRequired(message="Card number is required."),
+            Regexp(
+                r"^\d{4}\s\d{4}\s\d{4}\s\d{4}$",
+                message="Card number must be 16 digits in format: 0000 0000 0000 0000",
+            ),
+        ],
+    )
+    expiry_date = StringField(
+        "Expiry Date",
+        validators=[
+            DataRequired(message="Expiry date is required."),
+            Regexp(
+                r"^(0[1-9]|1[0-2])\/\d{2}$",
+                message="Expiry date must be valid in MM/YY format (e.g., 12/25).",
+            ),
+        ],
+    )
+    cvv = StringField(
+        "CVV",
+        validators=[
+            DataRequired(message="CVV is required."),
+            Regexp(r"^\d{3}$", message="CVV must be exactly 3 digits."),
+        ],
+    )
+    submit = SubmitField("Complete Payment")
