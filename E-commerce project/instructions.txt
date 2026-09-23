@@ -12,10 +12,7 @@ employee will have department, emp no., role - ???
 frontend and backend
 
 add audit logging
-details page for each item
 
-orders page to filter out last 3 month, 6 month, etc.
-Order and Orderitem table for 1 order to have many items
 
 
 ---DONE---
@@ -43,10 +40,18 @@ flagship bike removed from all items page if its flagship
 order management (pending, paid, delivery, delivered) on admin side
 Add category page on admin side
 unarchive a product
-page navigation on admin all items so it isn't a long list to scroll down
 Update customer details
 card validation
 everything in form must be validated (name cant be number, email must be validated, etc. )
+
+
+23/09
+Order and Orderitem table for 1 order to have many items
+orders page to filter out last 3 month, 6 month, etc.
+page navigation on admin all items so it isn't a long list to scroll down
+customer sell bike (pre owned bikes)
+
+
 
 
 

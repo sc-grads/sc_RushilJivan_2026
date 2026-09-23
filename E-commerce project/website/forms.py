@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import (StringField, IntegerField, FloatField, PasswordField, EmailField, BooleanField, SubmitField, SelectField)
-from wtforms.validators import (DataRequired, EqualTo, Length, NumberRange, Optional, Email, Regexp)
 from flask_wtf.file import FileAllowed, FileField
+from wtforms import (BooleanField, FloatField, IntegerField, PasswordField, SelectField, StringField, SubmitField, EmailField, TextAreaField)
+from wtforms.validators import (DataRequired, Email, EqualTo, Length, NumberRange, Optional, Regexp)
 from .models import Category
 
 
@@ -119,6 +119,44 @@ class ShopItemsForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(ShopItemsForm, self).__init__(*args, **kwargs)
+        self.category.choices = [(cat.id, cat.name) for cat in Category.query.all()]
+
+
+class SellBikeForm(FlaskForm):
+    """Form used by customers to submit their pre-owned bicycles for admin review."""
+
+    product_name = StringField(
+        "Bike Model / Name",
+        validators=[
+            DataRequired(message="Bike model/name is required."),
+            Length(max=100),
+        ],
+    )
+    current_price = FloatField(
+        "Asking Price (R)",
+        validators=[
+            DataRequired(message="Price is required."),
+            NumberRange(min=0, message="Price must be a positive number."),
+        ],
+    )
+    description = TextAreaField(
+        "Description", validators=[DataRequired(), Length(max=500)]
+    )
+
+    category = SelectField("Category", coerce=int, validators=[DataRequired()])
+    product_picture = FileField(
+        "Bike Picture",
+        validators=[
+            DataRequired(message="Please upload a picture of your bike."),
+            FileAllowed(
+                ["jpg", "jpeg", "png"], "Only jpg, jpeg, and png images are allowed!"
+            ),
+        ],
+    )
+    submit_bike = SubmitField("Submit for Approval")
+
+    def __init__(self, *args, **kwargs):
+        super(SellBikeForm, self).__init__(*args, **kwargs)
         self.category.choices = [(cat.id, cat.name) for cat in Category.query.all()]
 
 

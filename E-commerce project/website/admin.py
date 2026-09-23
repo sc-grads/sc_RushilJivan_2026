@@ -1,11 +1,15 @@
-import os
+from collections import defaultdict
+import datetime
+from datetime import timedelta
 import logging
-from flask import (Blueprint, render_template, request, jsonify, flash, send_from_directory, redirect, url_for, current_app)
-from flask_login import login_required, current_user
+import os
+import shutil
+from flask import (Blueprint,current_app, flash, jsonify, redirect, render_template, request, send_from_directory, url_for)
+from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
-from .forms import ShopItemsForm
-from .models import Product, Cart, Order, Category
 from . import db
+from .forms import ShopItemsForm
+from .models import Cart, Category, Order, Product
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +21,11 @@ def get_media_path(filename=""):
     if not os.path.exists(media_dir):
         os.makedirs(media_dir, exist_ok=True)
     return os.path.join(media_dir, filename)
+
+
+def get_customer_media_path(filename=""):
+    customer_media_dir = os.path.join(current_app.root_path, "customer_media")
+    return os.path.join(customer_media_dir, filename)
 
 
 def delete_media_file(db_file_path):
@@ -42,6 +51,10 @@ def get_image(filename):
     return send_from_directory(media_folder, filename)
 
 
+@admin.route("/customer-media/<path:filename>")
+def get_customer_image(filename):
+    customer_media_folder = os.path.join(current_app.root_path, "customer_media")
+    return send_from_directory(customer_media_folder, filename)
 
 
 @admin.route("/categories", methods=["GET", "POST"])
@@ -114,6 +127,73 @@ def delete_category(category_id):
     return redirect(url_for("admin.manage_categories"))
 
 
+@admin.route("/preowned-approvals", methods=["GET"])
+@login_required
+def manage_preowned():
+    if current_user.id != 1:
+        flash("Access denied.", "danger")
+        return redirect(url_for("views.index"))
+
+    pending_bikes = Product.query.filter_by(is_preowned=True, is_approved=False).all()
+    return render_template("/manage_preowned.html", pending_bikes=pending_bikes)
+
+
+@admin.route("/preowned-action/<int:item_id>/<action>", methods=["GET", "POST"])
+@login_required
+def preowned_action(item_id, action):
+    if current_user.id != 1:
+        flash("Access denied.", "danger")
+        return redirect(url_for("views.index"))
+
+    item = Product.query.get_or_404(item_id)
+
+    if action == "approve":
+        item.is_approved = True
+
+        if item.product_picture and (
+            "customer_media" in item.product_picture
+            or not item.product_picture.startswith("media/")
+        ):
+            filename = os.path.basename(item.product_picture)
+            src_path = get_customer_media_path(filename)
+            dest_path = get_media_path(filename)
+
+            if os.path.exists(src_path):
+                try:
+                    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                    shutil.move(src_path, dest_path)
+                    item.product_picture = f"media/{filename}"
+                except Exception as e:
+                    logger.error(
+                        "Error moving customer media file to media folder",
+                        extra={"file_path": src_path, "error": str(e)},
+                    )
+
+        flash(f'"{item.product_name}" has been approved and is now live!', "success")
+    elif action == "reject":
+        picture_path = item.product_picture
+        try:
+            Cart.query.filter_by(product_link=item.id).delete()
+            db.session.delete(item)
+            db.session.commit()
+            delete_media_file(picture_path)
+
+            if picture_path:
+                filename = os.path.basename(picture_path)
+                cust_path = get_customer_media_path(filename)
+                if os.path.exists(cust_path):
+                    os.remove(cust_path)
+
+            flash(
+                f'"{item.product_name}" listing has been rejected and removed.',
+                "warning",
+            )
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error rejecting item: {e}", "danger")
+
+    db.session.commit()
+    return redirect(url_for("admin.manage_preowned"))
 
 
 @admin.route("/add-shop-items", methods=["GET", "POST"])
@@ -158,7 +238,7 @@ def add_shop_items():
             new_shop_item.product_picture = db_file_path
             new_shop_item.category_id = category_id
             new_shop_item.is_flagship = is_flagship
-
+            new_shop_item.is_approved = True  
             try:
                 db.session.add(new_shop_item)
                 db.session.commit()
@@ -329,18 +409,57 @@ def manage_orders():
                 )
                 flash(f"Error updating order status: {e}", "error")
 
-            return redirect(url_for("admin.manage_orders"))
+            return redirect(
+                url_for(
+                    "admin.manage_orders",
+                    time_filter=request.args.get("time_filter", "all"),
+                )
+            )
+
+        time_filter = request.args.get("time_filter", "all")
+        query = Order.query.options(db.joinedload(Order.product))
+
+        now = datetime.datetime.utcnow()
+        if time_filter == "3m":
+            query = query.filter(Order.date_ordered >= now - timedelta(days=90))
+        elif time_filter == "6m":
+            query = query.filter(Order.date_ordered >= now - timedelta(days=180))
+        elif time_filter == "1y":
+            query = query.filter(Order.date_ordered >= now - timedelta(days=365))
+
+        raw_orders = query.order_by(Order.date_ordered.desc()).all()
+
+        grouped_dict = defaultdict(list)
+        for order in raw_orders:
+            grouped_dict[order.payment_id].append(order)
+
+        orders_list = list(grouped_dict.values())
 
         page = request.args.get("page", 1, type=int)
         per_page = 10
+        start = (page - 1) * per_page
+        end = start + per_page
 
-        pagination = Order.query.order_by(Order.date_ordered.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
-        orders = pagination.items
+        paginated_orders = orders_list[start:end]
+
+        class SimplePagination:
+            def __init__(self, page, per_page, total):
+                self.page = page
+                self.per_page = per_page
+                self.total = total
+                self.pages = (total + per_page - 1) // per_page
+                self.has_prev = page > 1
+                self.has_next = page < self.pages
+                self.prev_num = page - 1
+                self.next_num = page + 1
+
+        pagination = SimplePagination(page, per_page, len(orders_list))
 
         return render_template(
-            "manage_orders.html", orders=orders, pagination=pagination
+            "manage_orders.html",
+            orders=paginated_orders,
+            pagination=pagination,
+            time_filter=time_filter,
         )
 
     logger.warning(
@@ -496,18 +615,9 @@ def api_shop_items():
     items_list = [
         {
             "id": item.id,
-            "product_name": item.product_name,
-            "current_price": item.current_price,
-            "previous_price": item.previous_price,
-            "in_stock": item.in_stock,
-            "flash_sale": item.flash_sale,
-            "category_id": item.category_id,
-            "category_name": item.category.name if item.category else None,
-            "product_picture": item.product_picture,
-            "is_flagship": item.is_flagship,
-            "date_added": (
-                item.date_added.strftime("%Y-%m-%d") if item.date_added else None
-            ),
+            "product_name": item.product_name, "current_price": item.current_price, "previous_price": item.previous_price, "in_stock": item.in_stock,
+            "flash_sale": item.flash_sale, "category_id": item.category_id, "category_name": item.category.name if item.category else None, "product_picture": item.product_picture,
+            "is_flagship": item.is_flagship, "date_added": (item.date_added.strftime("%Y-%m-%d") if item.date_added else None),
         }
         for item in items
     ]
@@ -528,19 +638,11 @@ def api_orders():
     orders = Order.query.order_by(Order.date_ordered.desc()).all()
     orders_list = [
         {
-            "id": o.id,
-            "quantity": o.quantity,
-            "price": o.price,
-            "status": o.status,
-            "payment_id": o.payment_id,
+            "id": o.id, "quantity": o.quantity, "price": o.price, "status": o.status, "payment_id": o.payment_id,
             "date_ordered": (
                 o.date_ordered.strftime("%Y-%m-%d %H:%M:%S") if o.date_ordered else None
             ),
-            "address": o.address,
-            "city": o.city,
-            "postal_code": o.postal_code,
-            "customer_id": o.customer_link,
-            "product_id": o.product_link,
+            "address": o.address, "city": o.city, "postal_code": o.postal_code, "customer_id": o.customer_link, "product_id": o.product_link,
         }
         for o in orders
     ]
@@ -642,6 +744,7 @@ def api_add_shop_items():
     new_shop_item.category_id = category_id
     new_shop_item.product_picture = product_picture
     new_shop_item.is_flagship = is_flagship
+    new_shop_item.is_approved = True
 
     try:
         db.session.add(new_shop_item)
@@ -655,15 +758,9 @@ def api_add_shop_items():
                 {
                     "message": "Product added successfully!",
                     "product": {
-                        "id": new_shop_item.id,
-                        "product_name": new_shop_item.product_name,
-                        "current_price": new_shop_item.current_price,
-                        "previous_price": new_shop_item.previous_price,
-                        "in_stock": new_shop_item.in_stock,
-                        "flash_sale": new_shop_item.flash_sale,
-                        "category_id": new_shop_item.category_id,
-                        "product_picture": new_shop_item.product_picture,
-                        "is_flagship": new_shop_item.is_flagship,
+                        "id": new_shop_item.id, "product_name": new_shop_item.product_name, "current_price": new_shop_item.current_price, "previous_price": new_shop_item.previous_price,
+                        "in_stock": new_shop_item.in_stock, "flash_sale": new_shop_item.flash_sale, "category_id": new_shop_item.category_id,
+                        "product_picture": new_shop_item.product_picture, "is_flagship": new_shop_item.is_flagship,
                     },
                 }
             ),

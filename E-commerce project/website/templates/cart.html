@@ -163,8 +163,7 @@
 
                         <div class="mb-3">
                             {{ form.card_number.label(class="form-label small fw-semibold text-muted") }}
-                            {{ form.card_number(class="form-control rounded-3 shadow-none", placeholder="0000 0000 0000
-                            0000", maxlength="19") }}
+                            {{ form.card_number(class="form-control rounded-3 shadow-none", placeholder="0000 0000 0000 0000", maxlength="19") }}
                             {% for error in form.card_number.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}

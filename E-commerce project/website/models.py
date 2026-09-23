@@ -1,6 +1,6 @@
-from flask_login import UserMixin
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+from werkzeug.security import check_password_hash, generate_password_hash
 from . import db
 
 
@@ -72,6 +72,7 @@ class Customer(db.Model):
         "Cart", backref=db.backref("customer", lazy=True), cascade="all, delete-orphan"
     )
     orders = db.relationship("Order", backref=db.backref("customer", lazy=True))
+    preowned_listings = db.relationship("Product", backref="seller", lazy=True)
 
     def __str__(self):
         return f"<Customer {self.first_name} {self.last_name}>"
@@ -96,15 +97,22 @@ class Product(db.Model):
     product_name = db.Column(db.String(100), nullable=False)
     current_price = db.Column(db.Float, nullable=False)
     previous_price = db.Column(db.Float, nullable=True)
+    description = db.Column(db.Text, nullable=True)  
     in_stock = db.Column(db.Integer, nullable=False)
     product_picture = db.Column(db.String(1000), nullable=False)
     flash_sale = db.Column(db.Boolean, default=False)
     date_added = db.Column(db.DateTime, default=datetime.now)
 
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=True)
 
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     is_flagship = db.Column(db.Boolean, default=False, nullable=False)
+
+    is_preowned = db.Column(db.Boolean, default=False, nullable=False)
+    is_approved = db.Column(
+        db.Boolean, default=True, nullable=False
+    )  
+    seller_id = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=True)
 
     carts = db.relationship(
         "Cart", backref=db.backref("product", lazy=True), cascade="all, delete-orphan"
