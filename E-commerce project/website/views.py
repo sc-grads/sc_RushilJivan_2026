@@ -3,7 +3,8 @@ import os
 import logging
 from flask import (Blueprint, render_template, flash, redirect, request, jsonify, url_for, current_app, abort)
 from flask_login import login_required, current_user
-from .models import Product, Cart, Order, User, CATEGORY_CHOICES
+from .models import Product, Cart, Order, User, Category
+from .forms import CheckoutForm
 from . import db
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ def home():
     )
 
     flagship = Product.query.filter_by(is_flagship=True, is_active=True).first()
+    categories = Category.query.all()
 
     if current_user.is_authenticated and current_user.customer_profile:
         cart = Cart.query.filter_by(
@@ -32,7 +34,13 @@ def home():
     else:
         cart = []
 
-    return render_template("home.html", items=items, flagship=flagship, cart=cart)
+    return render_template(
+        "home.html",
+        items=items,
+        flagship=flagship,
+        cart=cart,
+        categories=categories,
+    )
 
 
 @views.route("/add-to-cart/<int:item_id>")
@@ -56,6 +64,14 @@ def add_to_cart(item_id):
     item_exists = Cart.query.filter_by(
         product_link=item_id, customer_link=customer_id
     ).first()
+
+    current_qty_in_cart = item_exists.quantity if item_exists else 0
+    if current_qty_in_cart + 1 > item_to_add.in_stock:
+        flash(
+            f"Cannot add more. Only {item_to_add.in_stock} available in stock.",
+            category="error",
+        )
+        return redirect(request.referrer or "/")
 
     if item_exists:
         try:
@@ -114,70 +130,91 @@ def show_cart():
 
     customer = current_user.customer_profile
     cart = Cart.query.filter_by(customer_link=customer.id).all()
+
+    for item in cart:
+        if item.product and item.quantity > item.product.in_stock:
+            flash(
+                f'"{item.product.product_name}" exceeds available stock. Only {item.product.in_stock} left.',
+                category="error",
+            )
+            return redirect("/cart")
+
     amount = sum(item.product.current_price * item.quantity for item in cart)
     shipping_fee = 200.0 if cart else 0.0
     total = amount + shipping_fee
+
+    form = CheckoutForm()
 
     if request.method == "POST":
         if not cart:
             flash("Your cart is empty!", category="error")
             return redirect("/cart")
 
-        address = request.form.get("address", "").strip()
-        city = request.form.get("city", "").strip()
-        postal_code = request.form.get("postal_code", "").strip()
+        if form.validate_on_submit():
+            address = request.form.get("address", "").strip()
+            city = request.form.get("city", "").strip()
+            postal_code = request.form.get("postal_code", "").strip()
 
-        try:
-            customer.address = address
-            customer.city = city
-            customer.postal_code = postal_code
+            try:
+                customer.address = address
+                customer.city = city
+                customer.postal_code = postal_code
 
-            db.session.add(customer)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            logger.error(
-                "Could not update customer address profile",
-                extra={"customer_id": customer.id, "error": str(e)},
+                db.session.add(customer)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                logger.error(
+                    "Could not update customer address profile",
+                    extra={"customer_id": customer.id, "error": str(e)},
+                )
+                flash(
+                    "Could not update address details in your profile.",
+                    category="error",
+                )
+
+            payment_id = f"ORDER-{uuid.uuid4().hex[:10].upper()}"
+
+            user_display_name = (
+                getattr(current_user, "username", None)
+                or getattr(current_user, "name", None)
+                or getattr(current_user, "first_name", None)
+                or "Customer"
             )
-            flash("Could not update address details in your profile.", category="error")
 
-        payment_id = f"ORDER-{uuid.uuid4().hex[:10].upper()}"
+            payfast_data = {
+                "merchant_id": PAYFAST_MERCHANT_ID,
+                "merchant_key": PAYFAST_MERCHANT_KEY,
+                "return_url": url_for("views.payment_success", _external=True),
+                "cancel_url": url_for("views.payment_cancel", _external=True),
+                "notify_url": url_for("views.payfast_notify", _external=True),
+                "m_payment_id": payment_id,
+                "amount": f"{total:.2f}",
+                "item_name": f"Order for {user_display_name}",
+                "email_address": getattr(current_user, "email", ""),
+            }
 
-        user_display_name = (
-            getattr(current_user, "username", None)
-            or getattr(current_user, "name", None)
-            or getattr(current_user, "first_name", None)
-            or "Customer"
-        )
+            logger.info(
+                "Initiating PayFast checkout redirect",
+                extra={
+                    "customer_id": customer.id,
+                    "payment_id": payment_id,
+                    "total_amount": total,
+                },
+            )
 
-        payfast_data = {
-            "merchant_id": PAYFAST_MERCHANT_ID,
-            "merchant_key": PAYFAST_MERCHANT_KEY,
-            "return_url": url_for("views.payment_success", _external=True),
-            "cancel_url": url_for("views.payment_cancel", _external=True),
-            "notify_url": url_for("views.payfast_notify", _external=True),
-            "m_payment_id": payment_id,
-            "amount": f"{total:.2f}",
-            "item_name": f"Order for {user_display_name}",
-            "email_address": getattr(current_user, "email", ""),
-        }
-
-        logger.info(
-            "Initiating PayFast checkout redirect",
-            extra={
-                "customer_id": customer.id,
-                "payment_id": payment_id,
-                "total_amount": total,
-            },
-        )
-
-        return render_template(
-            "payfast_redirect.html", payfast_url=PAYFAST_URL, payfast_data=payfast_data
-        )
+            return render_template(
+                "payfast_redirect.html",
+                payfast_url=PAYFAST_URL,
+                payfast_data=payfast_data,
+            )
+        else:
+            flash(
+                "Please correct the errors in your payment details.", category="error"
+            )
 
     return render_template(
-        "cart.html", cart=cart, amount=amount, total=total, customer=customer
+        "cart.html", cart=cart, amount=amount, total=total, customer=customer, form=form
     )
 
 
@@ -189,6 +226,14 @@ def payment_success():
     cart = Cart.query.filter_by(customer_link=customer_id).all()
 
     if cart:
+        for item in cart:
+            if not item.product or item.quantity > item.product.in_stock:
+                flash(
+                    f'Order failed: "{item.product.product_name if item.product else "Item"}" stock limit exceeded.',
+                    category="error",
+                )
+                return redirect(url_for("views.show_cart"))
+
         payment_id = f"PAYFAST-{uuid.uuid4().hex[:8].upper()}"
 
         for item in cart:
@@ -255,6 +300,16 @@ def plus_cart():
 
     if not cart_item or cart_item.customer_link != customer_id:
         return jsonify({"error": "Cart item not found"}), 404
+
+    if cart_item.product and cart_item.quantity + 1 > cart_item.product.in_stock:
+        return (
+            jsonify(
+                {
+                    "error": f"Cannot add more. Only {cart_item.product.in_stock} available in stock."
+                }
+            ),
+            400,
+        )
 
     cart_item.quantity += 1
     db.session.commit()
@@ -335,10 +390,17 @@ def order():
         return redirect("/")
 
     customer_id = current_user.customer_profile.id
-    orders = (
-        Order.query.filter_by(customer_link=customer_id).order_by(Order.id.desc()).all()
+    page = request.args.get("page", 1, type=int)
+    per_page = 5
+
+    pagination = (
+        Order.query.filter_by(customer_link=customer_id)
+        .order_by(Order.id.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
     )
-    return render_template("orders.html", orders=orders)
+    orders = pagination.items
+
+    return render_template("orders.html", orders=orders, pagination=pagination)
 
 
 @views.route("/search", methods=["GET", "POST"])
@@ -365,26 +427,16 @@ def about():
     return render_template("about.html")
 
 
-@views.route("/shop/<string:category_key>")
-def category_view(category_key):
-    valid_keys = [choice[0] for choice in CATEGORY_CHOICES]
-    if category_key not in valid_keys:
-        logger.warning(
-            "Invalid product category requested", extra={"category_key": category_key}
-        )
-        abort(404)
-
-    category_label = dict(CATEGORY_CHOICES).get(
-        category_key, category_key.replace("-", " ").title()
-    )
-
-    products = Product.query.filter_by(category=category_key, is_active=True).all()
+@views.route("/shop/<int:category_id>")
+def category_view(category_id):
+    category = Category.query.get_or_404(category_id)
+    products = Product.query.filter_by(category_id=category.id, is_active=True).all()
 
     return render_template(
         "category_products.html",
-        category_title=category_label,
+        category_title=category.name,
         products=products,
-        category_key=category_key,
+        category_id=category.id,
     )
 
 
@@ -397,6 +449,7 @@ def api_home():
         .all()
     )
     flagship = Product.query.filter_by(is_flagship=True, is_active=True).first()
+    categories = Category.query.all()
 
     items_list = [
         {
@@ -406,12 +459,15 @@ def api_home():
             "previous_price": p.previous_price,
             "in_stock": p.in_stock,
             "flash_sale": p.flash_sale,
-            "category": p.category,
+            "category_id": p.category_id,
+            "category_name": p.category.name if p.category else None,
             "product_picture": p.product_picture,
             "is_flagship": p.is_flagship,
         }
         for p in items
     ]
+
+    categories_list = [{"id": c.id, "name": c.name} for c in categories]
 
     flagship_data = None
     if flagship:
@@ -422,7 +478,16 @@ def api_home():
             "product_picture": flagship.product_picture,
         }
 
-    return jsonify({"items": items_list, "flagship": flagship_data}), 200
+    return (
+        jsonify(
+            {
+                "items": items_list,
+                "flagship": flagship_data,
+                "categories": categories_list,
+            }
+        ),
+        200,
+    )
 
 
 @views.route("/api/add-to-cart/<int:item_id>", methods=["POST"])
@@ -443,6 +508,17 @@ def api_add_to_cart(item_id):
     item_exists = Cart.query.filter_by(
         product_link=item_id, customer_link=customer_id
     ).first()
+
+    current_qty_in_cart = item_exists.quantity if item_exists else 0
+    if current_qty_in_cart + 1 > item_to_add.in_stock:
+        return (
+            jsonify(
+                {
+                    "error": f"Cannot add more. Only {item_to_add.in_stock} available in stock."
+                }
+            ),
+            400,
+        )
 
     if item_exists:
         try:
@@ -545,6 +621,16 @@ def api_plus_cart():
     cart_item = Cart.query.get(cart_id)
     if not cart_item or cart_item.customer_link != customer_id:
         return jsonify({"error": "Cart item not found"}), 404
+
+    if cart_item.product and cart_item.quantity + 1 > cart_item.product.in_stock:
+        return (
+            jsonify(
+                {
+                    "error": f"Cannot add more. Only {cart_item.product.in_stock} available in stock."
+                }
+            ),
+            400,
+        )
 
     cart_item.quantity += 1
     db.session.commit()
@@ -677,7 +763,8 @@ def api_search():
             "id": p.id,
             "product_name": p.product_name,
             "current_price": p.current_price,
-            "category": p.category,
+            "category_id": p.category_id,
+            "category_name": p.category.name if p.category else None,
             "product_picture": p.product_picture,
         }
         for p in items
@@ -686,16 +773,10 @@ def api_search():
     return jsonify({"query": search_query, "items": items_list}), 200
 
 
-@views.route("/api/shop/<string:category_key>", methods=["GET"])
-def api_category_view(category_key):
-    valid_keys = [choice[0] for choice in CATEGORY_CHOICES]
-    if category_key not in valid_keys:
-        return jsonify({"error": "Category not found"}), 404
-
-    category_label = dict(CATEGORY_CHOICES).get(
-        category_key, category_key.replace("-", " ").title()
-    )
-    products = Product.query.filter_by(category=category_key, is_active=True).all()
+@views.route("/api/shop/<int:category_id>", methods=["GET"])
+def api_category_view(category_id):
+    category = Category.query.get_or_404(category_id)
+    products = Product.query.filter_by(category_id=category.id, is_active=True).all()
 
     products_list = [
         {
@@ -712,8 +793,8 @@ def api_category_view(category_key):
     return (
         jsonify(
             {
-                "category_key": category_key,
-                "category_title": category_label,
+                "category_id": category.id,
+                "category_title": category.name,
                 "products": products_list,
             }
         ),

@@ -1,11 +1,9 @@
 import os
-import logging
 from dotenv import load_dotenv
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
-from logstash_async.handler import AsynchronousLogstashHandler, LogstashFormatter
 
 load_dotenv()
 
@@ -26,27 +24,8 @@ CATEGORY_CHOICES = [
 def create_app():
     app = Flask(__name__)
 
-    logstash_host = os.environ.get("LOGSTASH_HOST", "localhost")
-    logstash_port = int(os.environ.get("LOGSTASH_PORT", 5044))
-
-    logstash_handler = AsynchronousLogstashHandler(
-        host=logstash_host,
-        port=logstash_port,
-        database_path="", 
-    )
-    logstash_handler.setLevel(logging.INFO)
-    logstash_handler.setFormatter(LogstashFormatter(extra_prefix=""))
-
-    app.logger.addHandler(logstash_handler)
-    app.logger.setLevel(logging.INFO)
-
-    werkzeug_logger = logging.getLogger("werkzeug")
-    werkzeug_logger.addHandler(logstash_handler)
-    werkzeug_logger.setLevel(logging.INFO)
-
     secret_key = os.environ.get("SECRET_KEY")
     if not secret_key:
-        app.logger.critical("SECRET_KEY is missing from environment variables!")
         raise RuntimeError("SECRET_KEY is missing from environment variables!")
 
     app.config["SECRET_KEY"] = secret_key
@@ -82,12 +61,12 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        seed_admin_user(app)
+        seed_admin_user()
 
     return app
 
 
-def seed_admin_user(app):
+def seed_admin_user():
     """Ensures an admin account and its admin profile exist using strictly .env variables."""
     from .models import User, Admin
 
@@ -95,8 +74,8 @@ def seed_admin_user(app):
     admin_password = os.environ.get("ADMIN_PASSWORD")
 
     if not admin_email or not admin_password:
-        app.logger.warning(
-            "ADMIN_EMAIL or ADMIN_PASSWORD missing from .env. Skipping admin seed."
+        print(
+            "Warning: ADMIN_EMAIL or ADMIN_PASSWORD missing from .env. Skipping admin seed."
         )
         return
 
@@ -112,15 +91,10 @@ def seed_admin_user(app):
 
         db.session.add(admin_user)
         db.session.commit()
-        app.logger.info(
-            "Default admin user created successfully",
-            extra={"admin_email": admin_email},
-        )
+        print(f"Default admin user created successfully ({admin_email}).")
 
     if not admin_user.admin_profile:
         admin_profile = Admin(user_id=admin_user.id)
         db.session.add(admin_profile)
         db.session.commit()
-        app.logger.info(
-            "Admin profile created successfully", extra={"admin_email": admin_email}
-        )
+        print(f"Admin profile created successfully for ({admin_email}).")

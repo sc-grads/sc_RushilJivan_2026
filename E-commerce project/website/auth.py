@@ -2,7 +2,6 @@ import logging
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from .forms import LoginForm, SignUpForm, PasswordChangeForm, ResetPasswordForm
 from .models import User, Customer, db
-from . import db
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash
 
@@ -104,6 +103,8 @@ def sign_up():
     return render_template("signup.html", form=form)
 
 
+
+
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -136,6 +137,8 @@ def login():
     return render_template("login.html", form=form)
 
 
+
+
 @auth.route("/logout", methods=["GET", "POST"])
 @login_required
 def log_out():
@@ -145,11 +148,65 @@ def log_out():
     return redirect(url_for("views.home"))
 
 
-@auth.route("/profile/<int:user_id>")
+
+
+@auth.route("/profile/<int:user_id>", methods=["GET", "POST"])
 @login_required
 def profile(user_id):
     user = User.query.get_or_404(user_id)
+
+    if current_user.id != user.id:
+        flash(
+            "You do not have permission to view or edit this profile.", category="error"
+        )
+        return redirect(url_for("views.home"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
+        phone_number = request.form.get("phone_number", "").strip()
+        id_number = request.form.get("id_number", "").strip()
+        address = request.form.get("address", "").strip()
+        city = request.form.get("city", "").strip()
+        postal_code = request.form.get("postal_code", "").strip()
+
+        if email and email != user.email:
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email:
+                flash(
+                    "Email address is already in use by another account.",
+                    category="error",
+                )
+                return render_template("profile.html", user=user)
+            user.email = email
+
+        if user.customer_profile:
+            user.customer_profile.first_name = first_name
+            user.customer_profile.last_name = last_name
+            user.customer_profile.phone_number = phone_number
+            user.customer_profile.id_number = id_number
+            user.customer_profile.address = address
+            user.customer_profile.city = city
+            user.customer_profile.postal_code = postal_code
+
+        try:
+            db.session.commit()
+            logger.info("User profile updated successfully", extra={"user_id": user.id})
+            flash("Profile updated successfully!", category="success")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(
+                "Failed to update user profile",
+                extra={"user_id": user.id, "error": str(e)},
+            )
+            flash("Failed to update profile details.", category="error")
+
+        return redirect(url_for("auth.profile", user_id=user.id))
+
     return render_template("profile.html", user=user)
+
+
 
 
 @auth.route("/change-password/<int:user_id>", methods=["GET", "POST"])
@@ -188,6 +245,8 @@ def change_password(user_id):
     return render_template("change_password.html", form=form)
 
 
+
+
 @auth.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     form = ResetPasswordForm()
@@ -222,6 +281,10 @@ def forgot_password():
             )
 
     return render_template("forgot_password.html", form=form)
+
+
+
+
 
 
 @auth.route("/api/sign-up", methods=["POST"])
@@ -325,6 +388,9 @@ def api_login():
                 "last_name": user.customer_profile.last_name,
                 "phone_number": user.customer_profile.phone_number,
                 "id_number": user.customer_profile.id_number,
+                "address": user.customer_profile.address,
+                "city": user.customer_profile.city,
+                "postal_code": user.customer_profile.postal_code,
             }
 
         return (
@@ -346,9 +412,43 @@ def api_login():
     return jsonify({"error": "Invalid email or password"}), 401
 
 
-@auth.route("/api/profile/me", methods=["GET"])
+@auth.route("/api/profile/me", methods=["GET", "PUT"])
 @login_required
 def api_profile_me():
+    if request.method == "PUT":
+        data = request.get_json() or {}
+        email = data.get("email")
+
+        if email and email != current_user.email:
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email:
+                return jsonify({"error": "Email address is already in use."}), 400
+            current_user.email = email
+
+        if current_user.customer_profile:
+            cust = current_user.customer_profile
+            cust.first_name = data.get("first_name", cust.first_name)
+            cust.last_name = data.get("last_name", cust.last_name)
+            cust.phone_number = data.get("phone_number", cust.phone_number)
+            cust.id_number = data.get("id_number", cust.id_number)
+            cust.address = data.get("address", cust.address)
+            cust.city = data.get("city", cust.city)
+            cust.postal_code = data.get("postal_code", cust.postal_code)
+
+        try:
+            db.session.commit()
+            logger.info(
+                "API profile updated successfully", extra={"user_id": current_user.id}
+            )
+            return jsonify({"message": "Profile updated successfully!"}), 200
+        except Exception as e:
+            db.session.rollback()
+            logger.error(
+                "API failed to update profile",
+                extra={"user_id": current_user.id, "error": str(e)},
+            )
+            return jsonify({"error": str(e)}), 500
+
     profile_data = {}
     if current_user.customer_profile:
         profile_data = {
@@ -356,6 +456,9 @@ def api_profile_me():
             "last_name": current_user.customer_profile.last_name,
             "phone_number": current_user.customer_profile.phone_number,
             "id_number": current_user.customer_profile.id_number,
+            "address": current_user.customer_profile.address,
+            "city": current_user.customer_profile.city,
+            "postal_code": current_user.customer_profile.postal_code,
         }
 
     return (
@@ -381,6 +484,9 @@ def api_profile(user_id):
             "last_name": user.customer_profile.last_name,
             "phone_number": user.customer_profile.phone_number,
             "id_number": user.customer_profile.id_number,
+            "address": user.customer_profile.address,
+            "city": user.customer_profile.city,
+            "postal_code": user.customer_profile.postal_code,
         }
 
     return (

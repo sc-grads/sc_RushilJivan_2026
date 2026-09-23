@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %} Manage Orders - Ville Cycles {% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-clipboard-list me-2" style="color: #0EA5E9;"></i>Manage Customer Orders
+            </h2>
+            <p class="text-muted small mb-0">Review customer orders and update statuses.</p>
+        </div>
+        <span class="badge bg-white text-dark border shadow-sm px-3 py-2 fs-6">
+            Total Orders: {{ orders|length }}
+        </span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show shadow-sm rounded-3"
+        role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if orders %}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background-color: #1E293B; color: white;">
+                    <tr>
+                        <th class="py-3 ps-4">Order ID</th>
+                        <th class="py-3">Date</th>
+                        <th class="py-3">Customer ID</th>
+                        <th class="py-3">Product ID</th>
+                        <th class="py-3">Qty & Price</th>
+                        <th class="py-3">Shipping Address</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3 pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">#{{ order.id }}</td>
+                        <td class="small text-muted">
+                            {{ order.date_ordered.strftime('%Y-%m-%d %H:%M') if order.date_ordered else 'N/A' }}
+                        </td>
+                        <td>{{ order.customer_link }}</td>
+                        <td>{{ order.product_link }}</td>
+                        <td>
+                            <span class="fw-semibold">{{ order.quantity }}x</span>
+                            <span class="text-success small fw-bold">R {{ "{:,.2f}".format(order.price) }}</span>
+                        </td>
+                        <td class="small text-secondary" style="max-width: 200px;">
+                            {{ order.address }}, {{ order.city }} ({{ order.postal_code }})
+                        </td>
+                        <td>
+                            <form action="{{ url_for('admin.manage_orders') }}" method="POST"
+                                class="d-flex align-items-center gap-2 m-0">
+                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <select name="status" class="form-select form-select-sm shadow-none"
+                                    style="width: 160px;">
+                                    <option value="Pending" {% if order.status=='Pending' %}selected{% endif %}>Pending
+                                    </option>
+                                    <option value="Paid" {% if order.status=='Paid' %}selected{% endif %}>Paid</option>
+                                    <option value="Processing" {% if order.status=='Processing' %}selected{% endif %}>
+                                        Processing</option>
+                                    <option value="Out for Delivery" {% if order.status=='Out for Delivery' %}selected{%
+                                        endif %}>Out for Delivery</option>
+                                    <option value="Delivered" {% if order.status=='Delivered' %}selected{% endif %}>
+                                        Delivered</option>
+                                    <option value="Cancelled" {% if order.status=='Cancelled' %}selected{% endif %}>
+                                        Cancelled</option>
+                                </select>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <button type="submit" class="btn btn-sm text-white rounded-pill px-3 shadow-none border-0"
+                                style="background-color: #0EA5E9;">
+                                Update
+                            </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-white">
+        <div class="py-4">
+            <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+            <h5 class="fw-bold text-dark">No orders found</h5>
+            <p class="text-muted small mb-0">When customers place orders from their carts, they will show up right here.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

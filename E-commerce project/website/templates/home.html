@@ -45,29 +45,30 @@
 
             <div class="mb-4">
                 <div class="d-flex flex-row flex-wrap justify-content-center gap-2 pb-2">
-                    {% for cat_key, cat_label in CATEGORY_CHOICES %}
-                    <a href="{{ url_for('views.category_view', category_key=cat_key) }}"
+                    {% for cat in categories %}
+                    <a href="{{ url_for('views.category_view', category_id=cat.id) }}"
                         class="btn bg-white border shadow-sm text-dark d-flex align-items-center gap-2 px-3 py-2 rounded-pill text-decoration-none"
                         style="transition: all 0.2s;" onmouseover="this.style.borderColor='#0EA5E9'"
                         onmouseout="this.style.borderColor='#dee2e6'">
 
-                        {% if 'mountain' in cat_key %}
+                        {% set cat_name_lower = cat.name|lower %}
+                        {% if 'mountain' in cat_name_lower %}
                         <i class="fa-solid fa-person-biking" style="color: #0EA5E9;"></i>
-                        {% elif 'road' in cat_key %}
+                        {% elif 'road' in cat_name_lower %}
                         <i class="fa-solid fa-bicycle" style="color: #0EA5E9;"></i>
-                        {% elif 'electric' in cat_key or 'hybrid' in cat_key %}
+                        {% elif 'electric' in cat_name_lower or 'hybrid' in cat_name_lower %}
                         <i class="fa-solid fa-bolt" style="color: #0EA5E9;"></i>
-                        {% elif 'helmet' in cat_key %}
+                        {% elif 'helmet' in cat_name_lower %}
                         <i class="fa-solid fa-helmet-safety" style="color: #0EA5E9;"></i>
-                        {% elif 'component' in cat_key or 'part' in cat_key %}
+                        {% elif 'component' in cat_name_lower or 'part' in cat_name_lower %}
                         <i class="fa-solid fa-gear" style="color: #0EA5E9;"></i>
-                        {% elif 'tire' in cat_key %}
+                        {% elif 'tire' in cat_name_lower %}
                         <i class="fa-solid fa-circle-dot" style="color: #0EA5E9;"></i>
                         {% else %}
                         <i class="fa-solid fa-wrench" style="color: #0EA5E9;"></i>
                         {% endif %}
 
-                        <span class="fw-semibold text-nowrap small">{{ cat_label }}</span>
+                        <span class="fw-semibold text-nowrap small">{{ cat.name }}</span>
                     </a>
                     {% endfor %}
                 </div>

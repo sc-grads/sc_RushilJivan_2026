@@ -4,13 +4,23 @@
 
 {% block body %}
 
-<div class="container my-5">
-    <h2 class="fw-bold mb-4 text-white">Add New Shop Item</h2>
+<div class="container my-5" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">Add New Shop Item</h2>
+            <p class="text-muted small mb-0">Fill in the product details to add a new listing to your inventory.</p>
+        </div>
+        <a href="{{ url_for('admin.shop_items') }}"
+            class="btn btn-outline-secondary btn-sm rounded-pill px-3 bg-white text-dark border-0 shadow-sm"
+            onmouseover="this.style.backgroundColor='#F1F5F9'" onmouseout="this.style.backgroundColor='#FFFFFF'">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Inventory
+        </a>
+    </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
-    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show"
+    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show rounded-4 shadow-sm border-0"
         role="alert">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -19,46 +29,113 @@
     {% endif %}
     {% endwith %}
 
-    <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle">
-            <thead>
-                <tr>
-                    <th scope="col">Product Name</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Previous Price</th>
-                    <th scope="col">Current Price</th>
-                    <th scope="col">In Stock</th>
-                    <th scope="col">Picture</th>
-                    <th scope="col">Flash Sale</th>
-                    <th scope="col">Flagship</th>
-                    <th scope="col" class="text-end">Action</th>
-                </tr>
-            </thead>
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white">
+        <div class="card-body p-4 p-md-5">
+            <form action="" method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
 
-            <tbody>
-                <tr>
-                    <form action="" method="POST" enctype="multipart/form-data">
-                        {{ form.hidden_tag() }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Product Name</label>
+                        {{ form.product_name(class="form-control rounded-3 shadow-none", placeholder="Enter product
+                        name") }}
+                        {% if form.product_name.errors %}
+                        {% for error in form.product_name.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
 
-                        <td>{{ form.product_name(class="form-control bg-secondary text-white border-0") }}</td>
-                        <td>{{ form.category(class="form-select bg-secondary text-white border-0") }}</td>
-                        <td>{{ form.previous_price(class="form-control bg-secondary text-white border-0") }}</td>
-                        <td>{{ form.current_price(class="form-control bg-secondary text-white border-0") }}</td>
-                        <td>{{ form.in_stock(class="form-control bg-secondary text-white border-0") }}</td>
-                        <td>{{ form.product_picture(class="form-control bg-secondary text-white border-0") }}</td>
-                        <td class="text-center">{{ form.flash_sale(class="form-check-input") }}</td>
-                        <td class="text-center">{{ form.is_flagship(class="form-check-input") }}</td>
-                        <td class="text-end">
-                            {% if form.update_product %}
-                            {{ form.update_product(class="btn btn-primary fw-semibold btn-sm") }}
-                            {% else %}
-                            <button type="submit" class="btn btn-primary fw-semibold btn-sm">Add Product</button>
-                            {% endif %}
-                        </td>
-                    </form>
-                </tr>
-            </tbody>
-        </table>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Category</label>
+                        {{ form.category(class="form-select rounded-3 shadow-none") }}
+                        {% if form.category.errors %}
+                        {% for error in form.category.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Previous Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 rounded-start-3 text-secondary">R</span>
+                            {{ form.previous_price(class="form-control rounded-end-3 shadow-none", placeholder="0.00 (Optional)") }}
+                        </div>
+                        {% if form.previous_price.errors %}
+                        {% for error in form.previous_price.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Current Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 rounded-start-3 text-secondary">R</span>
+                            {{ form.current_price(class="form-control rounded-end-3 shadow-none", placeholder="0.00") }}
+                        </div>
+                        {% if form.current_price.errors %}
+                        {% for error in form.current_price.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">In Stock Quantity</label>
+                        {{ form.in_stock(class="form-control rounded-3 shadow-none", placeholder="Enter quantity") }}
+                        {% if form.in_stock.errors %}
+                        {% for error in form.in_stock.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-muted">Product Picture</label>
+                        {{ form.product_picture(class="form-control rounded-3 shadow-none py-2") }}
+                        {% if form.product_picture.errors %}
+                        {% for error in form.product_picture.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <div class="p-3 bg-light rounded-3 border-0 d-flex gap-4">
+                            <div class="form-check mb-0">
+                                {{ form.flash_sale(class="form-check-input shadow-none", style="cursor: pointer;") }}
+                                <label class="form-check-label fw-semibold text-secondary small"
+                                    for="{{ form.flash_sale.id }}" style="cursor: pointer;">
+                                    Flash Sale
+                                </label>
+                            </div>
+                            <div class="form-check mb-0">
+                                {{ form.is_flagship(class="form-check-input shadow-none", style="cursor: pointer;") }}
+                                <label class="form-check-label fw-semibold text-secondary small"
+                                    for="{{ form.is_flagship.id }}" style="cursor: pointer;">
+                                    Flagship Product
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-end mt-4">
+                        <a href="{{ url_for('admin.shop_items') }}"
+                            class="btn btn-light fw-semibold text-secondary rounded-pill px-4 me-2 border-0">Cancel</a>
+                        {% if form.update_product %}
+                        {{ form.update_product(class="btn fw-semibold text-white rounded-pill px-5 shadow-sm border-0",
+                        style="background-color: #0EA5E9;") }}
+                        {% else %}
+                        <button type="submit" class="btn fw-semibold text-white rounded-pill px-5 shadow-sm border-0"
+                            style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
+                            onmouseout="this.style.backgroundColor='#0EA5E9'">Add Product</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

@@ -96,6 +96,10 @@
                                         class="fa-solid fa-boxes-packing"></i></a></li>
                             <li><a class="dropdown-item" href="/add-shop-items">Add Shop Item <i
                                         class="fa-solid fa-square-plus"></i></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_categories') }}">Categories <i
+                                        class="fa-solid fa-tags"></i></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders') }}">Manage Orders <i
+                                        class="fa-solid fa-clipboard-list"></i></a></li>
                             {% endif %}
 
                             <li>
