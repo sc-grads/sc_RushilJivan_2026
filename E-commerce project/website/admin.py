@@ -587,7 +587,7 @@ def delete_item(item_id):
     return render_template("404.html")
 
 
-# --- API TESTING ---
+##API TESTING
 
 
 @admin.route("/api/categories", methods=["GET"])

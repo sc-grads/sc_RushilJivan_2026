@@ -13,7 +13,6 @@
                 statuses.</p>
         </div>
 
-        <!-- Filter and Count Controls -->
         <div class="d-flex align-items-center gap-3">
             <form method="GET" action="{{ url_for('admin.manage_orders') }}" class="d-flex align-items-center">
                 <select name="time_filter" class="form-select form-select-sm shadow-none bg-white border"
@@ -75,12 +74,10 @@
                             <div class="d-flex flex-column gap-2 py-2">
                                 {% for item in order_group %}
                                 <div class="d-flex align-items-center gap-3">
-                                    <!-- Product Picture Thumbnail (44px) -->
                                     <img src="{{ url_for('admin.get_image', filename=item.product.product_picture.replace('media/', '')) if item.product and item.product.product_picture else url_for('admin.get_image', filename='default.jpg') }}"
                                         alt="Product" class="rounded border shadow-sm"
                                         style="width: 44px; height: 44px; object-fit: cover; flex-shrink: 0;">
 
-                                    <!-- Product Info -->
                                     <div class="flex-grow-1">
                                         <h6 class="mb-0 fw-semibold text-dark fs-6">
                                             {{ item.product.product_name if item.product else 'Product #' ~
@@ -133,7 +130,6 @@
         </div>
     </div>
 
-    <!-- Pagination Controls (Preserves time_filter state) -->
     {% if pagination.pages > 1 %}
     <nav aria-label="Order pagination">
         <ul class="pagination justify-content-center">

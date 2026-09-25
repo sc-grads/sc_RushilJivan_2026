@@ -1,3 +1,5 @@
+import logging
+from logging.handlers import RotatingFileHandler
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template
@@ -23,6 +25,30 @@ CATEGORY_CHOICES = [
 
 def create_app():
     app = Flask(__name__)
+
+    if not os.path.exists("logs"):
+        os.mkdir("logs")
+
+    file_handler = RotatingFileHandler(
+        "logs/app.log", maxBytes=10 * 1024 * 1024, backupCount=5
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    )
+    file_handler.setLevel(logging.INFO)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    )
+    stream_handler.setLevel(logging.INFO)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+
+    if not root_logger.handlers:
+        root_logger.addHandler(file_handler)
+        root_logger.addHandler(stream_handler)
 
     secret_key = os.environ.get("SECRET_KEY")
     if not secret_key:
@@ -63,6 +89,7 @@ def create_app():
         db.create_all()
         seed_admin_user()
 
+    root_logger.info("Ville Cycles application initialized successfully.")
     return app
 
 

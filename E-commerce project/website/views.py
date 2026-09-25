@@ -21,11 +21,15 @@ PAYFAST_URL = "https://sandbox.payfast.co.za/eng/process"
 
 @views.route("/")
 def home():
-    items = (
+    page = request.args.get("page", 1, type=int)
+    per_page = 12  
+
+    pagination = (
         Product.query.filter_by(is_active=True, is_flagship=False, is_approved=True)
         .order_by(Product.date_added.desc())
-        .all()
+        .paginate(page=page, per_page=per_page, error_out=False)
     )
+    items = pagination.items
 
     flagship = Product.query.filter_by(
         is_flagship=True, is_active=True, is_approved=True
@@ -45,6 +49,7 @@ def home():
         flagship=flagship,
         cart=cart,
         categories=categories,
+        pagination=pagination,
     )
 
 
