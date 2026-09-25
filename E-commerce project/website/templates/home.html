@@ -13,9 +13,18 @@
                 style="background-color: #1E293B;">
                 <div class="row g-0 align-items-center p-3">
                     <div class="col-md-6 text-center p-3">
-                        <img src="{{ url_for('admin.get_image', filename=flagship.product_picture.replace('media/', '')) }}"
+                        {% set flagship_pic = flagship.product_picture or 'default.jpg' %}
+                        {% if 'customer_media' in flagship_pic or not flagship_pic.startswith('media/') %}
+                        {% set clean_flagship_name = flagship_pic.replace('customer_media/', '').replace('media/', '')
+                        %}
+                        <img src="{{ url_for('admin.get_customer_image', filename=clean_flagship_name) }}"
                             class="img-fluid rounded-3" alt="{{ flagship.product_name }}"
                             style="max-height: 250px; object-fit: contain;">
+                        {% else %}
+                        <img src="{{ url_for('admin.get_image', filename=flagship_pic.replace('media/', '')) }}"
+                            class="img-fluid rounded-3" alt="{{ flagship.product_name }}"
+                            style="max-height: 250px; object-fit: contain;">
+                        {% endif %}
                     </div>
                     <div class="col-md-6 p-3">
                         <span class="badge mb-2 text-white" style="background-color: #0EA5E9;">Flagship Bike</span>
@@ -101,7 +110,7 @@
 
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h4 class="fw-bold mb-0 text-dark">Shop All Items</h4>
-                <span class="badge bg-white text-dark border shadow-sm">{{ items|length }} Items Available</span>
+                <span class="badge bg-white text-dark border shadow-sm">{{ pagination.total }} Items Available</span>
             </div>
 
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
@@ -119,9 +128,18 @@
                             <span
                                 class="badge position-absolute top-0 end-0 m-3 bg-secondary text-white">Pre-Owned</span>
                             {% endif %}
-                            <img src="{{ url_for('admin.get_image', filename=item.product_picture.replace('media/', '')) }}"
+
+                            {% set pic = item.product_picture or 'default.jpg' %}
+                            {% if 'customer_media' in pic or not pic.startswith('media/') %}
+                            {% set clean_name = pic.replace('customer_media/', '').replace('media/', '') %}
+                            <img src="{{ url_for('admin.get_customer_image', filename=clean_name) }}"
                                 class="img-fluid rounded-2" alt="{{ item.product_name }}"
                                 style="height: 170px; object-fit: contain;">
+                            {% else %}
+                            <img src="{{ url_for('admin.get_image', filename=pic.replace('media/', '')) }}"
+                                class="img-fluid rounded-2" alt="{{ item.product_name }}"
+                                style="height: 170px; object-fit: contain;">
+                            {% endif %}
                         </div>
                         <div class="card-body d-flex flex-column justify-content-between pt-0">
                             <div>
@@ -154,6 +172,31 @@
                 {% endfor %}
 
             </div>
+
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Home Page Navigation" class="my-5">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link rounded-start-pill"
+                            href="{{ url_for('views.home', page=pagination.prev_num) if pagination.has_prev else '#' }}">Previous</a>
+                    </li>
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
+                    %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('views.home', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link rounded-end-pill"
+                            href="{{ url_for('views.home', page=pagination.next_num) if pagination.has_next else '#' }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
 
             <div class="bg-white rounded-3 p-3 shadow-sm border my-4">
                 <div class="row g-3 text-center">

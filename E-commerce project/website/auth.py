@@ -62,11 +62,7 @@ def sign_up():
                 db.session.flush()
 
                 new_customer = Customer(
-                    user_id=new_user.id,
-                    first_name=first_name,
-                    last_name=last_name,
-                    phone_number=phone_number if phone_number else None,
-                    id_number=id_number if id_number else None,
+                    user_id=new_user.id, first_name=first_name, last_name=last_name, phone_number=phone_number if phone_number else None, id_number=id_number if id_number else None,
                 )
                 db.session.add(new_customer)
                 db.session.commit()
@@ -325,11 +321,7 @@ def api_sign_up():
         db.session.flush()
 
         new_customer = Customer(
-            user_id=new_user.id,
-            first_name=first_name,
-            last_name=last_name,
-            phone_number=phone_number,
-            id_number=id_number,
+            user_id=new_user.id, first_name=first_name, last_name=last_name, phone_number=phone_number, id_number=id_number,
         )
         db.session.add(new_customer)
         db.session.commit()

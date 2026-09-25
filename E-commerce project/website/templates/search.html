@@ -7,67 +7,88 @@
 <div class="container my-5">
 
     <div class="d-flex align-items-center justify-content-between mb-4">
-        <h3 class="fw-bold" style="color: #0F172A;">Search Results</h3>
-        {% if items | length > 0 %}
-        <span class="badge bg-white text-dark border shadow-sm">{{ items|length }} Matches Found</span>
-        {% endif %}
-    </div>
-
-    {% if items | length < 1 %} 
-        <div class="text-center py-5 rounded-4 shadow-sm border p-4" style="background-color: #1E293B; color: #FFFFFF;">
-            <i class="fa-solid fa-magnifying-glass fs-1 mb-3" style="color: #0EA5E9;"></i>
-            <h3 class="fw-bold text-white mb-2">No Items Match Your Search</h3>
-            <p class="text-secondary mb-4">Try searching for a different bike model, category, or accessory.</p>
-            <a href="/" class="btn fw-bold text-white rounded-pill px-4 shadow-sm border-0"
-                style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
-                onmouseout="this.style.backgroundColor='#0EA5E9'">
-                Back to Home
+        <div>
+            <h3 class="fw-bold mb-1" style="color: #0F172A;">Search Results</h3>
+            {% if items | length > 0 %}
+            <span class="badge bg-white text-dark border shadow-sm">{{ items|length }} Matches Found</span>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{{ url_for('views.home') }}"
+                class="btn btn-outline-dark rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2"
+                style="transition: all 0.2s;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Home
             </a>
         </div>
-        {% else %}
+    </div>
 
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-            {% for item in items %}
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 rounded-3 bg-white">
-                    <div class="position-relative text-center p-3">
-                        {% if item.flash_sale %}
-                        <span class="badge position-absolute top-0 start-0 m-3 text-white"
-                            style="background-color: #0EA5E9;">SALE</span>
+    {% if items | length < 1 %} <div class="text-center py-5 rounded-4 shadow-sm border p-4"
+        style="background-color: #1E293B; color: #FFFFFF;">
+        <i class="fa-solid fa-magnifying-glass fs-1 mb-3" style="color: #0EA5E9;"></i>
+        <h3 class="fw-bold text-white mb-2">No Items Match Your Search</h3>
+        <p class="text-secondary mb-4">Try searching for a different bike model, category, or accessory.</p>
+        <a href="{{ url_for('views.home') }}" class="btn fw-bold text-white rounded-pill px-4 shadow-sm border-0"
+            style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
+            onmouseout="this.style.backgroundColor='#0EA5E9'">
+            Back to Home
+        </a>
+</div>
+{% else %}
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for item in items %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 rounded-3 bg-white">
+            <div class="position-relative text-center p-3">
+                {% if item.flash_sale %}
+                <span class="badge position-absolute top-0 start-0 m-3 text-white"
+                    style="background-color: #0EA5E9;">SALE</span>
+                {% endif %}
+                {% if item.is_preowned %}
+                <span class="badge position-absolute top-0 end-0 m-3 bg-secondary text-white">Pre-Owned</span>
+                {% endif %}
+
+                {% set pic = item.product_picture or 'default.jpg' %}
+                {% if 'customer_media' in pic or not pic.startswith('media/') %}
+                {% set clean_name = pic.replace('customer_media/', '').replace('media/', '') %}
+                <img src="{{ url_for('admin.get_customer_image', filename=clean_name) }}" class="img-fluid rounded-2"
+                    alt="{{ item.product_name }}" style="height: 170px; object-fit: contain;">
+                {% else %}
+                <img src="{{ url_for('admin.get_image', filename=pic.replace('media/', '')) }}"
+                    class="img-fluid rounded-2" alt="{{ item.product_name }}"
+                    style="height: 170px; object-fit: contain;">
+                {% endif %}
+            </div>
+            <div class="card-body d-flex flex-column justify-content-between pt-0">
+                <div>
+                    <h6 class="card-title text-dark fw-bold text-truncate">{{ item.product_name }}</h6>
+                    <div class="d-flex align-items-baseline gap-2 my-2">
+                        <span class="fs-5 fw-bold" style="color: #0EA5E9;">R {{ "{:,.2f}".format(item.current_price)
+                            }}</span>
+                        {% if item.previous_price and item.previous_price > 0 %}
+                        <strike><span class="text-secondary">R {{ "{:,.2f}".format(item.previous_price)
+                                }}</span></strike>
                         {% endif %}
-                        <img src="{{ item.product_picture }}" class="img-fluid rounded-2" alt="{{ item.product_name }}"
-                            style="height: 170px; object-fit: contain;">
-                    </div>
-                    <div class="card-body d-flex flex-column justify-content-between pt-0">
-                        <div>
-                            <h6 class="card-title text-dark fw-bold text-truncate">{{ item.product_name }}</h6>
-                            <div class="d-flex align-items-baseline gap-2 my-2">
-                                <span class="fs-5 fw-bold" style="color: #0EA5E9;">R {{
-                                    "{:,.2f}".format(item.current_price) }}</span>
-                                {% if item.previous_price and item.previous_price > 0 %}
-                                <strike><span class="text-secondary">R {{ "{:,.2f}".format(item.previous_price)
-                                        }}</span></strike>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div>
-                            <p class="small mb-2 text-muted">
-                                <i class="fa-solid fa-boxes-stacked me-1"></i> {{ item.in_stock }} Items Left
-                            </p>
-                            <a href="/add-to-cart/{{ item.id }}"
-                                class="btn btn-sm w-100 fw-bold text-white rounded-pill shadow-none border-0"
-                                style="background-color: #1E293B;" onmouseover="this.style.backgroundColor='#0F172A'"
-                                onmouseout="this.style.backgroundColor='#1E293B'">
-                                <i class="fa-solid fa-cart-plus me-1"></i> Add to Cart
-                            </a>
-                        </div>
                     </div>
                 </div>
+                <div>
+                    <p class="small mb-2 text-muted">
+                        <i class="fa-solid fa-boxes-stacked me-1"></i> {{ item.in_stock }} Items Left
+                    </p>
+                    <a href="/add-to-cart/{{ item.id }}"
+                        class="btn btn-sm w-100 fw-bold text-white rounded-pill shadow-none border-0"
+                        style="background-color: #1E293B;" onmouseover="this.style.backgroundColor='#0F172A'"
+                        onmouseout="this.style.backgroundColor='#1E293B'">
+                        <i class="fa-solid fa-cart-plus me-1"></i> Add to Cart
+                    </a>
+                </div>
             </div>
-            {% endfor %}
         </div>
+    </div>
+    {% endfor %}
+</div>
 
-        {% endif %}
+{% endif %}
 
 </div>
 
