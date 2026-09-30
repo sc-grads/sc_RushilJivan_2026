@@ -4,6 +4,36 @@
 
 {% block body %}
 
+<style>
+    /* Positions the toggle button inside the right side of the input box seamlessly */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper .form-control {
+        padding-right: 45px;
+        /* Leave space for the icon inside the box */
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #6c757d;
+        z-index: 10;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .password-toggle-btn:focus {
+        outline: none;
+        box-shadow: none;
+    }
+</style>
+
 <section class="base" id="base-signup">
     <div class="base-content">
         <div class="form">
@@ -74,7 +104,13 @@
 
                 <div class="password mb-3">
                     <h4 class="form-label text-white fs-6">Password</h4>
-                    {{ form.password1(class="form-control", placeholder="At least 6 characters") }}
+                    <div class="password-wrapper">
+                        {{ form.password1(class="form-control", placeholder="At least 6 characters",
+                        id="passwordField1") }}
+                        <button type="button" class="password-toggle-btn" id="togglePassword1">
+                            <i class="bi bi-eye" id="toggleIcon1"></i>
+                        </button>
+                    </div>
                     {% for error in form.password1.errors %}
                     <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
@@ -82,7 +118,12 @@
 
                 <div class="password mb-3">
                     <h4 class="form-label text-white fs-6">Confirm Password</h4>
-                    {{ form.password2(class="form-control", placeholder="Re-enter password") }}
+                    <div class="password-wrapper">
+                        {{ form.password2(class="form-control", placeholder="Re-enter password", id="passwordField2") }}
+                        <button type="button" class="password-toggle-btn" id="togglePassword2">
+                            <i class="bi bi-eye" id="toggleIcon2"></i>
+                        </button>
+                    </div>
                     {% for error in form.password2.errors %}
                     <div class="text-danger small mt-1">{{ error }}</div>
                     {% endfor %}
@@ -96,5 +137,28 @@
         </div>
     </div>
 </section>
+
+<!-- Password Visibility Toggles Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function setupToggle(toggleId, inputId, iconId) {
+            const toggleBtn = document.querySelector('#' + toggleId);
+            const inputField = document.querySelector('#' + inputId);
+            const toggleIcon = document.querySelector('#' + iconId);
+
+            if (toggleBtn && inputField && toggleIcon) {
+                toggleBtn.addEventListener('click', function () {
+                    const type = inputField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    inputField.setAttribute('type', type);
+                    toggleIcon.classList.toggle('bi-eye');
+                    toggleIcon.classList.toggle('bi-eye-slash');
+                });
+            }
+        }
+
+        setupToggle('togglePassword1', 'passwordField1', 'toggleIcon1');
+        setupToggle('togglePassword2', 'passwordField2', 'toggleIcon2');
+    });
+</script>
 
 {% endblock %}

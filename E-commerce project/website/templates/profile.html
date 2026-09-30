@@ -24,8 +24,7 @@
                 <a href="{{ url_for('auth.profile', user_id=user.id) }}"
                     class="list-group-item list-group-item-action active">Profile</a>
                 <a href="{{ url_for('auth.change_password', user_id=user.id) }}"
-                    class="list-group-item list-group-item-action">Change
-                    Password</a>
+                    class="list-group-item list-group-item-action">Change Password</a>
             </div>
         </div>
 
@@ -96,7 +95,15 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button type="submit" class="btn text-white"
+                                style="background-color: #0d6efd; border-color: #0d6efd;">Save Changes</button>
+                            <button type="button" class="btn text-white"
+                                style="background-color: #dc3545; border-color: #dc3545;" data-bs-toggle="modal"
+                                data-bs-target="#deleteAccountModal">
+                                Delete Account
+                            </button>
+                        </div>
                     </form>
 
                     {% else %}
@@ -115,7 +122,15 @@
                                 <span class="badge bg-danger">ADMIN</span>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button type="submit" class="btn text-white"
+                                style="background-color: #0d6efd; border-color: #0d6efd;">Save Changes</button>
+                            <button type="button" class="btn text-white"
+                                style="background-color: #dc3545; border-color: #dc3545;" data-bs-toggle="modal"
+                                data-bs-target="#deleteAccountModal">
+                                Delete Account
+                            </button>
+                        </div>
                     </form>
 
                     {% endif %}
@@ -124,6 +139,31 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your account? This action is <strong>permanent</strong> and cannot be
+                    undone. All associated shopping carts and order history will be removed.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('views.delete_account') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn text-white"
+                        style="background-color: #dc3545; border-color: #dc3545;">Yes, Delete My Account</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

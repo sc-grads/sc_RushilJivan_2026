@@ -52,6 +52,29 @@ page navigation on admin all items so it isn't a long list to scroll down
 customer sell bike (pre owned bikes)
 
 
+25/09
+added home button on search page
+pagination to home page
+
+
+
+
+add to cart without an account, should only ask to sign up or login at checkout. when login products should still stay
+
+
+29/09
+search bar and about us, etc shouldn't be available from the profile page, etc.
+flow of status as admin, from paid it goes to processed, out for delivery then delivered. shouldn't be able to go from paid to delivered. must follow flow. also a pop up to confirm changing the status
+shop page, a-z, lower to higher, higher to lower (price)
+
+
+
+30/09
+delete account
+view password button (eye)
+customer sell bike, shop should be able to earn commission
+confirmation email (resend)
+
 
 
 

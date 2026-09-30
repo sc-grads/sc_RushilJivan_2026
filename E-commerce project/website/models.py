@@ -56,7 +56,10 @@ class Customer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
     )
 
     first_name = db.Column(db.String(150), nullable=False)
@@ -68,11 +71,20 @@ class Customer(db.Model):
     city = db.Column(db.String(100), nullable=True)
     postal_code = db.Column(db.String(20), nullable=True)
 
+    # Unique backref names to prevent collisions
     cart_items = db.relationship(
-        "Cart", backref=db.backref("customer", lazy=True), cascade="all, delete-orphan"
+        "Cart",
+        backref=db.backref("customer_cart", lazy=True),
+        cascade="all, delete-orphan",
     )
-    orders = db.relationship("Order", backref=db.backref("customer", lazy=True))
-    preowned_listings = db.relationship("Product", backref="seller", lazy=True)
+
+    orders = db.relationship(
+        "Order", backref=db.backref("customer_order", lazy=True), passive_deletes=True
+    )
+
+    preowned_listings = db.relationship(
+        "Product", backref="seller", lazy=True, passive_deletes=True
+    )
 
     def __str__(self):
         return f"<Customer {self.first_name} {self.last_name}>"
@@ -83,7 +95,10 @@ class Admin(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
     )
 
     def __str__(self):
@@ -97,7 +112,7 @@ class Product(db.Model):
     product_name = db.Column(db.String(100), nullable=False)
     current_price = db.Column(db.Float, nullable=False)
     previous_price = db.Column(db.Float, nullable=True)
-    description = db.Column(db.Text, nullable=True)  
+    description = db.Column(db.Text, nullable=True)
     in_stock = db.Column(db.Integer, nullable=False)
     product_picture = db.Column(db.String(1000), nullable=False)
     flash_sale = db.Column(db.Boolean, default=False)
@@ -109,10 +124,18 @@ class Product(db.Model):
     is_flagship = db.Column(db.Boolean, default=False, nullable=False)
 
     is_preowned = db.Column(db.Boolean, default=False, nullable=False)
-    is_approved = db.Column(
-        db.Boolean, default=True, nullable=False
-    )  
-    seller_id = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=True)
+    is_approved = db.Column(db.Boolean, default=False, nullable=False)
+    seller_id = db.Column(
+        db.Integer, db.ForeignKey("customers.id", ondelete="SET NULL"), nullable=True
+    )
+
+    # --- Negotiation & Logistics Workflow Fields ---
+    customer_asking_price = db.Column(db.Float, nullable=True)
+    shop_counter_price = db.Column(db.Float, nullable=True)
+    admin_query_message = db.Column(db.Text, nullable=True)
+    consignment_status = db.Column(
+        db.String(50), default="pending_review", nullable=False
+    )
 
     carts = db.relationship(
         "Cart", backref=db.backref("product", lazy=True), cascade="all, delete-orphan"
@@ -120,7 +143,7 @@ class Product(db.Model):
     orders = db.relationship("Order", backref=db.backref("product", lazy=True))
 
     def __str__(self):
-        return f"<Product {self.product_name}>"
+        return f"<Product {self.product_name} - Status: {self.consignment_status}>"
 
 
 class Cart(db.Model):
@@ -129,8 +152,12 @@ class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
 
-    customer_link = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=False)
-    product_link = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    customer_link = db.Column(
+        db.Integer, db.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False
+    )
+    product_link = db.Column(
+        db.Integer, db.ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+    )
 
     def __str__(self):
         return f"<Cart {self.id}>"
@@ -153,7 +180,9 @@ class Order(db.Model):
     card_holder = db.Column(db.String(150), nullable=True)
     card_last_four = db.Column(db.String(4), nullable=True)
 
-    customer_link = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=False)
+    customer_link = db.Column(
+        db.Integer, db.ForeignKey("customers.id", ondelete="SET NULL"), nullable=True
+    )
     product_link = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
 
     def __str__(self):

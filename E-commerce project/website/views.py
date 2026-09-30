@@ -3,12 +3,24 @@ from datetime import datetime, timedelta
 import logging
 import os
 import uuid
-from flask import (Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, url_for)
-from flask_login import current_user, login_required
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from flask_login import current_user, login_required, logout_user
 from werkzeug.utils import secure_filename
 from . import db
 from .forms import CheckoutForm, SellBikeForm
 from .models import Cart, Category, Order, Product, User
+from sqlalchemy import or_
+import resend
 
 logger = logging.getLogger(__name__)
 
@@ -18,22 +30,107 @@ PAYFAST_MERCHANT_ID = os.environ.get("PAYFAST_MERCHANT_ID", "10000100")
 PAYFAST_MERCHANT_KEY = os.environ.get("PAYFAST_MERCHANT_KEY", "46f0cd694581a")
 PAYFAST_URL = "https://sandbox.payfast.co.za/eng/process"
 
+resend.api_key = os.environ.get("RESEND_API_KEY")
+
+
+def send_order_invoice(customer_email, order_data):
+    try:
+        items_html = ""
+        for item in order_data.get("items", []):
+            product_name = item.product.product_name if item.product else "Item"
+            items_html += f"""
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">{product_name}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">{item.quantity}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">R {item.price:,.2f}</td>
+            </tr>
+            """
+
+        html_content = f"""
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
+            <h2 style="color: #0EA5E9; text-align: center;">Ville Cycles</h2>
+            <h3 style="text-align: center; margin-top: 0;">Order Confirmation & Invoice</h3>
+            
+            <p><strong>Customer Email:</strong> {customer_email}</p>
+            <p><strong>Payment ID / Ref:</strong> {order_data.get('payment_id')}</p>
+            <p><strong>Date:</strong> {order_data.get('date')}</p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Item</th>
+                        <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">Qty</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items_html}
+                </tbody>
+            </table>
+            
+            <div style="text-align: right; margin-top: 20px;">
+                <h3>Total (incl. Shipping): R {order_data.get('total_price'):,.2f}</h3>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+            <p style="font-size: 12px; color: #777; text-align: center;">Internal notification from Ville Cycles platform.</p>
+        </div>
+        """
+
+        target_inbox = "rushiljivan@gmail.com"
+
+        params = {
+            "from": "Ville Cycles <onboarding@resend.dev>",
+            "to": [target_inbox],
+            "subject": f"New Order Invoice [{order_data.get('payment_id')}] - Ville Cycles",
+            "html": html_content,
+        }
+
+        response = resend.Emails.send(params)
+        return response
+    except Exception as e:
+        logger.error(f"Error sending invoice email via Resend: {e}")
+        return None
+
 
 @views.route("/")
 def home():
     page = request.args.get("page", 1, type=int)
-    per_page = 12  
+    per_page = 12
 
-    pagination = (
-        Product.query.filter_by(is_active=True, is_flagship=False, is_approved=True)
-        .order_by(Product.date_added.desc())
-        .paginate(page=page, per_page=per_page, error_out=False)
+    sort_option = request.args.get("sort", "newest")
+
+    query = Product.query.filter(
+        Product.is_active == True,
+        Product.is_flagship == False,
+        Product.is_approved == True,
+        Product.in_stock > 0,  # <-- Hides items with 0 stock
+        or_(
+            Product.is_preowned == False,
+            Product.consignment_status == "delivered",
+        ),
     )
+
+    if sort_option == "az":
+        query = query.order_by(Product.product_name.asc())
+    elif sort_option == "za":
+        query = query.order_by(Product.product_name.desc())
+    elif sort_option == "price_low_high":
+        query = query.order_by(Product.current_price.asc())
+    elif sort_option == "price_high_low":
+        query = query.order_by(Product.current_price.desc())
+    else:
+        query = query.order_by(Product.date_added.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     items = pagination.items
 
-    flagship = Product.query.filter_by(
-        is_flagship=True, is_active=True, is_approved=True
-    ).first()
+    flagship = (
+        Product.query.filter_by(is_flagship=True, is_active=True, is_approved=True)
+        .filter(Product.in_stock > 0)
+        .first()
+    )  # <-- Ensures flagship also hides if out of stock
+
     categories = Category.query.all()
 
     if current_user.is_authenticated and current_user.customer_profile:
@@ -50,6 +147,7 @@ def home():
         cart=cart,
         categories=categories,
         pagination=pagination,
+        current_sort=sort_option,
     )
 
 
@@ -78,21 +176,33 @@ def sell_bike():
             db_picture = "customer_media/default.jpg"
 
         new_bike = Product(
-            product_name=form.product_name.data, current_price=form.current_price.data, description=form.description.data, in_stock=1, category_id=form.category.data,
-            product_picture=db_picture, is_preowned=True, is_approved=False, seller_id=current_user.customer_profile.id, is_active=True)
+            product_name=form.product_name.data,
+            current_price=form.current_price.data,
+            customer_asking_price=form.current_price.data,
+            description=form.description.data,
+            in_stock=1,
+            category_id=form.category.data,
+            product_picture=db_picture,
+            is_preowned=True,
+            is_approved=False,
+            consignment_status="pending_review",
+            seller_id=current_user.customer_profile.id,
+            is_active=False,
+        )
 
         try:
             db.session.add(new_bike)
             db.session.commit()
             logger.info(
-                "Pre-owned bike submitted for approval",
+                "Pre-owned bike submitted for approval and negotiation",
                 extra={
                     "customer_id": current_user.customer_profile.id,
                     "product_name": form.product_name.data,
+                    "asking_price": form.current_price.data,
                 },
             )
             flash(
-                "Your pre-owned bike has been submitted for admin approval!",
+                "Your pre-owned bike has been submitted! Our team will review your details and get back to you with an offer.",
                 category="success",
             )
             return redirect(url_for("views.home"))
@@ -305,8 +415,13 @@ def payment_success():
                 return redirect(url_for("views.show_cart"))
 
         payment_id = f"PAYFAST-{uuid.uuid4().hex[:8].upper()}"
+        created_orders = []
+        subtotal = 0
 
         for item in cart:
+            item_total = item.product.current_price * item.quantity
+            subtotal += item_total
+
             new_order = Order(
                 quantity=item.quantity,
                 price=item.product.current_price,
@@ -319,12 +434,25 @@ def payment_success():
                 customer_link=customer_id,
             )
             db.session.add(new_order)
+            created_orders.append(new_order)
 
             if item.product and item.product.in_stock >= item.quantity:
                 item.product.in_stock -= item.quantity
 
         Cart.query.filter_by(customer_link=customer_id).delete()
         db.session.commit()
+
+        # Build order data package and send invoice email via Resend
+        shipping_fee = 200.0 if created_orders else 0.0
+        order_invoice_data = {
+            "payment_id": payment_id,
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "total_price": subtotal + shipping_fee,
+            "items": created_orders,
+        }
+        send_order_invoice(
+            getattr(current_user, "email", "unknown@customer.com"), order_invoice_data
+        )
 
         logger.info(
             "Payment successful, order created and cart cleared",
@@ -508,6 +636,24 @@ def order():
             self.prev_num = page - 1
             self.next_num = page + 1
 
+        def iter_pages(
+            self, left_edge=2, left_current=2, right_current=5, right_edge=2
+        ):
+            last = 0
+            for num in range(1, self.pages + 1):
+                if (
+                    num <= left_edge
+                    or (
+                        num > self.page - left_current - 1
+                        and num < self.page + right_current
+                    )
+                    or num > self.pages - right_edge
+                ):
+                    if last + 1 != num:
+                        yield None
+                    yield num
+                    last = num
+
     pagination = SimplePagination(page, per_page, len(orders_list))
 
     return render_template(
@@ -557,6 +703,87 @@ def category_view(category_id):
         products=products,
         category_id=category.id,
     )
+
+
+@views.route("/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    user = current_user
+    customer = user.customer_profile
+
+    try:
+        if customer:
+            Cart.query.filter_by(customer_link=customer.id).delete()
+            Product.query.filter_by(seller_id=customer.id).update({"seller_id": None})
+            Order.query.filter_by(customer_link=customer.id).delete()
+            db.session.delete(customer)
+
+        db.session.delete(user)
+        db.session.commit()
+
+        logout_user()
+        flash(
+            "Your account and all associated data have been successfully deleted.",
+            "success",
+        )
+        return redirect(url_for("views.home"))
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(
+            "Failed to delete user account",
+            extra={"user_id": user.id, "error": str(e)},
+        )
+        flash(
+            "An error occurred while trying to delete your account. Please try again.",
+            "danger",
+        )
+        return redirect(request.referrer or url_for("views.home"))
+
+
+@views.route("/my-submissions", methods=["GET"])
+@login_required
+def my_submissions():
+    if not current_user.customer_profile:
+        flash("Only customer accounts have bike submissions.", "error")
+        return redirect(url_for("views.home"))
+
+    customer_bikes = Product.query.filter_by(
+        seller_id=current_user.customer_profile.id, is_preowned=True
+    ).all()
+
+    return render_template("my_submissions.html", bikes=customer_bikes)
+
+
+@views.route("/respond-offer/<int:item_id>/<action>", methods=["POST"])
+@login_required
+def respond_offer(item_id, action):
+    if not current_user.customer_profile:
+        return redirect(url_for("views.home"))
+
+    item = Product.query.get_or_404(item_id)
+
+    if item.seller_id != current_user.customer_profile.id:
+        flash("Unauthorized action.", "error")
+        return redirect(url_for("views.my_submissions"))
+
+    if action == "accept":
+        if item.shop_counter_price:
+            item.current_price = item.shop_counter_price
+        item.consignment_status = "price_agreed"
+        flash(
+            "Offer accepted! Please check your delivery instructions to ship or drop off your bike at Ville Cycles.",
+            "success",
+        )
+    elif action == "reject":
+        item.consignment_status = "rejected_by_customer"
+        flash(
+            "You have declined the shop's offer. Feel free to contact our support team to discuss further.",
+            "warning",
+        )
+
+    db.session.commit()
+    return redirect(url_for("views.my_submissions"))
 
 
 ##API TESTING

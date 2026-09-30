@@ -57,11 +57,11 @@
                     </div>
                     <div>
                         <span class="badge rounded-pill px-3 py-2 fw-bold text-uppercase
-                            {% if order_group[0].status == 'Pending' %} bg-light text-dark border
-                            {% elif order_group[0].status == 'Accepted' %} bg-info text-dark
-                            {% elif order_group[0].status == 'Out for delivery' %} bg-warning text-dark
+                            {% if order_group[0].status == 'Pending' or order_group[0].status == 'Paid' %} bg-light text-dark border
+                            {% elif order_group[0].status == 'Processing' or order_group[0].status == 'Accepted' %} bg-info text-dark
+                            {% elif order_group[0].status == 'Out for Delivery' or order_group[0].status == 'Out for delivery' %} bg-warning text-dark
                             {% elif order_group[0].status == 'Delivered' %} bg-success text-white
-                            {% elif order_group[0].status == 'Canceled' %} bg-danger text-white
+                            {% elif order_group[0].status == 'Cancelled' or order_group[0].status == 'Canceled' %} bg-danger text-white
                             {% else %} bg-secondary text-white
                             {% endif %}" style="font-size: 0.75rem; letter-spacing: 0.5px;">
                             {{ order_group[0].status }}
@@ -119,10 +119,10 @@
                         {% set status = order_group[0].status %}
                         <div class="progress rounded-pill bg-light" style="height: 8px;">
                             <div class="progress-bar rounded-pill 
-                                {% if status == 'Accepted' %} bg-info w-50
-                                {% elif status == 'Out for delivery' %} bg-warning w-75
+                                {% if status == 'Processing' or status == 'Accepted' %} bg-info w-50
+                                {% elif status == 'Out for Delivery' or status == 'Out for delivery' %} bg-warning w-75
                                 {% elif status == 'Delivered' %} bg-success w-100
-                                {% elif status == 'Canceled' %} bg-danger w-100
+                                {% elif status == 'Cancelled' or status == 'Canceled' %} bg-danger w-100
                                 {% else %} bg-primary w-25 {% endif %}" role="progressbar" aria-valuenow="100"
                                 aria-valuemin="0" aria-valuemax="100">
                             </div>

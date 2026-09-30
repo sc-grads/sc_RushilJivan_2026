@@ -40,6 +40,8 @@
                             style="font-family: sans-serif; font-weight: 600; font-size: 19px; color: #0EA5E9;">Ville
                             Cycles</a>
                     </li>
+
+                    {% if request.path == '/' or request.path.startswith('/shop/') %}
                     <li class="nav-item">
                         <a class="nav-link text-light opacity-75" href="{{ url_for('views.about') }}"
                             style="font-size: 17px;">About Us</a>
@@ -50,8 +52,10 @@
                             style="font-size: 17px;">Sell Your Bike</a>
                     </li>
                     {% endif %}
+                    {% endif %}
                 </ul>
 
+                {% if request.path == '/' or request.path.startswith('/shop/') %}
                 <form class="d-flex mx-auto my-2 my-lg-0" role="search" action="/search" method="POST"
                     style="max-width: 400px; width: 100%;">
                     <input class="form-control me-2 bg-light border-0" name="search" type="search"
@@ -59,6 +63,7 @@
                     <button class="btn" type="submit"
                         style="background-color: #0EA5E9; color: white; border: none;">Search</button>
                 </form>
+                {% endif %}
 
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                     <li class="nav-item mx-2" id="items">
@@ -92,6 +97,8 @@
                             {% if current_user.customer_profile %}
                             <li><a class="dropdown-item" href="/orders">Orders <i
                                         class="fa-solid fa-truck-fast"></i></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('views.my_submissions') }}">My Consignments <i
+                                        class="fa-solid fa-bicycle"></i></a></li>
                             {% endif %}
 
                             {% if current_user.is_admin %}
