@@ -4,7 +4,17 @@ from datetime import timedelta
 import logging
 import os
 import shutil
-from flask import (Blueprint,current_app, flash, jsonify, redirect, render_template, request, send_from_directory, url_for)
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from . import db
@@ -134,8 +144,31 @@ def manage_preowned():
         flash("Access denied.", "danger")
         return redirect(url_for("views.index"))
 
-    pending_bikes = Product.query.filter_by(is_preowned=True, is_approved=False).all()
-    return render_template("/manage_preowned.html", pending_bikes=pending_bikes)
+    # 1. Section 1: Initial reviews & active counter-offers waiting for the customer's response
+    pending_bikes = (
+        Product.query.filter_by(is_preowned=True, is_approved=False)
+        .filter(
+            Product.consignment_status.in_(
+                [None, "pending", "pending_review", "counter_offered"]
+            )
+        )
+        .all()
+    )
+
+    # 2. Section 2: Strictly when the customer has agreed/accepted the price, awaiting physical delivery
+    agreed_bikes = (
+        Product.query.filter_by(is_preowned=True, is_approved=False)
+        .filter(
+            Product.consignment_status.in_(
+                ["price_agreed", "accepted", "offer_accepted"]
+            )
+        )
+        .all()
+    )
+
+    return render_template(
+        "manage_preowned.html", pending_bikes=pending_bikes, agreed_bikes=agreed_bikes
+    )
 
 
 @admin.route("/preowned-action/<int:item_id>/<action>", methods=["GET", "POST"])
@@ -149,6 +182,8 @@ def preowned_action(item_id, action):
 
     if action == "approve":
         item.is_approved = True
+        item.is_active = True
+        item.consignment_status = "approved"
 
         if item.product_picture and (
             "customer_media" in item.product_picture
@@ -196,6 +231,72 @@ def preowned_action(item_id, action):
     return redirect(url_for("admin.manage_preowned"))
 
 
+@admin.route("/preowned-counter-offer/<int:item_id>", methods=["POST"])
+@login_required
+def counter_offer_action(item_id):
+    if current_user.id != 1:
+        flash("Access denied.", "danger")
+        return redirect(url_for("views.index"))
+
+    item = Product.query.get_or_404(item_id)
+
+    try:
+        counter_price = request.form.get("shop_counter_price")
+        query_message = request.form.get("admin_query_message")
+
+        if counter_price:
+            item.shop_counter_price = float(counter_price)
+        if query_message is not None:
+            item.admin_query_message = query_message
+
+        # Keep it in Section 1 as counter_offered (waiting for customer)
+        item.consignment_status = "counter_offered"
+
+        db.session.commit()
+
+        logger.info(
+            "Counter-offer sent for pre-owned bike",
+            extra={
+                "admin_id": current_user.id,
+                "product_id": item.id,
+                "counter_price": item.shop_counter_price,
+            },
+        )
+        flash(f'Counter-offer successfully sent for "{item.product_name}"!', "success")
+    except Exception as e:
+        db.session.rollback()
+        logger.error(
+            "Failed to send counter-offer",
+            extra={"product_id": item_id, "error": str(e)},
+        )
+        flash(f"Error sending counter-offer: {e}", "danger")
+
+    return redirect(url_for("admin.manage_preowned"))
+
+
+@admin.route("/mark-delivered/<int:item_id>", methods=["POST"])
+@login_required
+def mark_delivered(item_id):
+    if current_user.id != 1:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for("views.index"))
+
+    bike = Product.query.get_or_404(item_id)
+
+    # Update status to delivered / available for sale on homepage/shop
+    bike.consignment_status = "delivered"
+    bike.is_preowned = True
+    bike.is_approved = True
+    bike.is_active = True
+
+    db.session.commit()
+    flash(
+        f"{bike.product_name} marked as delivered and is now live on the shop/homepage!",
+        "success",
+    )
+    return redirect(url_for("admin.manage_preowned"))
+
+
 @admin.route("/add-shop-items", methods=["GET", "POST"])
 @login_required
 def add_shop_items():
@@ -238,7 +339,10 @@ def add_shop_items():
             new_shop_item.product_picture = db_file_path
             new_shop_item.category_id = category_id
             new_shop_item.is_flagship = is_flagship
-            new_shop_item.is_approved = True  
+            new_shop_item.is_approved = True
+            new_shop_item.is_preowned = False
+            new_shop_item.consignment_status = None
+
             try:
                 db.session.add(new_shop_item)
                 db.session.commit()
@@ -385,29 +489,64 @@ def manage_orders():
             new_status = request.form.get("status")
 
             order = Order.query.get_or_404(order_id)
-            order.status = new_status
-            try:
-                db.session.commit()
-                logger.info(
-                    "Admin updated order status",
-                    extra={
-                        "admin_id": current_user.id,
-                        "order_id": order.id,
-                        "new_status": new_status,
-                    },
+
+            if order.status in ["Delivered", "Cancelled"]:
+                flash(
+                    f"Order #{order.id} is already {order.status} and cannot be modified.",
+                    "warning",
                 )
-                flash(f"Order #{order.id} status updated to '{new_status}'.", "success")
-            except Exception as e:
-                db.session.rollback()
-                logger.error(
-                    "Error updating order status",
-                    extra={
-                        "admin_id": current_user.id,
-                        "order_id": order.id,
-                        "error": str(e),
-                    },
-                )
-                flash(f"Error updating order status: {e}", "error")
+            elif not new_status:
+                flash("No status provided.", "error")
+            else:
+                valid_transition = False
+                if order.status in ["Pending", "Paid"] and new_status in [
+                    "Processing",
+                    "Cancelled",
+                ]:
+                    valid_transition = True
+                elif order.status == "Processing" and new_status in [
+                    "Out for Delivery",
+                    "Cancelled",
+                ]:
+                    valid_transition = True
+                elif order.status == "Out for Delivery" and new_status in [
+                    "Delivered",
+                    "Cancelled",
+                ]:
+                    valid_transition = True
+
+                if valid_transition:
+                    order.status = new_status
+                    try:
+                        db.session.commit()
+                        logger.info(
+                            "Admin updated order status",
+                            extra={
+                                "admin_id": current_user.id,
+                                "order_id": order.id,
+                                "new_status": new_status,
+                            },
+                        )
+                        flash(
+                            f"Order #{order.id} status updated to '{new_status}'.",
+                            "success",
+                        )
+                    except Exception as e:
+                        db.session.rollback()
+                        logger.error(
+                            "Error updating order status",
+                            extra={
+                                "admin_id": current_user.id,
+                                "order_id": order.id,
+                                "error": str(e),
+                            },
+                        )
+                        flash(f"Error updating order status: {e}", "error")
+                else:
+                    flash(
+                        f"Invalid status transition from '{order.status}' to '{new_status}'.",
+                        "error",
+                    )
 
             return redirect(
                 url_for(
@@ -615,9 +754,18 @@ def api_shop_items():
     items_list = [
         {
             "id": item.id,
-            "product_name": item.product_name, "current_price": item.current_price, "previous_price": item.previous_price, "in_stock": item.in_stock,
-            "flash_sale": item.flash_sale, "category_id": item.category_id, "category_name": item.category.name if item.category else None, "product_picture": item.product_picture,
-            "is_flagship": item.is_flagship, "date_added": (item.date_added.strftime("%Y-%m-%d") if item.date_added else None),
+            "product_name": item.product_name,
+            "current_price": item.current_price,
+            "previous_price": item.previous_price,
+            "in_stock": item.in_stock,
+            "flash_sale": item.flash_sale,
+            "category_id": item.category_id,
+            "category_name": item.category.name if item.category else None,
+            "product_picture": item.product_picture,
+            "is_flagship": item.is_flagship,
+            "date_added": (
+                item.date_added.strftime("%Y-%m-%d") if item.date_added else None
+            ),
         }
         for item in items
     ]
@@ -638,11 +786,19 @@ def api_orders():
     orders = Order.query.order_by(Order.date_ordered.desc()).all()
     orders_list = [
         {
-            "id": o.id, "quantity": o.quantity, "price": o.price, "status": o.status, "payment_id": o.payment_id,
+            "id": o.id,
+            "quantity": o.quantity,
+            "price": o.price,
+            "status": o.status,
+            "payment_id": o.payment_id,
             "date_ordered": (
                 o.date_ordered.strftime("%Y-%m-%d %H:%M:%S") if o.date_ordered else None
             ),
-            "address": o.address, "city": o.city, "postal_code": o.postal_code, "customer_id": o.customer_link, "product_id": o.product_link,
+            "address": o.address,
+            "city": o.city,
+            "postal_code": o.postal_code,
+            "customer_id": o.customer_link,
+            "product_id": o.product_link,
         }
         for o in orders
     ]
@@ -665,6 +821,43 @@ def api_update_order_status(order_id):
 
     if not new_status:
         return jsonify({"error": "status field is required"}), 400
+
+    if order.status in ["Delivered", "Cancelled"]:
+        return (
+            jsonify(
+                {
+                    "error": f"Order #{order.id} is already {order.status} and cannot be modified."
+                }
+            ),
+            400,
+        )
+
+    valid_transition = False
+    if order.status in ["Pending", "Paid"] and new_status in [
+        "Processing",
+        "Cancelled",
+    ]:
+        valid_transition = True
+    elif order.status == "Processing" and new_status in [
+        "Out for Delivery",
+        "Cancelled",
+    ]:
+        valid_transition = True
+    elif order.status == "Out for Delivery" and new_status in [
+        "Delivered",
+        "Cancelled",
+    ]:
+        valid_transition = True
+
+    if not valid_transition:
+        return (
+            jsonify(
+                {
+                    "error": f"Invalid status transition from '{order.status}' to '{new_status}'."
+                }
+            ),
+            400,
+        )
 
     order.status = new_status
     try:
@@ -758,9 +951,15 @@ def api_add_shop_items():
                 {
                     "message": "Product added successfully!",
                     "product": {
-                        "id": new_shop_item.id, "product_name": new_shop_item.product_name, "current_price": new_shop_item.current_price, "previous_price": new_shop_item.previous_price,
-                        "in_stock": new_shop_item.in_stock, "flash_sale": new_shop_item.flash_sale, "category_id": new_shop_item.category_id,
-                        "product_picture": new_shop_item.product_picture, "is_flagship": new_shop_item.is_flagship,
+                        "id": new_shop_item.id,
+                        "product_name": new_shop_item.product_name,
+                        "current_price": new_shop_item.current_price,
+                        "previous_price": new_shop_item.previous_price,
+                        "in_stock": new_shop_item.in_stock,
+                        "flash_sale": new_shop_item.flash_sale,
+                        "category_id": new_shop_item.category_id,
+                        "product_picture": new_shop_item.product_picture,
+                        "is_flagship": new_shop_item.is_flagship,
                     },
                 }
             ),

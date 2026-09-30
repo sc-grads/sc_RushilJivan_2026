@@ -4,6 +4,36 @@
 
 {% block body %}
 
+<style>
+    /* Positions the toggle button inside the right side of the input box seamlessly */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper .form-control {
+        padding-right: 45px;
+        /* Leave space for the icon inside the box */
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #6c757d;
+        z-index: 10;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .password-toggle-btn:focus {
+        outline: none;
+        box-shadow: none;
+    }
+</style>
+
 <section class="base" id="base-signup">
     <div class="base-content">
         <div class="form">
@@ -37,8 +67,13 @@
 
                 <div class="password mb-2">
                     <h4 class="form-label">Password</h4>
-                    {{ form.password(class="form-control") }}
-                    <hr class="field-hr">
+                    <div class="password-wrapper">
+                        {{ form.password(class="form-control", id="passwordField") }}
+                        <button type="button" class="password-toggle-btn" id="togglePassword">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                    <hr class="field-hr mt-2">
                 </div>
 
                 <div class="text-end mb-3">
@@ -55,5 +90,26 @@
         </div>
     </div>
 </section>
+
+<!-- Password Visibility Toggle Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordField = document.querySelector('#passwordField');
+        const toggleIcon = document.querySelector('#toggleIcon');
+
+        if (togglePassword && passwordField) {
+            togglePassword.addEventListener('click', function () {
+                // Toggle the type attribute
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+
+                // Toggle the Bootstrap icon class
+                toggleIcon.classList.toggle('bi-eye');
+                toggleIcon.classList.toggle('bi-eye-slash');
+            });
+        }
+    });
+</script>
 
 {% endblock %}

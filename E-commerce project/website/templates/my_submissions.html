@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %} My Bike Submissions - Ville Cycles {% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold text-dark">My Consignment Submissions</h2>
+            <p class="text-muted small">Track the status of your pre-owned bike listings, review shop counter-offers,
+                and manage logistics.</p>
+        </div>
+    </div>
+
+    {% if bikes %}
+    <div class="row g-4">
+        {% for bike in bikes %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white d-flex flex-column">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{% if 'customer_media' in bike.product_picture %}{{ url_for('admin.get_customer_image', filename=bike.product_picture.replace('customer_media/', '').replace('\\', '/').split('/')[-1]) }}{% else %}{{ url_for('static', filename=bike.product_picture) }}{% endif %}"
+                        alt="{{ bike.product_name }}" class="rounded-3 border me-3"
+                        style="width: 70px; height: 70px; object-fit: contain;">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">{{ bike.product_name }}</h5>
+
+                        {% set badge_class = 'bg-secondary' %}
+                        {% if bike.consignment_status == 'pending_review' %}
+                        {% set badge_class = 'bg-warning text-dark' %}
+                        {% elif bike.consignment_status == 'counter_offered' %}
+                        {% set badge_class = 'bg-info text-dark' %}
+                        {% elif bike.consignment_status in ['price_agreed', 'approved'] %}
+                        {% set badge_class = 'bg-primary text-white' %}
+                        {% elif bike.consignment_status == 'delivered' %}
+                        {% set badge_class = 'bg-success text-white' %}
+                        {% elif bike.consignment_status == 'rejected_by_customer' %}
+                        {% set badge_class = 'bg-danger text-white' %}
+                        {% endif %}
+
+                        <span class="badge {{ badge_class }} fs-6">
+                            Status: {{ bike.consignment_status.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                </div>
+
+                <hr class="text-muted opacity-25">
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small">Your Asking Price:</span>
+                        <span class="fw-bold text-dark">R {{ "{:,.2f}".format(bike.customer_asking_price or
+                            bike.current_price) }}</span>
+                    </div>
+
+                    {% if bike.shop_counter_price %}
+                    <div class="d-flex justify-content-between mb-1 bg-light p-2 rounded-3">
+                        <span class="text-primary fw-bold small">Shop Counter Offer:</span>
+                        <span class="fw-bold text-primary">R {{ "{:,.2f}".format(bike.shop_counter_price) }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if bike.admin_query_message %}
+                    <div class="alert alert-light border small mt-2 p-3 rounded-3 text-secondary">
+                        <strong>Shop Feedback:</strong> {{ bike.admin_query_message }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Action Section / Status Banner -->
+                <div class="mt-auto pt-2">
+                    {% if bike.consignment_status == 'counter_offered' %}
+                    <div class="d-flex gap-2">
+                        <form action="{{ url_for('views.respond_offer', item_id=bike.id, action='accept') }}"
+                            method="POST" class="flex-fill">
+                            <button type="submit" class="btn btn-success w-100 rounded-pill fw-semibold btn-sm py-2">
+                                <i class="fa-solid fa-check me-1"></i> Accept (R {{
+                                "{:,.0f}".format(bike.shop_counter_price) }})
+                            </button>
+                        </form>
+
+                        <div class="flex-fill">
+                            <button type="button"
+                                class="btn btn-outline-danger w-100 rounded-pill fw-semibold btn-sm py-2"
+                                data-bs-toggle="modal" data-bs-target="#declineModal{{ bike.id }}">
+                                <i class="fa-solid fa-xmark me-1"></i> Decline
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Decline Confirmation Modal -->
+                    <div class="modal fade" id="declineModal{{ bike.id }}" tabindex="-1"
+                        aria-labelledby="declineModalLabel{{ bike.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content rounded-4 border-0 shadow">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold text-dark" id="declineModalLabel{{ bike.id }}">
+                                        Decline Counter-Offer
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-muted text-start py-3">
+                                    Are you sure you want to decline the shop's counter-offer of <strong
+                                        class="text-dark">R {{ "{:,.2f}".format(bike.shop_counter_price) }}</strong> for
+                                    <strong class="text-dark">{{ bike.product_name }}</strong>?
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-4"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <form
+                                        action="{{ url_for('views.respond_offer', item_id=bike.id, action='reject') }}"
+                                        method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">Yes,
+                                            Decline</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% elif bike.consignment_status in ['price_agreed', 'approved'] %}
+                    <div class="text-primary small fw-semibold text-center bg-primary-subtle p-2 rounded-3">
+                        <i class="fa-solid fa-truck-fast me-1"></i> Price agreed! Please bring or ship your bike to
+                        Ville Cycles for final inspection and delivery.
+                    </div>
+                    {% elif bike.consignment_status == 'delivered' %}
+                    <div class="text-success small fw-semibold text-center bg-success-subtle p-2 rounded-3">
+                        <i class="fa-solid fa-circle-check me-1"></i> Bike delivered and now live on the shop homepage!
+                    </div>
+                    {% elif bike.consignment_status == 'rejected_by_customer' %}
+                    <div class="text-danger small fw-semibold text-center bg-danger-subtle p-2 rounded-3">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Offer declined. Contact support if you'd
+                        like to submit a new proposal.
+                    </div>
+                    {% else %}
+                    <div class="text-muted small text-center fst-italic">
+                        Waiting for admin review and valuation...
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
+        <i class="fa-solid fa-bicycle fs-1 text-muted mb-3"></i>
+        <h4 class="fw-bold text-dark">No Submissions Yet</h4>
+        <p class="text-muted small mb-3">You haven't submitted any pre-owned bikes for consignment.</p>
+        <a href="{{ url_for('views.sell_bike') }}" class="btn text-white rounded-pill px-4 fw-bold"
+            style="background-color: #0EA5E9;">Sell a Bike</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
