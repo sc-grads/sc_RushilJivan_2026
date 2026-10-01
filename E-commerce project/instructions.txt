@@ -60,6 +60,9 @@ pagination to home page
 
 
 add to cart without an account, should only ask to sign up or login at checkout. when login products should still stay
+review
+background textboxes to black
+loyalty 
 
 
 29/09
