@@ -5,13 +5,9 @@ cart - done
 checkout (payment) - done
 
 
-customer will have contact no., address - done
-employee will have department, emp no., role - ???
+frontend and backend - done
 
-
-frontend and backend
-
-add audit logging
+add audit logging - done
 
 
 
@@ -59,12 +55,6 @@ pagination to home page
 
 
 
-add to cart without an account, should only ask to sign up or login at checkout. when login products should still stay
-review
-background textboxes to black
-loyalty 
-
-
 29/09
 search bar and about us, etc shouldn't be available from the profile page, etc.
 flow of status as admin, from paid it goes to processed, out for delivery then delivered. shouldn't be able to go from paid to delivered. must follow flow. also a pop up to confirm changing the status
@@ -81,6 +71,11 @@ confirmation email (resend)
 
 
 
+add to cart without an account, should only ask to sign up or login at checkout. when login products should still stay
+review
+background textboxes to black
+loyalty 
+add llm chatbot
 
 
 
