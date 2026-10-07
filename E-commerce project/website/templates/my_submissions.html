@@ -66,7 +66,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Action Section / Status Banner -->
                 <div class="mt-auto pt-2">
                     {% if bike.consignment_status == 'counter_offered' %}
                     <div class="d-flex gap-2">
@@ -87,7 +86,6 @@
                         </div>
                     </div>
 
-                    <!-- Decline Confirmation Modal -->
                     <div class="modal fade" id="declineModal{{ bike.id }}" tabindex="-1"
                         aria-labelledby="declineModalLabel{{ bike.id }}" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">

@@ -4,17 +4,7 @@ from datetime import timedelta
 import logging
 import os
 import shutil
-from flask import (
-    Blueprint,
-    current_app,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    send_from_directory,
-    url_for,
-)
+from flask import (Blueprint,current_app,flash,jsonify,redirect,render_template,request,send_from_directory,url_for)
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from . import db
@@ -144,7 +134,6 @@ def manage_preowned():
         flash("Access denied.", "danger")
         return redirect(url_for("views.index"))
 
-    # 1. Section 1: Initial reviews & active counter-offers waiting for the customer's response
     pending_bikes = (
         Product.query.filter_by(is_preowned=True, is_approved=False)
         .filter(
@@ -155,7 +144,6 @@ def manage_preowned():
         .all()
     )
 
-    # 2. Section 2: Strictly when the customer has agreed/accepted the price, awaiting physical delivery
     agreed_bikes = (
         Product.query.filter_by(is_preowned=True, is_approved=False)
         .filter(
@@ -249,7 +237,6 @@ def counter_offer_action(item_id):
         if query_message is not None:
             item.admin_query_message = query_message
 
-        # Keep it in Section 1 as counter_offered (waiting for customer)
         item.consignment_status = "counter_offered"
 
         db.session.commit()
@@ -283,7 +270,6 @@ def mark_delivered(item_id):
 
     bike = Product.query.get_or_404(item_id)
 
-    # Update status to delivered / available for sale on homepage/shop
     bike.consignment_status = "delivered"
     bike.is_preowned = True
     bike.is_approved = True
@@ -517,6 +503,16 @@ def manage_orders():
 
                 if valid_transition:
                     order.status = new_status
+
+                    if new_status == "Delivered" and not order.loyalty_counted:
+                        order.loyalty_counted = True
+                        if order.customer_order:
+                            customer = order.customer_order
+                            customer.completed_orders_count += 1
+
+                            if customer.completed_orders_count % 5 == 0:
+                                customer.loyalty_rewards_available += 1
+
                     try:
                         db.session.commit()
                         logger.info(
@@ -724,6 +720,8 @@ def delete_item(item_id):
         extra={"user_id": current_user.id, "item_id": item_id},
     )
     return render_template("404.html")
+
+
 
 
 ##API TESTING
