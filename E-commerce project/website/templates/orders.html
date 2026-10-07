@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %} Orders - Ville Cycles {% endblock %}
+{% block title %} Orders & Rewards - Ville Cycles {% endblock %}
 
 {% block body %}
 
@@ -15,13 +15,82 @@
         border-color: #0EA5E9 !important;
         color: #ffffff !important;
     }
+
+    .punch-dot {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
 </style>
 
 <div class="container my-5">
-    <h1 class="text-center mb-4 fw-bold text-dark">Your Orders</h1>
+    <h1 class="text-center mb-4 fw-bold text-dark">Your Orders & Rewards</h1>
 
     <div class="row justify-content-center">
         <div class="col-lg-10">
+
+            {% if current_user.is_authenticated and current_user.customer_profile %}
+            <div class="card shadow-sm border-0 rounded-4 mb-5 p-4 text-white"
+                style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);">
+                <div class="row align-items-center">
+                    <div class="col-lg-7 mb-4 mb-lg-0">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-info text-dark px-3 py-1 rounded-pill fw-bold me-2">
+                                <i class="fa-solid fa-gift me-1"></i> Loyalty Rewards Program
+                            </span>
+                            <span class="text-light opacity-75 small">Complete 5 orders, get a reward!</span>
+                        </div>
+                        <h3 class="fw-bold mb-1">Your Punch-Card Progress</h3>
+                        <p class="text-light opacity-75 small mb-0">
+                            Track your completed orders toward free cycling gear, tune-ups, or merchandise discounts.
+                        </p>
+                    </div>
+
+                    <div class="col-lg-5 text-lg-end">
+                        {% set completed = current_user.customer_profile.completed_orders_count | default(0) %}
+                        {% set current_progress = completed % 5 %}
+                        {% set available_rewards = current_user.customer_profile.loyalty_rewards_available | default(0)
+                        %}
+
+                        <div class="d-flex justify-content-lg-end justify-content-center align-items-center gap-2 mb-3">
+                            {% for i in range(1, 6) %}
+                            {% if i <= current_progress or (completed> 0 and current_progress == 0 and i == 5) %}
+                                <div class="punch-dot bg-success text-white shadow-sm" title="Completed Order">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                {% else %}
+                                <div class="punch-dot bg-light text-muted border" title="Pending Order">
+                                    {{ i }}
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-lg-end justify-content-center align-items-center gap-3">
+                            <span class="small text-light">
+                                Progress: <strong class="text-info">{{ current_progress }}/5</strong> orders
+                            </span>
+                            {% if available_rewards > 0 %}
+                            <span class="badge bg-success text-light px-3 py-2 small fw-bold">
+                                <i class="fa-solid fa-star me-1"></i> {{ available_rewards }} Reward(s) Available in
+                                Cart
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary text-light px-2 py-1 small">
+                                {{ 5 - current_progress }} more order(s) to next reward
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <p class="text-muted mb-0 small">Manage and track your recent purchases.</p>
                 <form method="GET" action="{{ url_for('views.order') }}" class="d-flex align-items-center gap-2">
@@ -74,10 +143,22 @@
 
                     <div class="row align-items-center mb-3">
                         <div class="col-md-3 text-center mb-3 mb-md-0">
-                            <img src="{{ item.product.product_picture if item.product else '' }}"
-                                alt="{{ item.product.product_name if item.product else 'Product' }}"
-                                class="img-fluid rounded-3 border-0 bg-light p-2"
+                            {% if item.product %}
+                            {% set pic = item.product.product_picture or 'default.jpg' %}
+                            {% if 'customer_media' in pic or not pic.startswith('media/') %}
+                            {% set clean_name = pic.replace('customer_media/', '').replace('media/', '') %}
+                            <img src="{{ url_for('admin.get_customer_image', filename=clean_name) }}"
+                                alt="{{ item.product.product_name }}" class="img-fluid rounded-3 border-0 bg-light p-2"
                                 style="max-height: 100px; object-fit: contain;">
+                            {% else %}
+                            <img src="{{ url_for('admin.get_image', filename=pic.replace('media/', '')) }}"
+                                alt="{{ item.product.product_name }}" class="img-fluid rounded-3 border-0 bg-light p-2"
+                                style="max-height: 100px; object-fit: contain;">
+                            {% endif %}
+                            {% else %}
+                            <img src="" alt="Product" class="img-fluid rounded-3 border-0 bg-light p-2"
+                                style="max-height: 100px; object-fit: contain;">
+                            {% endif %}
                         </div>
 
                         <div class="col-md-5">

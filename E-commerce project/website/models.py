@@ -71,7 +71,9 @@ class Customer(db.Model):
     city = db.Column(db.String(100), nullable=True)
     postal_code = db.Column(db.String(20), nullable=True)
 
-    # Unique backref names to prevent collisions
+    completed_orders_count = db.Column(db.Integer, default=0, nullable=False)
+    loyalty_rewards_available = db.Column(db.Integer, default=0, nullable=False)
+
     cart_items = db.relationship(
         "Cart",
         backref=db.backref("customer_cart", lazy=True),
@@ -129,7 +131,6 @@ class Product(db.Model):
         db.Integer, db.ForeignKey("customers.id", ondelete="SET NULL"), nullable=True
     )
 
-    # --- Negotiation & Logistics Workflow Fields ---
     customer_asking_price = db.Column(db.Float, nullable=True)
     shop_counter_price = db.Column(db.Float, nullable=True)
     admin_query_message = db.Column(db.Text, nullable=True)
@@ -179,6 +180,8 @@ class Order(db.Model):
 
     card_holder = db.Column(db.String(150), nullable=True)
     card_last_four = db.Column(db.String(4), nullable=True)
+
+    loyalty_counted = db.Column(db.Boolean, default=False, nullable=False)
 
     customer_link = db.Column(
         db.Integer, db.ForeignKey("customers.id", ondelete="SET NULL"), nullable=True

@@ -19,9 +19,24 @@
                     {% for item in cart %}
                     <div class="row mb-3 align-items-center" id="cart-row-{{ item.id }}">
                         <div class="col-sm-3 text-center">
-                            <img src="{{ item.product.product_picture }}" alt="{{ item.product.product_name }}"
-                                class="img-fluid rounded-3 border-0 bg-light p-2"
+                            {% if item.product %}
+                            {% set pic = item.product.product_picture or 'default.jpg' %}
+                            {% if 'customer_media' in pic or not pic.startswith('media/') %}
+                            {% set clean_name = pic.replace('customer_media/', '').replace('media/', '') %}
+                            <img src="{{ url_for('admin.get_customer_image', filename=clean_name) }}"
+                                alt="{{ item.product.product_name }}" class="img-fluid rounded-3 border-0 bg-light p-2"
+                                style="max-height: 100px; object-fit: contain;"
+                                onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\' width=\'100%\' height=\'100%\'><path fill=\'%2394A3B8\' d=\'M448 96c-35.3 0-64 28.7-64 64c0 ...\'></path></svg>'; this.classList.add('p-4');">
+                            {% else %}
+                            <img src="{{ url_for('admin.get_image', filename=pic.replace('media/', '')) }}"
+                                alt="{{ item.product.product_name }}" class="img-fluid rounded-3 border-0 bg-light p-2"
+                                style="max-height: 100px; object-fit: contain;"
+                                onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\' width=\'100%\' height=\'100%\'><path fill=\'%2394A3B8\' d=\'M448 96c-35.3 0-64 28.7-64 64c0 ...\'></path></svg>'; this.classList.add('p-4');">
+                            {% endif %}
+                            {% else %}
+                            <img src="" alt="Product" class="img-fluid rounded-3 border-0 bg-light p-2"
                                 style="max-height: 100px; object-fit: contain;">
+                            {% endif %}
                         </div>
                         <div class="col-sm-9">
                             <div>
@@ -102,6 +117,31 @@
                                 class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-3 bg-transparent text-dark">
                                 Shipping <span class="fw-semibold">R <span id="shipping-fee">200.00</span></span>
                             </li>
+
+                            {% if customer and customer.loyalty_rewards_available > 0 %}
+                            <li class="list-group-item border-0 px-0 pb-3 bg-transparent">
+                                <div class="form-check p-3 rounded-3"
+                                    style="background-color: #F0F9FF; border: 1px dashed #0EA5E9;">
+                                    <input class="form-check-input" type="checkbox" name="use_reward" id="use_reward" {%
+                                        if request.method=='POST' and request.form.get('use_reward') %}checked{% endif
+                                        %}>
+                                    <label class="form-check-label text-dark fw-semibold small ms-1" for="use_reward">
+                                        <i class="fas fa-gift text-info me-1"></i> Use 1 Loyalty Reward
+                                        <span class="text-muted fw-normal d-block" style="font-size: 0.8rem;">Covers
+                                            your R 200.00 shipping fee! (You have {{ customer.loyalty_rewards_available
+                                            }} available)</span>
+                                    </label>
+                                </div>
+                            </li>
+                            {% endif %}
+
+                            {% if discount > 0 %}
+                            <li
+                                class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-2 bg-transparent text-success">
+                                Reward Discount <span>-R <span id="discount-amount">{{ "{:,.2f}".format(discount)
+                                        }}</span></span>
+                            </li>
+                            {% endif %}
 
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center border-top px-0 pt-3 bg-transparent text-dark">
@@ -222,7 +262,7 @@
         const cardNumberInput = document.querySelector("#card_number");
         if (cardNumberInput) {
             cardNumberInput.addEventListener("input", function (e) {
-                let value = e.target.value.replace(/\D/g, ""); 
+                let value = e.target.value.replace(/\D/g, "");
                 let formattedValue = "";
                 for (let i = 0; i < value.length; i++) {
                     if (i > 0 && i % 4 === 0) {
@@ -256,6 +296,13 @@
             });
         }
 
+        const rewardCheckbox = document.querySelector("#use_reward");
+        if (rewardCheckbox) {
+            rewardCheckbox.addEventListener("change", function () {
+                this.form.submit();
+            });
+        }
+
         function checkEmptyCart() {
             const remainingRows = document.querySelectorAll('[id^="cart-row-"]');
             if (remainingRows.length === 0) {
@@ -280,14 +327,13 @@
         document.querySelectorAll(".plus-cart").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 let pid = this.getAttribute("pid");
-                fetch(`/api/pluscart?cart_id=${pid}`, {
-                    method: "POST",
+                fetch(`/pluscart?cart_id=${pid}`, {
+                    method: "GET",
                     headers: { "Content-Type": "application/json" }
                 })
                     .then(response => response.json())
                     .then(data => {
                         if (data.error) {
-                            alert(data.error);
                             return;
                         }
                         document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
@@ -303,16 +349,12 @@
         document.querySelectorAll(".minus-cart").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 let pid = this.getAttribute("pid");
-                fetch(`/api/minuscart?cart_id=${pid}`, {
-                    method: "POST",
+                fetch(`/minuscart?cart_id=${pid}`, {
+                    method: "GET",
                     headers: { "Content-Type": "application/json" }
                 })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
                         if (data.quantity === 0) {
                             let row = document.querySelector(`#cart-row-${pid}`);
                             let hr = document.querySelector(`#hr-${pid}`);
@@ -327,8 +369,12 @@
                             if (summaryQty) summaryQty.innerText = data.quantity;
                         }
 
-                        document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        if (data.amount !== undefined) {
+                            document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                        if (data.total !== undefined) {
+                            document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
                     }).catch(err => console.error("Error:", err));
             });
         });
@@ -336,16 +382,12 @@
         document.querySelectorAll(".remove-cart").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 let pid = this.getAttribute("pid");
-                fetch(`/api/removecart?cart_id=${pid}`, {
-                    method: "POST",
+                fetch(`/removecart?cart_id=${pid}`, {
+                    method: "GET",
                     headers: { "Content-Type": "application/json" }
                 })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
                         let row = document.querySelector(`#cart-row-${pid}`);
                         let hr = document.querySelector(`#hr-${pid}`);
                         let summaryItem = document.querySelector(`#summary-item-${pid}`);
@@ -353,8 +395,12 @@
                         if (hr) hr.remove();
                         if (summaryItem) summaryItem.remove();
 
-                        document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        if (data.amount !== undefined) {
+                            document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                        if (data.total !== undefined) {
+                            document.querySelector("#total").innerText = data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
 
                         checkEmptyCart();
                     }).catch(err => console.error("Error:", err));

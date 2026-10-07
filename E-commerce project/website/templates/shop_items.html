@@ -69,10 +69,21 @@
                         {{ item.date_added.strftime('%Y-%m-%d') if item.date_added else 'N/A' }}
                     </td>
                     <td>
-                        <img src="{{ '/' + item.product_picture if not item.product_picture.startswith('/') else item.product_picture }}"
+                        {% set pic = item.product_picture or 'default.jpg' %}
+                        {% if 'customer_media' in pic or not pic.startswith('media/') %}
+                        {% set clean_name = pic.replace('customer_media/', '').replace('media/', '') %}
+                        <img src="{{ url_for('admin.get_customer_image', filename=clean_name) }}"
                             alt="{{ item.product_name }}"
                             class="rounded-3 border border-light object-fit-cover bg-light p-1 shadow-sm"
-                            style="height: 45px; width: 45px;" onerror="this.src='/media/default.jpg';">
+                            style="height: 45px; width: 45px;"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\' width=\'100%\' height=\'100%\'><path fill=\'%2394A3B8\' d=\'M448 96c-35.3 0-64 28.7-64 64c0 ...\'></path></svg>';">
+                        {% else %}
+                        <img src="{{ url_for('admin.get_image', filename=pic.replace('media/', '')) }}"
+                            alt="{{ item.product_name }}"
+                            class="rounded-3 border border-light object-fit-cover bg-light p-1 shadow-sm"
+                            style="height: 45px; width: 45px;"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\' width=\'100%\' height=\'100%\'><path fill=\'%2394A3B8\' d=\'M448 96c-35.3 0-64 28.7-64 64c0 ...\'></path></svg>';">
+                        {% endif %}
                     </td>
                     <td class="fw-semibold text-dark">
                         {{ item.product_name }}

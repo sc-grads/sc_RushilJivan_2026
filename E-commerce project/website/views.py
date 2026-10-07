@@ -94,7 +94,7 @@ def home():
         Product.is_active == True,
         Product.is_flagship == False,
         Product.is_approved == True,
-        Product.in_stock > 0,  # <-- Hides items with 0 stock
+        Product.in_stock > 0,
         or_(
             Product.is_preowned == False,
             Product.consignment_status == "delivered",
@@ -119,7 +119,7 @@ def home():
         Product.query.filter_by(is_flagship=True, is_active=True, is_approved=True)
         .filter(Product.in_stock > 0)
         .first()
-    )  # <-- Ensures flagship also hides if out of stock
+    )
 
     categories = Category.query.all()
 
@@ -311,7 +311,16 @@ def show_cart():
 
     amount = sum(item.product.current_price * item.quantity for item in cart)
     shipping_fee = 200.0 if cart else 0.0
-    total = amount + shipping_fee
+
+    use_reward = (
+        request.form.get("use_reward") == "on" if request.method == "POST" else False
+    )
+    discount = 0.0
+
+    if use_reward and customer.loyalty_rewards_available > 0:
+        discount = amount * 0.15
+
+    total = max(0, amount + shipping_fee - discount)
 
     form = CheckoutForm()
 
@@ -330,12 +339,15 @@ def show_cart():
                 customer.city = city
                 customer.postal_code = postal_code
 
+                if use_reward and customer.loyalty_rewards_available > 0:
+                    customer.loyalty_rewards_available -= 1
+
                 db.session.add(customer)
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
                 logger.error(
-                    "Could not update customer address profile",
+                    "Could not update customer address profile and rewards",
                     extra={"customer_id": customer.id, "error": str(e)},
                 )
                 flash(
@@ -370,6 +382,7 @@ def show_cart():
                     "customer_id": customer.id,
                     "payment_id": payment_id,
                     "total_amount": total,
+                    "reward_used": use_reward,
                 },
             )
 
@@ -384,7 +397,14 @@ def show_cart():
             )
 
     return render_template(
-        "cart.html", cart=cart, amount=amount, total=total, customer=customer, form=form
+        "cart.html",
+        cart=cart,
+        amount=amount,
+        shipping_fee=shipping_fee,
+        discount=discount,
+        total=total,
+        customer=customer,
+        form=form,
     )
 
 
@@ -422,6 +442,7 @@ def payment_success():
                 postal_code=customer.postal_code,
                 product_link=item.product_link,
                 customer_link=customer_id,
+                loyalty_counted=False,
             )
             db.session.add(new_order)
             created_orders.append(new_order)
@@ -432,7 +453,6 @@ def payment_success():
         Cart.query.filter_by(customer_link=customer_id).delete()
         db.session.commit()
 
-        # Build order data package and send invoice email via Resend
         shipping_fee = 200.0 if created_orders else 0.0
         order_invoice_data = {
             "payment_id": payment_id,
