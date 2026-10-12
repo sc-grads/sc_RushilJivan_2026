@@ -107,9 +107,14 @@
                                     <span class="badge bg-primary rounded-pill">
                                         {% set completed = current_user.customer_profile.completed_orders_count |
                                         default(0) %}
+                                        {% set rewards = current_user.customer_profile.loyalty_rewards_available |
+                                        default(0) %}
                                         {% set current_progress = completed % 5 %}
-                                        {% if completed > 0 and current_progress == 0 %}5{% else %}{{ current_progress
-                                        }}{% endif %}/5
+                                        {% if current_progress == 0 and completed > 0 and rewards > 0 %}
+                                        5
+                                        {% else %}
+                                        {{ current_progress }}
+                                        {% endif %}/5
                                     </span>
                                 </a>
                             </li>
