@@ -3,7 +3,17 @@ from datetime import datetime, timedelta
 import logging
 import os
 import uuid
-from flask import (Blueprint,abort,current_app,flash,jsonify,redirect,render_template,request,url_for)
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required, logout_user
 from werkzeug.utils import secure_filename
 from . import db
@@ -318,7 +328,7 @@ def show_cart():
     discount = 0.0
 
     if use_reward and customer.loyalty_rewards_available > 0:
-        discount = amount * 0.15
+        discount = (amount + shipping_fee) * 0.20
 
     total = max(0, amount + shipping_fee - discount)
 
@@ -367,7 +377,11 @@ def show_cart():
             payfast_data = {
                 "merchant_id": PAYFAST_MERCHANT_ID,
                 "merchant_key": PAYFAST_MERCHANT_KEY,
-                "return_url": url_for("views.payment_success", _external=True),
+                "return_url": url_for(
+                    "views.payment_success",
+                    use_reward=("1" if use_reward else "0"),
+                    _external=True,
+                ),
                 "cancel_url": url_for("views.payment_cancel", _external=True),
                 "notify_url": url_for("views.payfast_notify", _external=True),
                 "m_payment_id": payment_id,
@@ -415,6 +429,8 @@ def payment_success():
     customer_id = customer.id
     cart = Cart.query.filter_by(customer_link=customer_id).all()
 
+    use_reward_flag = request.args.get("use_reward") == "1"
+
     if cart:
         for item in cart:
             if not item.product or item.quantity > item.product.in_stock:
@@ -429,12 +445,25 @@ def payment_success():
         subtotal = 0
 
         for item in cart:
-            item_total = item.product.current_price * item.quantity
-            subtotal += item_total
+            subtotal += item.product.current_price * item.quantity
+
+        shipping_fee = 200.0 if cart else 0.0
+
+        if use_reward_flag:
+            total_before_discount = subtotal + shipping_fee
+            final_grand_total = total_before_discount * 0.80
+            target_items_total = final_grand_total - shipping_fee
+            item_discount_ratio = target_items_total / subtotal if subtotal > 0 else 1.0
+        else:
+            item_discount_ratio = 1.0
+            final_grand_total = subtotal + shipping_fee
+
+        for item in cart:
+            effective_unit_price = item.product.current_price * item_discount_ratio
 
             new_order = Order(
                 quantity=item.quantity,
-                price=item.product.current_price,
+                price=effective_unit_price,
                 status="Paid",
                 payment_id=payment_id,
                 address=customer.address,
@@ -453,11 +482,10 @@ def payment_success():
         Cart.query.filter_by(customer_link=customer_id).delete()
         db.session.commit()
 
-        shipping_fee = 200.0 if created_orders else 0.0
         order_invoice_data = {
             "payment_id": payment_id,
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "total_price": subtotal + shipping_fee,
+            "total_price": final_grand_total,
             "items": created_orders,
         }
         send_order_invoice(
