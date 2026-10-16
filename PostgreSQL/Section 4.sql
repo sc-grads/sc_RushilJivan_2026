@@ -150,9 +150,53 @@ SELECT comments.id AS comment_id, p.id FROM photos2 as p JOIN comments ON p.id =
 
 
 
+SELECT url, username FROM photos2 JOIN users2 ON users2.id = photos2.user_id
 
 
 
 INSERT INTO photos2 (url, user_id) VALUES ('https://banner.jpg', NULL);
-
 INSERT INTO users2 (username) VALUES ('Nicole');
+
+
+SELECT url, username FROM photos2 LEFT JOIN users2 ON users2.id = photos2.user_id
+
+SELECT url, username FROM photos2 RIGHT JOIN users2 ON users2.id = photos2.user_id
+
+SELECT url, username FROM photos2 FULL JOIN users2 ON users2.id = photos2.user_id
+
+SELECT url, contents FROM comments JOIN photos2 ON photos2.id = comments.photo_id WHERE comments.user_id = photos2.user_id;
+
+SELECT url, contents, username FROM comments JOIN photos2 ON photos2.id = comments.photo_id 
+JOIN users2 ON users2.id = comments.user_id AND users2.id = photos2.user_id;
+
+
+-- SECTION 5
+
+SELECT user_id FROM comments GROUP BY user_id
+
+SELECT MAX(id) FROM comments;
+SELECT MIN(id) FROM comments;
+SELECT AVG(id) FROM comments;
+SELECT COUNT(id) FROM comments;
+SELECT SUM(id) FROM comments;
+
+
+SELECT user_id, MAX(id) FROM comments GROUP BY user_id;
+SELECT user_id, COUNT(id) AS num_comments_created FROM comments GROUP BY user_id;
+
+SELECT * FROM photos2
+
+SELECT COUNT(user_id) FROM photos2;
+SELECT COUNT(*) FROM photos2;
+
+SELECT user_id, COUNT(*) FROM comments GROUP BY user_id;
+
+SELECT photo_id, count(*) from comments group by photo_id;
+
+
+select photo_id, count(*) from comments where photo_id < 3 group by photo_id having count(*) > 2
+
+
+select user_id, count(*) from comments where photo_id < 50 group by user_id having count(*) > 20;
+
+
