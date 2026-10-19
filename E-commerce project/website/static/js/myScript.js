@@ -1,5 +1,10 @@
-$('.plus-cart').click(function () {
-    var id = $(this).attr('pid').toString();
+$(document).on('click', '.plus-cart', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    if ($btn.data('processing')) return;
+    $btn.data('processing', true);
+
+    var id = $btn.attr('pid').toString();
 
     $.ajax({
         type: 'GET',
@@ -8,8 +13,8 @@ $('.plus-cart').click(function () {
             cart_id: id
         },
         success: function (data) {
+            if (data.error) return;
             $(`#quantity-${id}`).text(data.quantity);
-
             $(`#summary-qty-${id}`).text(data.quantity);
 
             $('#amount').text(data.amount.toFixed(2));
@@ -17,12 +22,20 @@ $('.plus-cart').click(function () {
         },
         error: function (err) {
             console.error('Error updating plus cart:', err);
+        },
+        complete: function () {
+            $btn.data('processing', false);
         }
     });
 });
 
-$('.minus-cart').click(function () {
-    var id = $(this).attr('pid').toString();
+$(document).on('click', '.minus-cart', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    if ($btn.data('processing')) return;
+    $btn.data('processing', true);
+
+    var id = $btn.attr('pid').toString();
 
     $.ajax({
         type: 'GET',
@@ -45,14 +58,20 @@ $('.minus-cart').click(function () {
         },
         error: function (err) {
             console.error('Error updating minus cart:', err);
+        },
+        complete: function () {
+            $btn.data('processing', false);
         }
     });
 });
 
+$(document).on('click', '.remove-cart', function (e) {
+    e.preventDefault();
+    var $btn = $(this);
+    if ($btn.data('processing')) return;
+    $btn.data('processing', true);
 
-$('.remove-cart').click(function (e) {
-    e.preventDefault(); 
-    var id = $(this).attr('pid').toString();
+    var id = $btn.attr('pid').toString();
 
     $.ajax({
         type: 'GET',
@@ -70,6 +89,9 @@ $('.remove-cart').click(function (e) {
         },
         error: function (err) {
             console.error('Error removing item from cart:', err);
+        },
+        complete: function () {
+            $btn.data('processing', false);
         }
     });
 });
