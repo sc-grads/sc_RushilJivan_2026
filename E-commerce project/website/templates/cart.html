@@ -134,7 +134,6 @@
                             </li>
                             {% endif %}
 
-                            <!-- Dynamic Discount Row (Hidden by default unless checked) -->
                             <li id="discount-row"
                                 class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-2 bg-transparent text-success {% if discount <= 0 %}d-none{% endif %}">
                                 Reward Discount <span>-R <span id="discount-amount">{{ "{:,.2f}".format(discount)
@@ -201,7 +200,8 @@
 
                         <div class="mb-3">
                             {{ form.card_number.label(class="form-label small fw-semibold text-muted") }}
-                            {{ form.card_number(class="form-control rounded-3 shadow-none", placeholder="0000 0000 0000 0000", maxlength="19") }}
+                            {{ form.card_number(class="form-control rounded-3 shadow-none", placeholder="0000 0000 0000
+                            0000", maxlength="19") }}
                             {% for error in form.card_number.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}
@@ -256,178 +256,213 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const cardNumberInput = document.querySelector("#card_number");
-        if (cardNumberInput) {
-            cardNumberInput.addEventListener("input", function (e) {
-                let value = e.target.value.replace(/\D/g, "");
-                let formattedValue = "";
-                for (let i = 0; i < value.length; i++) {
-                    if (i > 0 && i % 4 === 0) {
-                        formattedValue += " ";
-                    }
-                    formattedValue += value[i];
-                }
-                e.target.value = formattedValue.substring(0, 19);
-            });
-        }
+    if (typeof cartScriptLoaded === 'undefined') {
+        var cartScriptLoaded = true;
 
-        const expiryDateInput = document.querySelector("#expiry_date");
-        if (expiryDateInput) {
-            expiryDateInput.addEventListener("input", function (e) {
-                let value = e.target.value.replace(/\D/g, "");
-                let formattedValue = "";
-                if (value.length > 0) {
-                    let month = value.substring(0, 2);
-                    if (month.length === 2) {
-                        let monthNum = parseInt(month, 10);
-                        if (monthNum > 12) month = "12";
-                        if (monthNum === 0) month = "01";
-                    }
-                    formattedValue = month;
-
-                    if (value.length > 2) {
-                        formattedValue += "/" + value.substring(2, 4);
-                    }
-                }
-                e.target.value = formattedValue.substring(0, 5);
-            });
-        }
-
-        const shippingFee = 200.00;
-
-        function updateTotals(subtotal) {
-            const rewardCheckbox = document.querySelector("#use_reward");
-            const discountRow = document.querySelector("#discount-row");
-            const discountAmountSpan = document.querySelector("#discount-amount");
-            const totalSpan = document.querySelector("#total");
-
-            let discount = 0;
-            let total = subtotal + shippingFee;
-
-            if (rewardCheckbox && rewardCheckbox.checked) {
-                discount = total * 0.20;
-                total -= discount;
-                if (discountRow) discountRow.classList.remove("d-none");
-                if (discountAmountSpan) discountAmountSpan.innerText = discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            } else {
-                if (discountRow) discountRow.classList.add("d-none");
-            }
-
-            if (totalSpan) {
-                totalSpan.innerText = total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
-        }
-
-        const rewardCheckbox = document.querySelector("#use_reward");
-        if (rewardCheckbox) {
-            rewardCheckbox.addEventListener("change", function () {
-                let amountText = document.querySelector("#amount").innerText.replace(/,/g, '');
-                let subtotal = parseFloat(amountText) || 0;
-                updateTotals(subtotal);
-            });
-        }
-
-        function checkEmptyCart() {
-            const remainingRows = document.querySelectorAll('[id^="cart-row-"]');
-            if (remainingRows.length === 0) {
-                const containerRow = document.querySelector("#cart-container-row");
-                if (containerRow) {
-                    containerRow.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <div class="card border-0 shadow-sm rounded-4 p-5 mx-auto bg-white" style="max-width: 500px;">
-                                <i class="fa-solid fa-cart-shopping fa-3x mb-3" style="color: #0EA5E9;"></i>
-                                <h2 class="mb-2 fw-bold text-dark">Your Cart is Empty</h2>
-                                <p class="text-muted mb-4 small">Looks like you haven't added any gear or bikes to your cart yet.</p>
-                                <a href="/" class="btn fw-bold text-white rounded-pill py-2 shadow-none border-0"
-                                    style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
-                                    onmouseout="this.style.backgroundColor='#0EA5E9'">Browse Products</a>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-        }
-
-        document.querySelectorAll(".plus-cart").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                let pid = this.getAttribute("pid");
-                fetch(`/pluscart?cart_id=${pid}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            return;
+        document.addEventListener("DOMContentLoaded", function () {
+            const cardNumberInput = document.querySelector("#card_number");
+            if (cardNumberInput) {
+                cardNumberInput.addEventListener("input", function (e) {
+                    let value = e.target.value.replace(/\D/g, "");
+                    let formattedValue = "";
+                    for (let i = 0; i < value.length; i++) {
+                        if (i > 0 && i % 4 === 0) {
+                            formattedValue += " ";
                         }
-                        document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
-                        let summaryQty = document.querySelector(`#summary-qty-${pid}`);
-                        if (summaryQty) summaryQty.innerText = data.quantity;
+                        formattedValue += value[i];
+                    }
+                    e.target.value = formattedValue.substring(0, 19);
+                });
+            }
 
-                        document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        updateTotals(data.amount);
-                    }).catch(err => console.error("Error:", err));
-            });
-        });
+            const expiryDateInput = document.querySelector("#expiry_date");
+            if (expiryDateInput) {
+                expiryDateInput.addEventListener("input", function (e) {
+                    let value = e.target.value.replace(/\D/g, "");
+                    let formattedValue = "";
+                    if (value.length > 0) {
+                        let month = value.substring(0, 2);
+                        if (month.length === 2) {
+                            let monthNum = parseInt(month, 10);
+                            if (monthNum > 12) month = "12";
+                            if (monthNum === 0) month = "01";
+                        }
+                        formattedValue = month;
 
-        document.querySelectorAll(".minus-cart").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                let pid = this.getAttribute("pid");
-                fetch(`/minuscart?cart_id=${pid}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.quantity === 0) {
+                        if (value.length > 2) {
+                            formattedValue += "/" + value.substring(2, 4);
+                        }
+                    }
+                    e.target.value = formattedValue.substring(0, 5);
+                });
+            }
+
+            const shippingFee = 200.00;
+
+            function updateTotals(subtotal) {
+                const rewardCheckbox = document.querySelector("#use_reward");
+                const discountRow = document.querySelector("#discount-row");
+                const discountAmountSpan = document.querySelector("#discount-amount");
+                const totalSpan = document.querySelector("#total");
+
+                let discount = 0;
+                let total = subtotal + shippingFee;
+
+                if (rewardCheckbox && rewardCheckbox.checked) {
+                    discount = total * 0.20;
+                    total -= discount;
+                    if (discountRow) discountRow.classList.remove("d-none");
+                    if (discountAmountSpan) discountAmountSpan.innerText = discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else {
+                    if (discountRow) discountRow.classList.add("d-none");
+                }
+
+                if (totalSpan) {
+                    totalSpan.innerText = total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+            }
+
+            const rewardCheckbox = document.querySelector("#use_reward");
+            if (rewardCheckbox) {
+                rewardCheckbox.addEventListener("change", function () {
+                    let amountText = document.querySelector("#amount").innerText.replace(/,/g, '');
+                    let subtotal = parseFloat(amountText) || 0;
+                    updateTotals(subtotal);
+                });
+            }
+
+            function checkEmptyCart() {
+                const remainingRows = document.querySelectorAll('[id^="cart-row-"]');
+                if (remainingRows.length === 0) {
+                    const containerRow = document.querySelector("#cart-container-row");
+                    if (containerRow) {
+                        containerRow.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <div class="card border-0 shadow-sm rounded-4 p-5 mx-auto bg-white" style="max-width: 500px;">
+                                    <i class="fa-solid fa-cart-shopping fa-3x mb-3" style="color: #0EA5E9;"></i>
+                                    <h2 class="mb-2 fw-bold text-dark">Your Cart is Empty</h2>
+                                    <p class="text-muted mb-4 small">Looks like you haven't added any gear or bikes to your cart yet.</p>
+                                    <a href="/" class="btn fw-bold text-white rounded-pill py-2 shadow-none border-0"
+                                        style="background-color: #0EA5E9;" onmouseover="this.style.backgroundColor='#0284C7'"
+                                        onmouseout="this.style.backgroundColor='#0EA5E9'">Browse Products</a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            let lastActionTimestamp = 0;
+
+            document.body.addEventListener("click", function (e) {
+                let plusBtn = e.target.closest(".plus-cart");
+                let minusBtn = e.target.closest(".minus-cart");
+                let removeBtn = e.target.closest(".remove-cart");
+
+                if (!plusBtn && !minusBtn && !removeBtn) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                let now = Date.now();
+                if (now - lastActionTimestamp < 500) {
+                    return; 
+                }
+                lastActionTimestamp = now;
+
+                if (plusBtn) {
+                    let pid = plusBtn.getAttribute("pid");
+                    plusBtn.style.pointerEvents = "none"; 
+                    fetch(`/pluscart?cart_id=${pid}`, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            plusBtn.style.pointerEvents = "auto";
+                            if (data.error) return;
+                            document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
+                            let summaryQty = document.querySelector(`#summary-qty-${pid}`);
+                            if (summaryQty) summaryQty.innerText = data.quantity;
+
+                            document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            updateTotals(data.amount);
+                        }).catch(err => {
+                            plusBtn.style.pointerEvents = "auto";
+                            console.error("Error:", err);
+                        });
+                    return;
+                }
+
+                if (minusBtn) {
+                    let pid = minusBtn.getAttribute("pid");
+                    minusBtn.style.pointerEvents = "none";
+
+                    fetch(`/minuscart?cart_id=${pid}`, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            minusBtn.style.pointerEvents = "auto";
+                            if (data.quantity === 0) {
+                                let row = document.querySelector(`#cart-row-${pid}`);
+                                let hr = document.querySelector(`#hr-${pid}`);
+                                let summaryItem = document.querySelector(`#summary-item-${pid}`);
+                                if (row) row.remove();
+                                if (hr) hr.remove();
+                                if (summaryItem) summaryItem.remove();
+                                checkEmptyCart();
+                            } else {
+                                document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
+                                let summaryQty = document.querySelector(`#summary-qty-${pid}`);
+                                if (summaryQty) summaryQty.innerText = data.quantity;
+                            }
+
+                            if (data.amount !== undefined) {
+                                document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                updateTotals(data.amount);
+                            }
+                        }).catch(err => {
+                            minusBtn.style.pointerEvents = "auto";
+                            console.error("Error:", err);
+                        });
+                    return;
+                }
+
+                if (removeBtn) {
+                    let pid = removeBtn.getAttribute("pid");
+                    removeBtn.style.pointerEvents = "none";
+
+                    fetch(`/removecart?cart_id=${pid}`, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            removeBtn.style.pointerEvents = "auto";
                             let row = document.querySelector(`#cart-row-${pid}`);
                             let hr = document.querySelector(`#hr-${pid}`);
                             let summaryItem = document.querySelector(`#summary-item-${pid}`);
                             if (row) row.remove();
                             if (hr) hr.remove();
                             if (summaryItem) summaryItem.remove();
+
+                            if (data.amount !== undefined) {
+                                document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                updateTotals(data.amount);
+                            }
+
                             checkEmptyCart();
-                        } else {
-                            document.querySelector(`#quantity-${pid}`).innerText = data.quantity;
-                            let summaryQty = document.querySelector(`#summary-qty-${pid}`);
-                            if (summaryQty) summaryQty.innerText = data.quantity;
-                        }
-
-                        if (data.amount !== undefined) {
-                            document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                            updateTotals(data.amount);
-                        }
-                    }).catch(err => console.error("Error:", err));
+                        }).catch(err => {
+                            removeBtn.style.pointerEvents = "auto";
+                            console.error("Error:", err);
+                        });
+                    return;
+                }
             });
         });
-
-        document.querySelectorAll(".remove-cart").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                let pid = this.getAttribute("pid");
-                fetch(`/removecart?cart_id=${pid}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        let row = document.querySelector(`#cart-row-${pid}`);
-                        let hr = document.querySelector(`#hr-${pid}`);
-                        let summaryItem = document.querySelector(`#summary-item-${pid}`);
-                        if (row) row.remove();
-                        if (hr) hr.remove();
-                        if (summaryItem) summaryItem.remove();
-
-                        if (data.amount !== undefined) {
-                            document.querySelector("#amount").innerText = data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                            updateTotals(data.amount);
-                        }
-
-                        checkEmptyCart();
-                    }).catch(err => console.error("Error:", err));
-            });
-        });
-    });
+    }
 </script>
 
 {% endblock %}
